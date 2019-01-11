@@ -1,8 +1,5 @@
 #!/bin/bash
 
-export SICM_DIR="/lustre/atlas/scratch/molson5/gen010"
-export CRAYPE_LINK_TYPE=dynamic
-
 # Compile SICM
 cd $SICM_DIR
 make uninstall || true

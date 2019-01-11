@@ -1,6 +1,5 @@
 #!/bin/bash
 
-export SICM_DIR="/lustre/atlas/scratch/molson5/gen010/SICM"
 export PATH="$SICM_DIR/deps/bin:$PATH"
 export OMP_NUM_THREADS=256
 export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
