@@ -2,5 +2,6 @@
 
 cd $SICM_DIR/examples/high/roms/run
 source $SCRIPTS_DIR/all/pebs.sh
+source $SCRIPTS_DIR/benchmarks/roms/roms_sizes.sh
 
-pebs "128" "./roms < short_ocean_benchmark3.in"
+pebs "128" "$SMALL"

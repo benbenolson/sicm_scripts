@@ -1,6 +1,7 @@
 #!/bin/bash
 
-cd $SICM_DIR/examples/high/lulesh
+cd $SICM_DIR/examples/high/lulesh/run
 source $SCRIPTS_DIR/all/firsttouch_all.sh
+source $SCRIPTS_DIR/benchmarks/lulesh/lulesh_sizes.sh
 
-firsttouch "1" "./lulesh2.0 -s 220 -i 20 -r 11 -b 0 -c 64 -p"
+firsttouch "1" "$LARGE"

@@ -16,7 +16,7 @@ function background {
 }
 
 # First argument is the frequency of PEBS sampling to use
-# Second argument is the percentage of the peak RSS that should be available on the MCDRAM
+# Second argument is the number of GB that should be available on the MCDRAM
 # Third argument is the packing strategy
 # Fourth argument is the command to run
 function pebs {
@@ -32,28 +32,30 @@ function pebs {
     exit
   fi
 
-  RATIO=$(echo "${2}/100" | bc -l)
+  CONSTANTBYTES=$(echo "${2}/1024/1024/1024" | bc -l)
+	DIR="results/offline_pebs_${1}_${2}GB_${3}"
 
   # User output
   echo "Running experiment:"
   echo "  Experiment: Offline PEBS-Guided"
   echo "  Profiling Frequency: '${1}'"
-  echo "  Percentage: '${2}'"
+  echo "  Capacity: '${2}'"
   echo "  Packing algo: '${3}'"
   echo "  Command: '${4}'"
   
-  rm -rf results/offline_pebs_${1}_${2}_${3}/
-  mkdir -p results/offline_pebs_${1}_${2}_${3}/
-  cat results/pebs_${1}/stdout.txt | $SICM_DIR/deps/bin/hotset pebs ${3} ratio ${RATIO} 1 > results/offline_pebs_${1}_${2}_${3}/guidance.txt
-  export SH_GUIDANCE_FILE="results/offline_pebs_${1}_${2}_${3}/guidance.txt"
+  rm -rf $DIR/
+  mkdir -p $DIR/
+  cat results/pebs_${1}/stdout.txt | $SICM_DIR/deps/bin/hotset pebs ${3} ratio ${RATIO} 1 > $DIR/guidance.txt
+  export SH_GUIDANCE_FILE="$DIR/guidance.txt"
   for iter in {1..5}; do
     $SICM_DIR/deps/bin/memreserve 1 256 constant 4128116 release prefer # "Clear caches"
+		sleep 5
     cat results/firsttouch_100_node0_exclusive_device/stdout.txt | $SICM_DIR/deps/bin/memreserve 1 256 ratio ${RATIO} hold bind &
     sleep 5
-    numastat -m &>> results/offline_pebs_${1}_${2}_${3}/numastat_before.txt
-    background "offline_pebs_${1}_${2}_${3}" &
+    numastat -m &>> $DIR/numastat_before.txt
+    background "offline_pebs_${1}_${2}GB_${3}" &
     background_pid=$!
-    eval "env time -v " "${4}" &>> results/offline_pebs_${1}_${2}_${3}/stdout.txt
+    eval "env time -v " "${4}" &>> $DIR/stdout.txt
     kill $background_pid
     wait $background_pid 2>/dev/null
     pkill memreserve

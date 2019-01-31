@@ -26,6 +26,8 @@ function bench_build {
   export COMPILER_WRAPPER="$SICM_DIR/deps/bin/compiler_wrapper.sh -g"
   export LD_WRAPPER="$SICM_DIR/deps/bin/ld_wrapper.sh -g"
   export PREPROCESS_WRAPPER="$SICM_DIR/deps/bin/clang -E -x c -w -P"
+  export AR_WRAPPER="$SICM_DIR/deps/bin/ar_wrapper.sh"
+  export RANLIB_WRAPPER="$SICM_DIR/deps/bin/ranlib_wrapper.sh"
 }
 
 # First argument is "fort" or "c", which linker we should use.

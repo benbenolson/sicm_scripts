@@ -26,6 +26,8 @@ function pebs {
   mkdir -p results/pebs_${1}
   for iter in {1..1}; do # Only one profiling run
     $SICM_DIR/deps/bin/memreserve 1 256 constant 4128116 release prefer # "Clear caches"
+		sleep 5
     eval "env time -v" "$2" &>> results/pebs_${1}/stdout.txt
+		sleep 5
   done
 }

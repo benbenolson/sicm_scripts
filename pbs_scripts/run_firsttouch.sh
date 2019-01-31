@@ -1,6 +1,6 @@
 #!/bin/bash
 
-array=(roms lulesh fotonik3d imagick)
+array=(pennant)
 for i in "${array[@]}"; do
   qsub -v "SICM_DIR=$SICM_DIR,SCRIPTS_DIR=$SCRIPTS_DIR" -F "$SCRIPTS_DIR/benchmarks/$i/${i}_firsttouch_5%.sh" -N "${i}" run.pbs
   qsub -v "SICM_DIR=$SICM_DIR,SCRIPTS_DIR=$SCRIPTS_DIR" -F "$SCRIPTS_DIR/benchmarks/$i/${i}_firsttouch_10%.sh" -N "${i}" run.pbs

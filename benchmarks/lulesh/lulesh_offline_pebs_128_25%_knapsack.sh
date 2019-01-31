@@ -1,6 +1,7 @@
 #!/bin/bash
 
-cd $SICM_DIR/examples/high/lulesh
+cd $SICM_DIR/examples/high/lulesh/run
 source $SCRIPTS_DIR/all/offline_pebs.sh
+source $SCRIPTS_DIR/benchmarks/lulesh/lulesh_sizes.sh
 
-pebs "128" "25" "knapsack" "./lulesh2.0 -s 220 -i 20 -r 11 -b 0 -c 64 -p"
+pebs "128" "25" "knapsack" "$LARGE"

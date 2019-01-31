@@ -33,7 +33,6 @@ function firsttouch {
   echo "  Ratio: ${1}"
   echo "  Command: '${2}'"
 
-  echo $HOME
   ulimit -c unlimited
 
   # Run 5 iters
@@ -41,6 +40,7 @@ function firsttouch {
   mkdir -p results/firsttouch_${1}/
   for iter in {1..5}; do
     $SICM_DIR/deps/bin/memreserve 1 256 constant 4128116 release prefer # "Clear caches"
+		sleep 5
     cat results/firsttouch_100_node0_exclusive_device/stdout.txt | $SICM_DIR/deps/bin/memreserve 1 256 ratio ${RATIO} hold bind &>> results/firsttouch_${1}/memreserve.txt &
     sleep 5
     numastat -m &>> results/firsttouch_${1}/numastat_before.txt

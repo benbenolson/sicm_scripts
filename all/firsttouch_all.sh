@@ -30,11 +30,13 @@ function firsttouch {
   mkdir -p results/firsttouch_100_node${1}/
   for iter in {1..5}; do
     $SICM_DIR/deps/bin/memreserve 1 256 constant 4128116 release prefer # "Clear caches"
+		sleep 5
     numastat -m &>> results/firsttouch_100_node${1}/numastat_before.txt
     background "firsttouch_100_node${1}" &
     background_pid=$!
     eval "env time -v numactl --preferred=${1}" "$2" &>> results/firsttouch_100_node${1}/stdout.txt
     kill $background_pid
     wait $background_pid 2>/dev/null
+		sleep 5
   done
 }

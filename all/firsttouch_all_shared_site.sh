@@ -15,12 +15,15 @@ function firsttouch {
 
   # Default to the given node
   export SH_DEFAULT_NODE="${1}"
+	export MALLOC_CONF="retain:false"
 
   # Run 5 iters
   rm -rf results/firsttouch_100_node${1}_shared_site/
   mkdir -p results/firsttouch_100_node${1}_shared_site/
   for iter in {1..5}; do
     $SICM_DIR/deps/bin/memreserve 1 256 constant 4128116 release prefer # "Clear caches"
+		sleep 5
     eval "env time -v numactl --preferred=${1}" "$2" &>> results/firsttouch_100_node${1}_shared_site/stdout.txt
+		sleep 5
   done
 }
