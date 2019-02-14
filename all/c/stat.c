@@ -253,7 +253,7 @@ void find_file(char **filename, char *metric) {
 }
 
 int main(int argc, char **argv) {
-  prev_app_info *app_info;
+  application_profile *app_info;
   metrics *info;
   int option_index;
   char *metric, c, *filename, *path;

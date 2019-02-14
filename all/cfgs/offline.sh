@@ -5,12 +5,13 @@ function offline {
   PEBS_FREQ="$2"
   PEBS_RATE="$3"
   CAP_INTERVAL="$4"
-  PACK_ALGO="$5"
+  CAP_PROF_TYPE="$5"
+  PACK_ALGO="$6"
 
   CANARY_CFG="firsttouch_all_exclusive_device:"
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
-  PEBS_DIR="${BASEDIR}/../../${PEBS_SIZE}/profile_all_and_allocs:${PEBS_FREQ}_${PEBS_RATE}_${CAP_INTERVAL}/i0/"
-  PEBS_FILE="${PEBS_DIR}/stdout.txt"
+  PEBS_DIR="${BASEDIR}/../../${PEBS_SIZE}/profile_all_and_${CAP_PROF_TYPE}:${PEBS_FREQ}_${PEBS_RATE}_${CAP_INTERVAL}/i0/"
+  PEBS_FILE="${PEBS_DIR}/profile.txt"
 
   # This file is used for the profiling information
   if [ ! -r "${PEBS_FILE}" ]; then
@@ -48,7 +49,7 @@ function offline {
 
   # Generate the guidance file
   cat "${PEBS_FILE}" | \
-    sicm_hotset --capacity=${UPPER_SIZE} --scale=${SCALE} --verbose \
+    sicm_hotset --capacity=${UPPER_SIZE} --scale=${SCALE} --weight=profile_${CAP_PROF_TYPE} --node=${SH_UPPER_NODE} --verbose \
     > ${BASEDIR}/guidance.txt
 
   # Run the iterations

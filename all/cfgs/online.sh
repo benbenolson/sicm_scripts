@@ -2,14 +2,14 @@
 
 function online_allocs {
   FREQ="$1"
-  RATE="$2" 
+  RATE="$2"
   CAP_SKIP_INTERVALS="$3"
   ONLINE_SKIP_INTERVALS="$4"
 
   export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
   export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
-  export SH_PROFILE_RATE_NSECONDS=$(echo "${RATE} * 1000000" | bc) 
+  export SH_PROFILE_RATE_NSECONDS=$(echo "${RATE} * 1000000" | bc)
 
   # Value profiling
   export SH_PROFILE_ALL="1"
@@ -24,7 +24,7 @@ function online_allocs {
   # Turn on online
   export SH_PROFILE_ONLINE="1"
   export SH_PROFILE_ONLINE_EVENT="MEM_LOAD_UOPS_RETIRED:L3_MISS"
-  export SH_PROFILE_ONLINE_SKIP_INTERVALS="$ONLINE_SKIP_INTERVALS" 
+  export SH_PROFILE_ONLINE_SKIP_INTERVALS="$ONLINE_SKIP_INTERVALS"
 
   export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
 
@@ -45,8 +45,9 @@ function online_allocs {
 
 function online_extent_size {
   FREQ="$1"
-  RATE="$2" 
-  SKIP_INTERVALS="$3"
+  RATE="$2"
+  CAP_SKIP_INTERVALS="$3"
+  ONLINE_SKIP_INTERVALS="$4"
 
   export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
@@ -61,54 +62,14 @@ function online_extent_size {
 
   # Weight profiling
   export SH_PROFILE_EXTENT_SIZE="1"
-  export SH_PROFILE_EXTENT_SIZE_SKIP_INTERVALS="$SKIP_INTERVALS"
+  export SH_PROFILE_ALLOCS_SKIP_INTERVALS="$CAP_SKIP_INTERVALS"
 
   # Turn on online
   export SH_PROFILE_ONLINE="1"
   export SH_PROFILE_ONLINE_EVENT="MEM_LOAD_UOPS_RETIRED:L3_MISS"
+  export SH_PROFILE_ONLINE_SKIP_INTERVALS="$ONLINE_SKIP_INTERVALS"
 
-  export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 4`
-
-  eval "${PRERUN}"
-
-  for i in $(seq 0 $MAX_ITER); do
-    DIR="${BASEDIR}/i${i}"
-    mkdir ${DIR}
-    drop_caches
-    numastat -m &>> ${DIR}/numastat_before.txt
-    numastat_background "${DIR}"
-    pcm_background "${DIR}"
-    eval "${COMMAND}" &>> ${DIR}/stdout.txt
-    numastat_kill
-    pcm_kill
-  done
-}
-
-function online_rss {
-  FREQ="$1"
-  RATE="$2" 
-  SKIP_INTERVALS="$3"
-
-  export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
-  export SH_MAX_SITES_PER_ARENA="5000"
-  export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
-  export SH_PROFILE_RATE_NSECONDS=$(echo "${RATE} * 1000000" | bc)
-
-  # Value profiling
-  export SH_PROFILE_ALL="1"
-  export SH_PROFILE_ALL_EVENTS="MEM_LOAD_UOPS_RETIRED:L3_MISS"
-  export SH_MAX_SAMPLE_PAGES="512"
-  export SH_SAMPLE_FREQ="${FREQ}"
-
-  # Weight profiling
-  export SH_PROFILE_RSS="1"
-  export SH_PROFILE_RSS_SKIP_INTERVALS="$SKIP_INTERVALS"
-
-  # Turn on online
-  export SH_PROFILE_ONLINE="1"
-  export SH_PROFILE_ONLINE_EVENT="MEM_LOAD_UOPS_RETIRED:L3_MISS"
-
-  export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 4`
+  export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
 
   eval "${PRERUN}"
 
@@ -175,7 +136,7 @@ function online_memreserve {
   export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 4`
 
   eval "${PRERUN}"
-  
+
   for i in $(seq 0 $MAX_ITER); do
     DIR="${BASEDIR}/i${i}" mkdir ${DIR}
     drop_caches
@@ -183,7 +144,7 @@ function online_memreserve {
     numastat_background "${DIR}"
     pcm_background "${DIR}"
     numastat -m &>> ${DIR}/numastat_before.txt
-    eval "${COMMAND}" &>> ${DIR}/stdout.txt
+    eval "${COMMAND}" #&>> ${DIR}/stdout.txt
     numastat_kill
     pcm_kill
     memreserve_kill
