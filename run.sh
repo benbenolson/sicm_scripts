@@ -37,7 +37,9 @@ if [[ "$(hostname)" = "JF1121-080209T" ]]; then
     exit
   fi
 
-elif [[ "$(hostname)" = "ben-clx0" ]]; then
+elif [[ "$(hostname)" = "cce-clx-9.jf.intel.com" ]]; then
+
+  echo "It's the new Intel machine"
 
   # New CLX machine
   if [[ $NUM_NUMA_NODES = 4 ]]; then
