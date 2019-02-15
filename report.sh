@@ -17,6 +17,11 @@ if [[ ${#BENCHES[@]} = 0 ]]; then
   exit 1
 fi
 
+STAT_ARGS="--metric=${METRIC}"
+if [[ ! -z "${NODE}" ]]; then
+  STAT_ARGS="${STAT_ARGS} --node=${NODE}"
+fi
+
 # Get first column size
 MAX_CONFIG_LENGTH=0
 for CONFIG in ${FULL_CONFIGS[@]}; do
@@ -56,7 +61,7 @@ for FULL_CONFIG in ${FULL_CONFIGS[@]}; do
     while true; do
       if [[ -d "${DIR}/i${CTR}" ]]; then
         # If this iteration exists, grab the stat from its output
-        VAL=$(${SCRIPTS_DIR}/all/stat --metric="${METRIC}" "${DIR}/i${CTR}/")
+        VAL=$(${SCRIPTS_DIR}/all/stat ${STAT_ARGS} "${DIR}/i${CTR}/")
         VALS+=($VAL)
       else
         break

@@ -3,11 +3,12 @@
 . $SPACK_DIR/share/spack/setup-env.sh
 
 # Arguments
-GETOPT_OUTPUT=`getopt -o bcsagmip --long bench:,config:,size:,args:,graph,metric:,iters:,profile: -n 'args.sh' -- "$@"`
+GETOPT_OUTPUT=`getopt -o bcsagmipn --long bench:,config:,size:,args:,graph,metric:,iters:,profile:,node: -n 'args.sh' -- "$@"`
 if [ $? != 0 ] ; then echo "'getopt' failed. Aborting." >&2 ; exit 1 ; fi
 eval set -- "$GETOPT_OUTPUT"
 
 # Handle arguments
+NODE=""
 BENCHES=()
 CONFIGS=()
 SIZE=""
@@ -26,6 +27,7 @@ while true; do
     -m | --metric ) METRIC="$2"; shift 2;;
     -i | --iters ) ITERS="$2"; shift 2;;
     -p | --profile ) PROFILE_DIR="$2"; shift 2;;
+    -n | --node ) NODE="$2"; shift 2;;
     -- ) shift; break;;
     * ) break;;
   esac

@@ -59,6 +59,10 @@ void parse_metrics(metrics *info, char *path, char *metric, unsigned long node) 
   } else if((filename = is_numastat_metric(metric)) != NULL) {
     fullpath = construct_path(path, filename);
     file = fopen(fullpath, "r");
+    if(!file) {
+      fprintf(stderr, "Failed to open file '%s'. Aborting.\n", fullpath);
+      exit(1);
+    }
     parse_numastat(file, info->numastat);
     print_numastat_metric(metric, info->numastat, node);
   } else {
