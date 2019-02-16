@@ -4,7 +4,7 @@
 if [[ "$(hostname)" = "JF1121-080209T" ]]; then
   # Old CLX machine
   export OMP_NUM_THREADS="48"
-elif [[ "$(hostname)" = "ben-clx0" ]]; then
+elif [[ "$(hostname)" = "cce-clx-9.jf.intel.com" ]]; then
   # New CLX machine
   export OMP_NUM_THREADS="40"
 else
@@ -38,8 +38,6 @@ if [[ "$(hostname)" = "JF1121-080209T" ]]; then
   fi
 
 elif [[ "$(hostname)" = "cce-clx-9.jf.intel.com" ]]; then
-
-  echo "It's the new Intel machine"
 
   # New CLX machine
   if [[ $NUM_NUMA_NODES = 4 ]]; then
