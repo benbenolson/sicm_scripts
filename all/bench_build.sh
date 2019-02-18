@@ -5,29 +5,34 @@
 # Third argument is a list of compiler flags to add, which are just appended
 function bench_build {
   if [ "$1" = "fort" ]; then
-    export LD_LINKER="$SICM_DIR/deps/bin/flang $2 -g -Wno-unused-command-line-argument -L$SICM_DIR/deps/lib -Wl,-rpath,$SICM_DIR/deps/lib"
+    export LD_LINKER="flang $2 -g -Wno-unused-command-line-argument"
   elif [ "$1" = "c" ]; then
-    export LD_LINKER="$SICM_DIR/deps/bin/clang++ $2 -g -Wno-unused-command-line-argument -L$SICM_DIR/deps/lib -Wl,-rpath,$SICM_DIR/deps/lib"
+    export LD_LINKER="clang++ $2 -g -Wno-unused-command-line-argument"
   else
     echo "No linker specified. Aborting."
     exit
   fi
 
+  # Use Spack to load SICM into the environment
+  spack load flang@20180921 /h6rsfo
+  spack load llvm@flang-20180921
+  spack load sicm-high
+
   # Define the variables for the compiler wrappers
-  export LD_COMPILER="$SICM_DIR/deps/bin/clang++ -Wno-unused-command-line-argument -Ofast -march=knl" # Compiles from .bc -> .o
-  export CXX_COMPILER="$SICM_DIR/deps/bin/clang++ $3 -g -Wno-unused-command-line-argument -Ofast -I$SICM_DIR/deps/include -march=knl"
-  export FORT_COMPILER="$SICM_DIR/deps/bin/flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -Ofast -I$SICM_DIR/deps/include -march=knl"
-  export C_COMPILER="$SICM_DIR/deps/bin/clang -g $3 -Wno-unused-command-line-argument -Ofast -I$SICM_DIR/deps/include -march=knl"
-  export LLVMLINK="$SICM_DIR/deps/bin/llvm-link"
-  export OPT="$SICM_DIR/deps/bin/opt"
+  export LD_COMPILER="clang++ -Wno-unused-command-line-argument -Ofast -march=knl" # Compiles from .bc -> .o
+  export CXX_COMPILER="clang++ $3 -g -Wno-unused-command-line-argument -Ofast -march=knl"
+  export FORT_COMPILER="flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -Ofast -march=knl"
+  export C_COMPILER="clang -g $3 -Wno-unused-command-line-argument -Ofast -march=knl"
+  export LLVMLINK="llvm-link"
+  export OPT="opt"
 
 
   # Make sure the Makefiles find our wrappers
-  export COMPILER_WRAPPER="$SICM_DIR/deps/bin/compiler_wrapper.sh -g"
-  export LD_WRAPPER="$SICM_DIR/deps/bin/ld_wrapper.sh -g"
-  export PREPROCESS_WRAPPER="$SICM_DIR/deps/bin/clang -E -x c -w -P"
-  export AR_WRAPPER="$SICM_DIR/deps/bin/ar_wrapper.sh"
-  export RANLIB_WRAPPER="$SICM_DIR/deps/bin/ranlib_wrapper.sh"
+  export COMPILER_WRAPPER="compiler_wrapper.sh -g"
+  export LD_WRAPPER="ld_wrapper.sh -g"
+  export PREPROCESS_WRAPPER="clang -E -x c -w -P"
+  export AR_WRAPPER="ar_wrapper.sh"
+  export RANLIB_WRAPPER="ranlib_wrapper.sh"
 }
 
 # First argument is "fort" or "c", which linker we should use.

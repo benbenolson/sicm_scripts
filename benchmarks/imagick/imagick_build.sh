@@ -3,7 +3,8 @@
 source $SCRIPTS_DIR/all/bench_build.sh
 bench_build "c"
 
-cd $SICM_DIR/examples/high/imagick/src
+cd $BENCH_DIR/imagick/src
 make clean
 make -j $(nproc --all)
-cp imagick_s $SICM_DIR/examples/high/imagick/run/imagick
+mkdir -p $BENCH_DIR/imagick/run
+cp imagick_s $BENCH_DIR/imagick/run

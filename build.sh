@@ -1,11 +1,13 @@
 #!/bin/bash
 
-# Compile SICM
+spack uninstall -y sicm-high
 cd $SICM_DIR
-make uninstall || true
-make distclean || true
-./autogen.sh
-./configure --prefix=$SICM_DIR/deps --with-jemalloc=$SICM_DIR/deps --with-llvm=$($SICM_DIR/deps/bin/llvm-config --prefix) --with-libpfm=$SICM_DIR/deps
-make clean
-make -j5
-make install
+
+if [[ "$(hostname)" =~ percival-login.* ]]; then
+  echo "hi there"
+  spack clean -sd spack.sicm-high target=sandybridge
+  spack install -j 4 spack.sicm-high target=sandybridge %gcc@7.2.0
+else
+  spack clean -sd spack.sicm-high
+  spack install -j 4 spack.sicm-high %gcc@7.2.0
+fi

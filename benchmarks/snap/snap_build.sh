@@ -3,12 +3,9 @@
 source $SCRIPTS_DIR/all/bench_build.sh
 bench_build fort
 
-#export COMPILER_WRAPPER="gfortran"
-#export PREPROCESS_WRAPPER="$SICM_DIR/deps/bin/clang -x c"
-#export LD_WRAPPER="gfortran"
-
-# Compile Lulesh
-cd $SICM_DIR/examples/high/snap/src
+# Compile SNAP
+cd $BENCH_DIR/snap/src
 make clean
 make -j $(nproc --all)
-cp gsnap ../run/snap
+mkdir -p $BENCH_DIR/snap/run
+cp $BENCH_DIR/snap/src/gsnap $BENCH_DIR/snap/run/snap

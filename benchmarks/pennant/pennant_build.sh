@@ -4,8 +4,8 @@ source $SCRIPTS_DIR/all/bench_build.sh
 bench_build c
 
 # Compile Pennant
-cd $SICM_DIR/examples/high/pennant/src
+cd $BENCH_DIR/pennant/src
 make clean
 make -j $(nproc --all)
-mkdir -p ../run
-cp build/pennant ../run
+mkdir $BENCH_DIR/pennant/run
+cp $BENCH_DIR/pennant/src/build/pennant $BENCH_DIR/pennant/run
