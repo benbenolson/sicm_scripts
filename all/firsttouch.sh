@@ -16,68 +16,50 @@ function numastat_background {
 ################################################################################
 #                        firsttouch_exclusive_device                           #
 ################################################################################
-# First argument is node to firsttouch onto
+# First argument is results directory
 # Second argument is the command to run
+# Third argument is node to firsttouch onto
 function firsttouch_exclusive_device {
+  RESULTS_DIR="$1"
+  COMMAND="$2"
+  NODE="$3"
+
   # User output
   echo "Running experiment:"
   echo "  Experiment: Firsttouch Exclusive Device, 100%"
-  echo "  Node: ${1}"
-  echo "  Command: '${2}'"
+  echo "  Node: ${NODE}"
+  echo "  Command: '${COMMAND}'"
+  echo "  Results directory: ${RESULTS_DIR}"
 
-  DIRECTORY="results/firsttouch_exclusive_device_100%"
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export OMP_NUM_THREADS=256
-  export SH_DEFAULT_NODE="${1}"
+  export SH_DEFAULT_NODE="${NODE}"
 
   # Run 5 iters
-  rm -rf $DIRECTORY
-  mkdir -p $DIRECTORY
   for iter in {1..5}; do
     sicm_memreserve 1 256 constant 4128116 release prefer # "Clear caches"
 		sleep 5
-    numastat -m &>> $DIRECTORY/numastat_before.txt
-    numastat_background "$DIRECTORY" &
+    numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
+    numastat_background "${RESULTS_DIR}" &
     background_pid=$!
-    eval "env time -v numactl --preferred=${1}" "$2" &>> $DIRECTORY/stdout.txt
+    eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
     kill $background_pid
     wait $background_pid 2>/dev/null
 		sleep 5
   done
 }
 
-
 ################################################################################
 #                        firsttouch_default                                    #
 ################################################################################
-# First argument is node to firsttouch onto
+# First argument is the results directory
 # Second argument is the command to run
+# Third argument is the node to firsttouch to
 function firsttouch_default {
-  # User output
-  echo "Running experiment:"
-  echo "  Experiment: Firsttouch Default, 100%"
-  echo "  Node: ${1}"
-  echo "  Command: '${2}'"
+  RESULTS_DIR="$1"
+  COMMAND="$2"
+  NODE="$3"
 
-  # Variables
-  DIRECTORY="results/firsttouch_default_100%"
-  export SH_DEFAULT_NODE="${1}"
-  export OMP_NUM_THREADS=256
-
-  # Run 5 iters
-  rm -rf $DIRECTORY
-  mkdir -p $DIRECTORY
-  for iter in {1..5}; do
-    sicm_memreserve 1 256 constant 4128116 release prefer # "Clear caches"
-		sleep 5
-    numastat -m &>> $DIRECTORY/numastat_before.txt
-    numastat_background "$DIRECTORY" &
-    background_pid=$!
-    eval "env time -v numactl --preferred=${1}" "$2" &>> $DIRECTORY/stdout.txt
-    kill $background_pid
-    wait $background_pid 2>/dev/null
-		sleep 5
-  done
 }
 
 

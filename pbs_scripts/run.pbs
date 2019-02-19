@@ -3,5 +3,12 @@
 #PBS -N lulesh
 #PBS -l walltime=10:00:00
 #PBS -l nodes=1
+
 cd $SCRIPTS_DIR
-aprun -e "SICM_DIR=$SICM_DIR" -e "SCRIPTS_DIR=$SCRIPTS_DIR" --wdir $SCRIPTS_DIR -d 64 --cc none $1
+aprun -e "SICM_DIR=$SICM_DIR" \
+      -e "SCRIPTS_DIR=$SCRIPTS_DIR" \
+      -e "BENCH_DIR=$BENCH_DIR" \
+      --wdir $SCRIPTS_DIR \
+      -d 64 \
+      --cc none \
+      ./run.sh $@

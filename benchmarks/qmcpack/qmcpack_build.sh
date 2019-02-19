@@ -3,11 +3,13 @@
 source $SCRIPTS_DIR/all/bench_build.sh
 bench_build c "" ""
 
-# Create a Spack environment and install QMCPACK deps into that
-#spack env create qmcpack-env
-#spack env activate qmcpack-env
+# QMCPACK deps
+# Install an unpatched Flang
 #spack install flang@20180921 target=sandybridge
+# spack config edit compilers
 #spack install qmcpack@3.6.0 -phdf5 -mpi -qe +soa %clang@6.0.1 target=sandybridge ^cmake@3.6.0 ^hdf5~hl~fortran~mpi ^fftw~mpi
+# Also install a LAPACK/BLAS implementation
+# spack install openblas %clang@6.0.1
 
 # The above QMCPACK compilation may fail, but we don't care, as long as the dependencies are installed.
 # Now let's load them into the environment. This is the easiest way to do so without

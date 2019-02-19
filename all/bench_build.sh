@@ -4,28 +4,23 @@
 # Second argument is a list of linker flags to add, which are just appended
 # Third argument is a list of compiler flags to add, which are just appended
 function bench_build {
+  # Use Spack to load SICM into the environment
   if [ "$1" = "fort" ]; then
-    export LD_LINKER="flang $2 -g -Wno-unused-command-line-argument"
+    export LD_LINKER="flang $2 -g -Wno-unused-command-line-argument -Wl,-rpath,$(spack location -i llvm@flang-20180921)/lib -Wl,-rpath,$(spack location -i flang@20180921 /h6rsfo)/lib -Wl,-rpath,$(spack location -i pgmath)/lib"
   elif [ "$1" = "c" ]; then
-    export LD_LINKER="clang++ $2 -g -Wno-unused-command-line-argument"
+    export LD_LINKER="clang++ $2 -g -Wno-unused-command-line-argument -Wl,-rpath,$(spack location -i llvm@flang-20180921)/lib"
   else
     echo "No linker specified. Aborting."
     exit
   fi
 
-  # Use Spack to load SICM into the environment
-  spack load flang@20180921 /h6rsfo
-  spack load llvm@flang-20180921
-  spack load sicm-high
-
   # Define the variables for the compiler wrappers
   export LD_COMPILER="clang++ -Wno-unused-command-line-argument -Ofast -march=knl" # Compiles from .bc -> .o
   export CXX_COMPILER="clang++ $3 -g -Wno-unused-command-line-argument -Ofast -march=knl"
-  export FORT_COMPILER="flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -Ofast -march=knl"
+  export FORT_COMPILER="flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -Ofast -march=knl -I$(spack location -i flang@20180921 /h6rsfo)/include"
   export C_COMPILER="clang -g $3 -Wno-unused-command-line-argument -Ofast -march=knl"
   export LLVMLINK="llvm-link"
   export OPT="opt"
-
 
   # Make sure the Makefiles find our wrappers
   export COMPILER_WRAPPER="compiler_wrapper.sh -g"
