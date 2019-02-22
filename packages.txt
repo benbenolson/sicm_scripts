@@ -12,3 +12,4 @@ gfortran
 memtester
 memtest86+
 environment-modules
+unzip
