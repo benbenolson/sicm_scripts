@@ -1,0 +1,14 @@
+vim
+htop
+sudo
+tmux
+git
+time
+gcc
+curl
+make
+g++
+gfortran
+memtester
+memtest86+
+environment-modules
