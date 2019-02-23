@@ -1,13 +1,12 @@
-#!/bin/bash
+#!/bin/bash -l
 # First argument is the benchmark name
 
 source $SCRIPTS_DIR/all/bench_build.sh
 
 echo "Loading Spack module of SICM..."
 . $SPACK_DIR/share/spack/setup-env.sh
-module use "$(spack location -r)/share/spack/modules/cray-cnl6-sandybridge"
 spack load pgmath
-spack load flang@20180921 /h6rsfo
+spack load flang@20180921
 spack load llvm@flang-20180921
 spack load sicm-high
 
