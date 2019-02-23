@@ -3,15 +3,24 @@
 source $SCRIPTS_DIR/all/bench_build.sh
 bench_build c "" ""
 
-# Get Spack into the environment and load Clang 6.0.1
-# This will be the Flang-patched version, but we don't care
+# Get Spack into the environment and load Clang 6.0.1.
+# This is a dependency of SICM, so should already be installed.
 spack load llvm@flang-20180921
+
+# Also install an unpatched Flang. We need this because the SICM-patched
+# Flang will try to look for "sh_" symbols, which we don't have.
+spack find flang@20180921 >> $SCRIPTS_DIR/patched_flang.txt
+spack install flang@20180921 %gcc@7.2.0
+spack find flang@20180921 >> $SCRIPTS_DIR/unpatched_flang.txt
+
+# Make sure Clang is in the environment. Should bring in Flang, too.
 spack compiler find
+
+# Have to manually add Flang and pgmath modules to the compiler listing.
+spack config edit compilers
 
 # QMCPACK deps
 spack install qmcpack@3.6.0 -phdf5 -mpi -qe +soa %clang@6.0.1 ^cmake@3.6.0 ^hdf5~hl~fortran~mpi ^fftw~mpi
-# Also install a LAPACK/BLAS implementation
-spack install openblas %clang@6.0.1
 
 # The above QMCPACK compilation may fail, but we don't care, as long as the dependencies are installed.
 # Now let's load them into the environment. This is the easiest way to do so without
@@ -37,7 +46,7 @@ cmake -DBUILD_UNIT_TESTS=False \
       -DCMAKE_C_COMPILER:PATH=${COMPILER_WRAPPER} \
       -DCMAKE_CXX_FLAGS="--gcc-toolchain='/autofs/nccs-svm1_home1/molson5/spack/opt/spack/cray-cnl6-sandybridge/gcc-7.2.0/gcc-7.2.0-ygu2t55vylfkucmezdxkxuwc7iudnhn5/' -Wno-warnings -Wno-deprecated -Wno-pragma-messages" \
       -DCMAKE_LINKER:PATH=${LD_WRAPPER} \
-      -DCMAKE_CXX_LINK_EXECUTABLE="<CMAKE_LINKER> -lhdf5 -lxml2 -lfftw3 -llapack -lblas <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>" \
+      -DCMAKE_CXX_LINK_EXECUTABLE="<CMAKE_LINKER> -lhdf5 -lxml2 -lfftw3 -lopenblas <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>" \
       -DCMAKE_AR:PATH=${AR_WRAPPER} \
       -DCMAKE_RANLIB:PATH="${RANLIB_WRAPPER}" \
       -DCMAKE_BUILD_WITH_INSTALL_RPATH=True \
