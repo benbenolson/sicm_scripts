@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -l
 # First argument is the benchmark name
 # Second argument is the benchmark size
 # The third argument is the BASH function of the experiment.
@@ -8,9 +8,7 @@ source $SCRIPTS_DIR/all/firsttouch.sh
 
 echo "Loading Spack module of SICM..."
 . $SPACK_DIR/share/spack/setup-env.sh
-module use "$(spack location -r)/share/spack/modules/cray-cnl6-sandybridge"
 spack load sicm-high
-spack load time@1.9
 
 echo "Running $1"
 echo "  Size: $2"

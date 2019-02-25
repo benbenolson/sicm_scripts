@@ -32,12 +32,12 @@ function firsttouch_all_exclusive_device {
   echo "  Results directory: ${RESULTS_DIR}"
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
-  export OMP_NUM_THREADS=256
+  export OMP_NUM_THREADS=64
   export SH_DEFAULT_NODE="${NODE}"
 
   # Run 5 iters
   for iter in {1..5}; do
-    sicm_memreserve 1 256 constant 4128116 release prefer # "Clear caches"
+    echo 3 | sudo tee /proc/sys/vm/drop_caches
 		sleep 5
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
     numastat_background "${RESULTS_DIR}" &
@@ -67,12 +67,12 @@ function firsttouch_all_default {
   echo "  Command: '${COMMAND}'"
   echo "  Results directory: ${RESULTS_DIR}"
 
-  export OMP_NUM_THREADS=256
+  export OMP_NUM_THREADS=64
   export SH_DEFAULT_NODE="${NODE}"
 
   # Run 5 iters
   for iter in {1..5}; do
-    sicm_memreserve 1 256 constant 4128116 release prefer # "Clear caches"
+    echo 3 | sudo tee /proc/sys/vm/drop_caches
 		sleep 5
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
     numastat_background "${RESULTS_DIR}" &
@@ -104,12 +104,12 @@ function firsttouch_all_shared_site {
   echo "  Results directory: ${RESULTS_DIR}"
 
   export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
-  export OMP_NUM_THREADS=256
+  export OMP_NUM_THREADS=64
   export SH_DEFAULT_NODE="${NODE}"
 
   # Run 5 iters
   for iter in {1..5}; do
-    sicm_memreserve 1 256 constant 4128116 release prefer # "Clear caches"
+    echo 3 | sudo tee /proc/sys/vm/drop_caches
 		sleep 5
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
     numastat_background "${RESULTS_DIR}" &
@@ -150,7 +150,7 @@ function firsttouch_exclusive_device {
 
   # Run 5 iters
   for iter in {1..5}; do
-    sicm_memreserve 1 256 constant 4128116 release prefer # "Clear caches"
+    echo 3 | sudo tee /proc/sys/vm/drop_caches
     sleep 5
     cat ${RESULTS_DIR}/../${CANARY_CFG}/stdout.txt | sicm_memreserve 1 256 ratio ${RATIO} hold bind &>> ${RESULTS_DIR}/memreserve.txt &
     sleep 5
