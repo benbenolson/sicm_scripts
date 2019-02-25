@@ -20,7 +20,7 @@ bench_build c "" ""
 #spack config edit compilers
 
 # QMCPACK deps
-#spack install qmcpack@3.6.0 -phdf5 -mpi -qe +soa %clang@6.0.1 ^cmake@3.6.0 ^hdf5~hl~fortran~mpi ^fftw~mpi
+#spack install qmcpack@3.6.0 -phdf5 -mpi -qe +soa %clang@6.0.1 ^cmake@3.6.0 ^hdf5~hl~fortran~mpi ^fftw~mpi ^netlib-lapack@3.8.0
 
 # The above QMCPACK compilation may fail, but we don't care, as long as the dependencies are installed.
 # Now let's load them into the environment. This is the easiest way to do so without
@@ -44,9 +44,9 @@ cmake -DBUILD_UNIT_TESTS=False \
       -DENABLE_PHDF5=False \
       -DCMAKE_CXX_COMPILER:PATH=${COMPILER_WRAPPER} \
       -DCMAKE_C_COMPILER:PATH=${COMPILER_WRAPPER} \
-      -DCMAKE_CXX_FLAGS="--gcc-toolchain='/home/macslayer/spack/opt/spack/linux-debian9-x86_64/gcc-6.3.0/gcc-7.2.0-5uojnwlzpgrhmrcwyn7s7q5q7tx6byze' -Wno-warnings -Wno-deprecated -Wno-pragma-messages" \
+      -DCMAKE_CXX_FLAGS="-Wno-#warnings -Wno-deprecated -Wno-#pragma-messages" \
       -DCMAKE_LINKER:PATH=${LD_WRAPPER} \
-      -DCMAKE_CXX_LINK_EXECUTABLE="<CMAKE_LINKER> -lhdf5 -lxml2 -lfftw3 -lopenblas <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>" \
+      -DCMAKE_CXX_LINK_EXECUTABLE="<CMAKE_LINKER> -lhdf5 -lxml2 -lfftw3 -llapack -lblas -Wl,-rpath,$(spack location -i hdf5)/lib -Wl,-rpath,$(spack location -i fftw)/lib -Wl,-rpath,$(spack location -i netlib-lapack)/lib <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>" \
       -DCMAKE_AR:PATH=${AR_WRAPPER} \
       -DCMAKE_RANLIB:PATH="${RANLIB_WRAPPER}" \
       -DCMAKE_BUILD_WITH_INSTALL_RPATH=True \
