@@ -25,7 +25,7 @@ if(scalar @benches_arg > 0) {
 } else {
   @benches = split(/,/,join(',',@benches));
 }
-if($size_arg ne "") {
+if(defined $size_arg) {
   $size = $size_arg;
 }
 if(scalar @cfgs_arg > 0) {
