@@ -7,8 +7,7 @@
 source $SCRIPTS_DIR/all/firsttouch.sh
 
 echo "Loading Spack module of SICM..."
-. $SPACK_DIR/share/spack/setup-env.sh
-spack load sicm-high
+module load sicm-high-develop-gcc-7.2.0-bz67eff
 
 echo "Running $1"
 echo "  Size: $2"
