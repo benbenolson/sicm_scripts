@@ -1,63 +1,76 @@
 #!/bin/bash
 
+################################################################################
+#                        numastat_background                                   #
+################################################################################
 # First arg is directory to write to
-function background {
-  rm results/$1/numastat.txt
+function numastat_background {
+  rm $1/numastat.txt
   while true; do
-    echo "=======================================" &>> results/$1/numastat.txt
-    numastat -m &>> results/$1/numastat.txt
+    echo "=======================================" &>> $1/numastat.txt
+    numastat -m &>> $1/numastat.txt
     sleep 2
   done
 }
 
-export PATH="$SICM_DIR/deps/bin:$PATH"
-export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
-export SH_DEFAULT_NODE="0"
-export OMP_NUM_THREADS="256"
+################################################################################
+#                        offline_pebs_guided_percent                           #
+################################################################################
+# First argument is results directory
+# Second argument is the command to run
+# Third argument is the frequency of PEBS sampling to use
+# Fourth argument is the percentage of the peak RSS that should be available on the MCDRAM
+# Fifth argument is the packing strategy
+function offline_pebs_guided_percent {
+  RESULTS_DIR="$1"
+  COMMAND="$2"
+  FREQ="$3"
+  RATIO=$(echo "${4}/100" | bc -l)
+  PACK_ALGO="$5"
+  PEAK_RSS_CFG="firsttouch_all_exclusive_device_0"
+  PEBS_CFG="pebs_${1}"
 
-# First argument is the frequency of PEBS sampling to use
-# Second argument is the percentage of the peak RSS that should be available on the MCDRAM
-# Third argument is the packing strategy
-# Fourth argument is the command to run
-function pebs {
   # This file is used for the profiling information
-  if [ ! -r results/pebs_${1}/stdout.txt ]; then
-    echo "ERROR: The file 'results/pebs_${1}/stdout.txt doesn't exist yet. Aborting."
+  if [ ! -r ${RESULTS_DIR}/../${PEBS_CFG}/stdout.txt ]; then
+    echo "ERROR: The file '${RESULTS_DIR}/../${PEBS_CFG}/stdout.txt doesn't exist yet. Aborting."
     exit
   fi
 
   # This file is used to get the peak RSS
-  if [ ! -r results/firsttouch_100_node0_exclusive_device/stdout.txt ]; then
-    echo "ERROR: The file 'results/firsttouch_100_node0_exclusive_device/stdout.txt doesn't exist yet. Aborting."
+  if [ ! -r ${RESULTS_DIR}/../${PEAK_RSS_CFG}/stdout.txt ]; then
+    echo "ERROR: The file '${RESULTS_DIR}/../${PEAK_RSS_CFG}/stdout.txt doesn't exist yet. Aborting."
     exit
   fi
-
-  RATIO=$(echo "${2}/100" | bc -l)
 
   # User output
   echo "Running experiment:"
   echo "  Experiment: Offline PEBS-Guided"
-  echo "  Profiling Frequency: '${1}'"
-  echo "  Percentage: '${2}'"
-  echo "  Packing algo: '${3}'"
-  echo "  Command: '${4}'"
+  echo "  Profiling Frequency: '${FREQ}'"
+  echo "  Ratio: '${RATIO}'"
+  echo "  Packing algo: '${PACK_ALGO}'"
+  echo "  Command: '${COMMAND}'"
+
+  export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
+  export SH_DEFAULT_NODE="0"
+  export OMP_NUM_THREADS="64"
   
-  rm -rf results/offline_pebs_${1}_${2}_${3}/
-  mkdir -p results/offline_pebs_${1}_${2}_${3}/
-  cat results/pebs_${1}/stdout.txt | $SICM_DIR/deps/bin/hotset pebs ${3} ratio ${RATIO} 1 > results/offline_pebs_${1}_${2}_${3}/guidance.txt
-  export SH_GUIDANCE_FILE="results/offline_pebs_${1}_${2}_${3}/guidance.txt"
+  # Generate the hotset/knapsack/thermos
+  cat ${RESULTS_DIR}/../${PEBS_CFG}/stdout.txt | \
+    sicm_hotset pebs ${PACK_ALGO} ratio ${RATIO} 1 > \
+    ${RESULTS_DIR}/guidance.txt
   for iter in {1..5}; do
-    $SICM_DIR/deps/bin/memreserve 1 256 constant 4128116 release prefer # "Clear caches"
+    echo 3 | sudo tee /proc/sys/vm/drop_caches
 		sleep 5
-    cat results/firsttouch_100_node0_exclusive_device/stdout.txt | $SICM_DIR/deps/bin/memreserve 1 256 ratio ${RATIO} hold bind &
+    cat ${RESULTS_DIR}/../${PEAK_RSS_CFG}/stdout.txt | \
+      sicm_memreserve 1 256 ratio ${RATIO} hold bind &
     sleep 5
-    numastat -m &>> results/offline_pebs_${1}_${2}_${3}/numastat_before.txt
-    background "offline_pebs_${1}_${2}_${3}" &
+    numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
+    background "${RESULTS_DIR}" &
     background_pid=$!
-    eval "env time -v " "${4}" &>> results/offline_pebs_${1}_${2}_${3}/stdout.txt
+    eval "env time -v " "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
     kill $background_pid
     wait $background_pid 2>/dev/null
-    pkill memreserve
+    pkill sicm_memreserve
     sleep 5
   done
 }
