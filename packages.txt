@@ -14,3 +14,5 @@ memtest86+
 environment-modules
 unzip
 numactl
+libpfm4
+libpfm4-dev

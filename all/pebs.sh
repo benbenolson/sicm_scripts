@@ -27,6 +27,7 @@ function pebs {
   export SH_SAMPLE_FREQ="${FREQ}"
   export OMP_NUM_THREADS="64"
 
+  echo 1 | sudo tee /proc/sys/kernel/perf_event_paranoid
   echo 3 | sudo tee /proc/sys/vm/drop_caches
   sleep 5
   eval "env time -v" "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
