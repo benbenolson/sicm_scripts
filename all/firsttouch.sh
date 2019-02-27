@@ -36,7 +36,7 @@ function firsttouch_all_exclusive_device {
   export SH_DEFAULT_NODE="${NODE}"
 
   # Run 5 iters
-  for iter in {1..5}; do
+  for iter in {1..2}; do
     echo 3 | sudo tee /proc/sys/vm/drop_caches
 		sleep 5
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
@@ -71,7 +71,7 @@ function firsttouch_all_default {
   export SH_DEFAULT_NODE="${NODE}"
 
   # Run 5 iters
-  for iter in {1..5}; do
+  for iter in {1..2}; do
     echo 3 | sudo tee /proc/sys/vm/drop_caches
 		sleep 5
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
@@ -108,7 +108,7 @@ function firsttouch_all_shared_site {
   export SH_DEFAULT_NODE="${NODE}"
 
   # Run 5 iters
-  for iter in {1..5}; do
+  for iter in {1..2}; do
     echo 3 | sudo tee /proc/sys/vm/drop_caches
 		sleep 5
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
@@ -149,10 +149,10 @@ function firsttouch_exclusive_device {
   echo "  Command: '${COMMAND}'"
 
   # Run 5 iters
-  for iter in {1..5}; do
+  for iter in {1..2}; do
     echo 3 | sudo tee /proc/sys/vm/drop_caches
     sleep 5
-    cat ${RESULTS_DIR}/../${CANARY_CFG}/stdout.txt | sicm_memreserve 1 256 ratio ${RATIO} hold bind &>> ${RESULTS_DIR}/memreserve.txt &
+    cat ${RESULTS_DIR}/../${CANARY_CFG}/stdout.txt | sicm_memreserve 1 64 ratio ${RATIO} hold bind &>> ${RESULTS_DIR}/memreserve.txt &
     sleep 5
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
     background "${RESULTS_DIR}" &

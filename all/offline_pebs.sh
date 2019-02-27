@@ -58,11 +58,11 @@ function offline_pebs_guided_percent {
   cat ${RESULTS_DIR}/../${PEBS_CFG}/stdout.txt | \
     sicm_hotset pebs ${PACK_ALGO} ratio ${RATIO} 1 > \
     ${RESULTS_DIR}/guidance.txt
-  for iter in {1..5}; do
+  for iter in {1..2}; do
     echo 3 | sudo tee /proc/sys/vm/drop_caches
 		sleep 5
     cat ${RESULTS_DIR}/../${PEAK_RSS_CFG}/stdout.txt | \
-      sicm_memreserve 1 256 ratio ${RATIO} hold bind &
+      sicm_memreserve 1 64 ratio ${RATIO} hold bind &
     sleep 5
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
     background "${RESULTS_DIR}" &
