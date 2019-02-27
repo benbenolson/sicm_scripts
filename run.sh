@@ -9,11 +9,6 @@ source $SCRIPTS_DIR/all/firsttouch.sh
 echo "Loading Spack module of SICM..."
 module load sicm-high-develop-gcc-7.2.0-bz67eff
 
-echo "Running $1"
-echo "  Size: $2"
-echo "  Experiment: $3"
-echo "  Arguments: ${@:4}"
-
 # Set $COMMAND to the command that runs the benchmark
 source $SCRIPTS_DIR/benchmarks/${1}/${1}_sizes.sh
 COMMAND=""
