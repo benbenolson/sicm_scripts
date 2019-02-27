@@ -5,6 +5,8 @@
 # All subsequent arguments are its arguments
 
 source $SCRIPTS_DIR/all/firsttouch.sh
+source $SCRIPTS_DIR/all/pebs.sh
+source $SCRIPTS_DIR/all/offline_pebs.sh
 
 echo "Loading Spack module of SICM..."
 module load sicm-high-develop-gcc-7.2.0-bz67eff
