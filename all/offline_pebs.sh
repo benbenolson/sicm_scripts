@@ -74,3 +74,52 @@ function offline_pebs_guided_percent {
     sleep 5
   done
 }
+
+################################################################################
+#                        offline_pebs_guided                                   #
+################################################################################
+# First argument is results directory
+# Second argument is the command to run
+# Third argument is the frequency of PEBS sampling to use
+# Fourth argument is the packing strategy
+function offline_pebs_guided_percent {
+  RESULTS_DIR="$1"
+  COMMAND="$2"
+  FREQ="$3"
+  PACK_ALGO="$4"
+  PEBS_CFG="pebs_${1}"
+
+  # This file is used for the profiling information
+  if [ ! -r ${RESULTS_DIR}/../${PEBS_CFG}/stdout.txt ]; then
+    echo "ERROR: The file '${RESULTS_DIR}/../${PEBS_CFG}/stdout.txt doesn't exist yet. Aborting."
+    exit
+  fi
+
+  # User output
+  echo "Running experiment:"
+  echo "  Experiment: Offline PEBS-Guided"
+  echo "  Profiling Frequency: '${FREQ}'"
+  echo "  Packing algo: '${PACK_ALGO}'"
+  echo "  Command: '${COMMAND}'"
+
+  export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
+  export SH_DEFAULT_NODE="0"
+  export OMP_NUM_THREADS="64"
+  
+  # Generate the hotset/knapsack/thermos
+  cat ${RESULTS_DIR}/../${PEBS_CFG}/stdout.txt | \
+    sicm_hotset pebs ${PACK_ALGO} ratio ${RATIO} 1 > \
+    ${RESULTS_DIR}/guidance.txt
+  for iter in {1..2}; do
+    echo 3 | sudo tee /proc/sys/vm/drop_caches
+		sleep 5
+    numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
+    background "${RESULTS_DIR}" &
+    background_pid=$!
+    eval "env time -v " "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
+    kill $background_pid
+    wait $background_pid 2>/dev/null
+    pkill sicm_memreserve
+    sleep 5
+  done
+}
