@@ -2,7 +2,7 @@
 # First argument is the benchmark name
 
 source ./all/vars.sh
-source ${SCRIPTS_DIR}/all/args_nospack.sh
+source ${SCRIPTS_DIR}/all/args.sh
 source ${SCRIPTS_DIR}/all/bench_build.sh
 
 if [[ ${#BENCHES[@]} = 0 ]]; then

@@ -1,6 +1,6 @@
 #!/bin/bash
-# Sets environment variables based on the arguments that you specify, using getopt.
-. $SPACK_DIR/share/spack/setup-env.sh
+
+source ./all/vars.sh
 
 # Arguments
 GETOPT_OUTPUT=`getopt -o bcsagmipnrt --long bench:,config:,size:,args:,graph,metric:,iters:,profile:,node:,baseconfig:,base_args: -n 'args.sh' -- "$@"`
@@ -90,7 +90,7 @@ if [[ ! -z "${BASECONFIG}" ]]; then
   FULL_BASECONFIG="${BASECONFIG}:${BASECONFIG_ARGS_UNDERSCORES}"
 fi
 
-export SICM_ENV="env LD_PRELOAD='$(spack location -i ${SICM}%gcc@7.2.0)/lib/libsicm_overrides.so'"
+export SICM_ENV="env LD_PRELOAD='${SICM_PREFIX}/lib/libsicm_overrides.so'"
 BENCH_COMMANDS=()
 for BENCH in ${BENCHES[@]}; do
   BENCH_COMMAND=""

@@ -2,7 +2,7 @@
 # Builds SICM
 
 source ./all/vars.sh
-source ./all/args_nospack.sh
+source ${SCRIPTS_DIR}/all/args.sh
 
 # Compile SICM.
 cd ${SICM_PREFIX}/src/

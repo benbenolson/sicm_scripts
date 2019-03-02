@@ -2,3 +2,4 @@
 *.OU
 all/stat
 all/memreserve
+*.o
