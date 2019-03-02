@@ -1,6 +1,13 @@
 #include <getopt.h>
 #include <string.h>
 #include <ctype.h>
+
+/* Globals for setting various miscellaneous options; i.e.
+   graph titles, benchmark names, etc. */
+static char *graph_title = NULL;
+static char *output_filename = NULL;
+static char output_filetype = 0;
+
 #include "parse_gnu_time.h"
 #include "parse_numastat.h"
 #include "parse_sicm.h"
@@ -51,7 +58,7 @@ char *construct_path(char *path, char *filename) {
   return fullpath;
 }
 
-void parse_metrics(metrics *info, char *path, char *metric, unsigned long node) {
+void parse_metrics(metrics *info, char *path, char *metric, unsigned long node, int site) {
   char *filename, *fullpath;
   FILE *file;
 
@@ -80,7 +87,7 @@ void parse_metrics(metrics *info, char *path, char *metric, unsigned long node) 
       fprintf(stderr, "Failed to open file '%s'. Aborting.\n", fullpath);
       exit(1);
     }
-    parse_sicm(file, info->sicm);
+    parse_sicm(file, metric, info->sicm, site);
     print_sicm_metric(metric, info->sicm);
   } else {
     fprintf(stderr, "Metric not yet implemented.\n");

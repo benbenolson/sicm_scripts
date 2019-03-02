@@ -46,6 +46,7 @@ function offline_base {
   if [[ ! -z ${CAPACITY_PROF_TYPE} ]]; then
     HOTSET_ARGS="${HOTSET_ARGS} --weight=${CAPACITY_PROF_TYPE}"
   fi
+  HOTSET_ARGS="${HOTSET_ARGS} --multiplier=1 --multiplier=5"
   cat "${PEBS_FILE}" | \
     sicm_hotset ${HOTSET_ARGS} \
     > ${BASEDIR}/guidance.txt
@@ -98,6 +99,11 @@ function offline_memreserve {
 }
 
 function offline_memreserve_extent_size {
+  CAPACITY_PROF_TYPE="profile_extent_size"
+  offline_memreserve $@
+}
+
+function offline_memreserve_extent_size_onlineprofiling {
   CAPACITY_PROF_TYPE="profile_extent_size"
   offline_memreserve $@
 }

@@ -1,6 +1,6 @@
 /* draw.c
  * James S. Plank
- 
+
 Jgraph - A program for plotting graphs in postscript.
 
  * $Source: /Users/plank/src/jgraph/RCS/draw.c,v $
@@ -76,9 +76,9 @@ Axis axis;
   if (axis->is_lg) {
     if (val <= 0.0) {
       error_header();
-      fprintf(stderr, 
-              "Value of %f is at negative infinity with logrhythmic %c axis\n", 
-              val, (axis->is_x) ? 'x' : 'y'); 
+      fprintf(stderr,
+              "Value of %f is at negative infinity with logrhythmic %c axis\n",
+              val, (axis->is_x) ? 'x' : 'y');
        exit(1);
     }
     return (log(val) / axis->logfactor - axis->logmin) * axis->factor;
@@ -146,8 +146,8 @@ Axis a, other;
   if (a->draw_hash_marks) {
     comment("Drawing Hash Marks");
     for (h = first(a->hash_lines); h != nil(a->hash_lines); h = next(h)) {
-      printline(h->loc, a->draw_hash_marks_at, h->loc, 
-                a->draw_hash_marks_at + (h->size * a->hash_scale), 
+      printline(h->loc, a->draw_hash_marks_at, h->loc,
+                a->draw_hash_marks_at + (h->size * a->hash_scale),
                 orientation);
     }
   }
@@ -283,7 +283,7 @@ Graph g;
           start_line(ctop(p->x, g->x_axis), ctop(p->y, g->y_axis), c);
         } else {
           cont_line(ctop(p->x, g->x_axis), ctop(p->y, g->y_axis));
-        } 
+        }
         if (!c->poly && i == 100 && next(p)) {
           end_line();
           p = prev(p);
@@ -309,16 +309,16 @@ Graph g;
     if (!c->bezier || i == 0) draw_mark(this_x, this_y, c, g);
     if (p != first(c->pts)) {
       if (c->rarrows || (c->rarrow && p == last(c->pts))) {
-        if (!c->bezier || i == 0) 
+        if (!c->bezier || i == 0)
           draw_arrow(this_x, this_y, last_x, last_y, c);
       }
       if (c->larrows || (c->larrow && prev(p) == first(c->pts))) {
-        if (!c->bezier || i == 1) 
+        if (!c->bezier || i == 1)
           draw_arrow(last_x, last_y, this_x, this_y, c);
       }
     }
-    last_x = this_x;  
-    last_y = this_y;  
+    last_x = this_x;
+    last_y = this_y;
     i = (i + 1) % 3;
   }
   grestore();
@@ -392,7 +392,7 @@ Graph g;
               sprintf(inp, "Including eps file %s", c->eps);
               comment(inp);
               /* Use bbox to scale and translate */
-                
+
               printf("%f %f scale %f %f translate\n", scx, scy, trx, try);
               /* Include the rest of the file */
               for (ch = getc(f); ch != real_eof; ch = getc(f)) putchar(ch);
@@ -408,7 +408,7 @@ Graph g;
               } else {
                 f = fopen(c->postscript, "r");
                 if (f == NULL) {
-                  fprintf(stderr, 
+                  fprintf(stderr,
                           "Error: postscript file %s couldn't be opened\n",
                           c->postscript);
                   exit(1);
@@ -516,7 +516,7 @@ Graph g;
     case 'x': printline(-ms0, -ms1, ms0, ms1, 'x');
               printline(-ms0, ms1, ms0, -ms1, 'x');
               break;
-    case 'o': printellipse(x, y, ms0, ms0, 
+    case 'o': printellipse(x, y, ms0, ms0,
                            c->filltype, c->fill, c->pattern, c->parg);
               break;
     case 'e': printellipse(x, y, ms0, ms1,
@@ -541,7 +541,7 @@ Graph g;
               break;
     case 'l': draw_label(c->lmark);
               break;
-    default: error_header(); 
+    default: error_header();
              fprintf(stderr, "Unknown mark: %c\n", c->marktype);
              break;
   }
@@ -555,8 +555,8 @@ Curve c;
   float dx, dy;
   float ms0;
   float theta, ct, st;
-  
-  
+
+
   if (c->marktype == 'o') {
     dx = x1 - x2;
     dy = y1 - y2;
@@ -570,7 +570,7 @@ Curve c;
     x1 = x1 + ct*(dx > 0.0 ? -1.0 : 1.0);
     y1 = y1 + st*(dy > 0.0 ? -1.0 : 1.0);
 
-    if ( ((x1 - x2 > 0) != (dx > 0)) || 
+    if ( ((x1 - x2 > 0) != (dx > 0)) ||
          ((y1 - y2 > 0) != (dy > 0)) ) return;
   }
 
@@ -608,6 +608,8 @@ Graph g;
       gsave();
       setgray(c->graytype, c->gray);
       y = (c->l->ymax + c->l->ymin) / 2.0;
+      fprintf(stderr, "Linetype: %c\n", c->linetype);
+      fprintf(stderr, "Marktype: %c\n", c->marktype);
       if (l->anylines) {
         if (c->linetype != '0' && l->linelength != 0) {
           if (l->type == 'c' && c->l->hj == 'r') {
@@ -615,7 +617,11 @@ Graph g;
           } else {
             x = c->l->x - l->midspace - l->linelength;
           }
-          start_line(x, y, c); 
+          if(l->linethick != FSIG) {
+            start_legend_line(x, y, c, l->linethick);
+          } else {
+            start_legend_line(x, y, c, c->linethick);
+          }
           cont_line(x+l->linelength, y);
           end_line();
         }
@@ -637,8 +643,8 @@ Graph g;
       if (c->marktype == 'X' || c->marktype == 'Y') {
         char old;
         old = c->marktype;
-        c->marktype = 'b'; 
-        draw_mark(x, y, c, g); 
+        c->marktype = 'b';
+        draw_mark(x, y, c, g);
         c->marktype = old;
       } else {
         draw_mark(x, y, c, g);
@@ -711,10 +717,10 @@ int landscape;
   if (gs->page == 1) printf("%%!PS-Adobe-2.0 EPSF-1.2\n");
   printf("%%%%Page: %d %d\n", gs->page, gs->page);
   if (landscape) {
-    printf("%%%%BoundingBox: %d %d %d %d\n", gs->bb[1], gs->bb[0], 
+    printf("%%%%BoundingBox: %d %d %d %d\n", gs->bb[1], gs->bb[0],
             gs->bb[3], gs->bb[2]);
   } else {
-    printf("%%%%BoundingBox: %d %d %d %d\n", gs->bb[0], gs->bb[1], 
+    printf("%%%%BoundingBox: %d %d %d %d\n", gs->bb[0], gs->bb[1],
             gs->bb[2], gs->bb[3]);
   }
 
@@ -726,12 +732,12 @@ int landscape;
     if (landscape) {
       printf("%f 0 translate\n", -(11.0 * FCPI));
       printf("%f %f translate\n",
-        (((11.0 * FCPI) - (gs->bb[2] - gs->bb[0])) / 2.0) - gs->bb[0],     
-        (((8.5 * FCPI) - (gs->bb[3] - gs->bb[1])) / 2.0) - gs->bb[1]);     
+        (((11.0 * FCPI) - (gs->bb[2] - gs->bb[0])) / 2.0) - gs->bb[0],
+        (((8.5 * FCPI) - (gs->bb[3] - gs->bb[1])) / 2.0) - gs->bb[1]);
     } else {
       printf("%f %f translate\n",
-        (((8.5 * FCPI) - (gs->bb[2] - gs->bb[0])) / 2.0) - gs->bb[0],     
-        (((11.0 * FCPI) - (gs->bb[3] - gs->bb[1])) / 2.0) - gs->bb[1]);     
+        (((8.5 * FCPI) - (gs->bb[2] - gs->bb[0])) / 2.0) - gs->bb[0],
+        (((11.0 * FCPI) - (gs->bb[3] - gs->bb[1])) / 2.0) - gs->bb[1]);
     }
   } else if (landscape) {
     printf("%f 0 translate\n", (double) (-gs->bb[2] - gs->bb[0]));
@@ -820,4 +826,3 @@ int pp;
   grestore();
   if (pp) printf("showpage\n"); else printf("\n");
 }
-

@@ -20,6 +20,7 @@ source $SCRIPTS_DIR/all/args.sh
 source $SCRIPTS_DIR/all/tools.sh
 source $SCRIPTS_DIR/all/cfgs/firsttouch.sh
 source $SCRIPTS_DIR/all/cfgs/profile.sh
+source $SCRIPTS_DIR/all/cfgs/profile_cache_miss.sh
 source $SCRIPTS_DIR/all/cfgs/offline.sh
 source $SCRIPTS_DIR/all/cfgs/online.sh
 source $SCRIPTS_DIR/all/cfgs/multi_iter.sh

@@ -1,6 +1,6 @@
 /* process.c
  * James S. Plank
- 
+
 Jgraph - A program for plotting graphs in postscript.
 
  * $Source: /Users/plank/src/jgraph/RCS/process.c,v $
@@ -87,15 +87,15 @@ Graph g;
   if (g->title->y != FSIG) g->title->y = ctop(g->title->y, g->y_axis);
   else {
     ytitleloc = 0.0;
-    if (g->x_axis->draw_axis_label && g->x_axis->label->label != CNULL) 
-      ytitleloc = MIN(ytitleloc, g->x_axis->label->ymin); 
+    if (g->x_axis->draw_axis_label && g->x_axis->label->label != CNULL)
+      ytitleloc = MIN(ytitleloc, g->x_axis->label->ymin);
     if (g->x_axis->draw_hash_labels)
       ytitleloc = MIN(ytitleloc, g->x_axis->hl->ymin);
     if (g->x_axis->draw_hash_marks)
       ytitleloc = MIN(ytitleloc, g->x_axis->draw_hash_marks_at - HASH_SIZE);
     if (g->legend->type == 'u')
       ytitleloc = MIN(ytitleloc, g->legend->l->ymin);
-    
+
     g->title->y = ytitleloc - 10.0;
   }
   process_label(g->title, g, 0);
@@ -105,8 +105,9 @@ void process_legend(g)
 Graph g;
 {
   Legend l;
-  int anything;
-  float height, hdist, y, x, width, maxmark, maxmarky;
+  int anything, entries, entries_per_col, overflow, i, col;
+  float height, hdist, y, x, width, maxmark, maxmarky,
+        col_height, col_width, initial_x, initial_y, max_col_width;
   Curve c;
   char *s;
 
@@ -121,8 +122,8 @@ Graph g;
     if (c->l->label != CNULL) {
       anything = 1;
       if (c->marktype == 'l') {
-         maxmark = MAX(maxmark, c->lmark->xmax - c->lmark->xmin); 
-         maxmarky = MAX(maxmarky, c->lmark->ymax - c->lmark->ymin); 
+         maxmark = MAX(maxmark, c->lmark->xmax - c->lmark->xmin);
+         maxmarky = MAX(maxmarky, c->lmark->ymax - c->lmark->ymin);
       } else if (c->marktype != 'n') {
         maxmark = MAX(maxmark, ABS(c->marksize[0]));
         maxmarky = MAX(maxmarky, ABS(c->marksize[1]));
@@ -130,9 +131,13 @@ Graph g;
       if (c->linetype != '0') l->anylines = 1;
     }
   }
-  if (l->linelength == FSIG)
+  fprintf(stderr, "anylines: %d\n", l->anylines);
+  if (l->linelength == FSIG) {
+    fprintf(stderr, "Setting linelength.\n");
     l->linelength = (l->anylines) ? (MAX(maxmark + 6.0, 24.0)) : 0.0;
-    else l->linelength = disttop(l->linelength, g->x_axis);
+  } else {
+    l->linelength = disttop(l->linelength, g->x_axis);
+  }
   if (l->midspace == FSIG)
     l->midspace = (l->anylines) ? 4.0 : (maxmark / 2.0) + 4.0;
     else l->midspace = disttop(l->midspace, g->x_axis);
@@ -148,29 +153,74 @@ Graph g;
   }
 
   if (!anything) {
-    l->anylines = -1; 
+    l->anylines = -1;
     return;
   }
 
-  width = 0.0;
-  height = -l->linebreak;
+  /* Figure out how many entries per column */
+  entries = 0;
   for (c = first(g->curves); c != nil(g->curves); c = next(c)) {
     if (c->l->label != CNULL) {
-      s = c->l->label;
-      copy_label(c->l, l->l);
-      c->l->x = 0.0;
-      c->l->y = 0.0;
-      c->l->rotate = 0.0;
-      c->l->hj = 'l';
-      c->l->vj = 'b';
-      c->l->label = s;
-      process_label(c->l, g, 0);
-      height += c->l->ymax + l->linebreak;
-      width = MAX(width, c->l->xmax);
+      entries++;
     }
   }
+  overflow = entries % l->columns;
+  entries_per_col = entries / l->columns;
+  fprintf(stderr, "Entries: %d\n", entries);
+  fprintf(stderr, "Entries per column: %d\n", entries_per_col);
+
+  /* Here, we'll iterate over each column's entries */
+  c = first(g->curves);
+  height = 0.0;
+  width = 0.0;
+  max_col_width = 0.0;
   hdist = (l->anylines) ? l->midspace + l->linelength : l->midspace;
-  width += hdist;
+  for(col = 0; col < l->columns; col++) {
+    fprintf(stderr, "Column: %d\n", col);
+    i = 0;
+    if(col == 0) {
+      /* All overflow entries go into the first column */
+      entries = entries_per_col + overflow;
+    } else {
+      entries = entries_per_col;
+    }
+    col_width = 0.0;
+    col_height = -l->linebreak;
+    while(c != nil(g->curves)) {
+      if (c->l->label != CNULL) {
+        s = c->l->label;
+        copy_label(c->l, l->l);
+        c->l->x = 0.0;
+        c->l->y = 0.0;
+        c->l->rotate = 0.0;
+        c->l->hj = 'l';
+        c->l->vj = 'b';
+        c->l->label = s;
+        process_label(c->l, g, 0);
+        col_height += c->l->ymax + l->linebreak;
+        col_width = MAX(col_width, c->l->xmax);
+        fprintf(stderr, "%d Entry (%s) width: %f\n", i, s, c->l->xmax);
+        i++;
+        if(i == entries) {
+          c = next(c);
+          break;
+        }
+      }
+      c = next(c);
+    }
+    fprintf(stderr, "Column width: %f\n", col_width);
+    fprintf(stderr, "Column height: %f\n", col_height);
+    height = MAX(col_height, height);
+    max_col_width = MAX(max_col_width, col_width + hdist);
+  }
+  width = (max_col_width * l->columns);
+
+  fprintf(stderr, "midspace: %f\n", l->midspace);
+  fprintf(stderr, "linelength: %f\n", l->linelength);
+  fprintf(stderr, "hdist: %f\n", hdist);
+  fprintf(stderr, "Legend width: %f\n", width);
+  fprintf(stderr, "Legend height: %f\n", height);
+  fprintf(stderr, "Maximum column width: %f\n", max_col_width);
 
   if (l->l->x == FSIG) {
     if (l->l->hj == 'c') {
@@ -178,13 +228,13 @@ Graph g;
     } else if (l->l->hj == 'l') {
       if (l->l->vj == 'c') {
         l->l->x = g->x_axis->psize;
-        if (g->y_axis->draw_axis_label) 
+        if (g->y_axis->draw_axis_label)
           l->l->x = MAX(l->l->x, g->y_axis->label->xmax);
-        if (g->y_axis->draw_hash_labels) 
+        if (g->y_axis->draw_hash_labels)
           l->l->x = MAX(l->l->x, g->y_axis->hl->xmax);
         if (g->y_axis->draw_hash_marks) {
           l->l->x = MAX(l->l->x, g->y_axis->draw_hash_marks_at);
-          l->l->x = MAX(l->l->x, g->y_axis->draw_hash_marks_at + 
+          l->l->x = MAX(l->l->x, g->y_axis->draw_hash_marks_at +
                                  HASH_DIR(g->y_axis) * HASH_SIZE);
         }
         l->l->x += 15.0;
@@ -194,13 +244,13 @@ Graph g;
     } else {
       if (l->l->vj == 'c') {
         l->l->x = 0.0;
-        if (g->y_axis->draw_axis_label) 
+        if (g->y_axis->draw_axis_label)
           l->l->x = MIN(l->l->x, g->y_axis->label->xmin);
-        if (g->y_axis->draw_hash_labels) 
+        if (g->y_axis->draw_hash_labels)
           l->l->x = MIN(l->l->x, g->y_axis->hl->xmin);
         if (g->y_axis->draw_hash_marks) {
           l->l->x = MIN(l->l->x, g->y_axis->draw_hash_marks_at);
-          l->l->x = MIN(l->l->x, g->y_axis->draw_hash_marks_at + 
+          l->l->x = MIN(l->l->x, g->y_axis->draw_hash_marks_at +
                                  HASH_DIR(g->y_axis) * HASH_SIZE);
         }
         l->l->x = l->l->x - 15.0;
@@ -216,25 +266,25 @@ Graph g;
       l->l->y = g->y_axis->psize / 2.0;
     } else if (l->l->vj == 'b') {
       l->l->y = g->y_axis->psize;
-      if (g->x_axis->draw_axis_label) 
+      if (g->x_axis->draw_axis_label)
         l->l->y = MAX(l->l->y, g->x_axis->label->ymax);
-      if (g->x_axis->draw_hash_labels) 
+      if (g->x_axis->draw_hash_labels)
         l->l->y = MAX(l->l->y, g->x_axis->hl->ymax);
       if (g->x_axis->draw_hash_marks) {
         l->l->y = MAX(l->l->y, g->x_axis->draw_hash_marks_at);
-        l->l->y = MAX(l->l->y, g->x_axis->draw_hash_marks_at + 
+        l->l->y = MAX(l->l->y, g->x_axis->draw_hash_marks_at +
                                HASH_DIR(g->x_axis) * HASH_SIZE);
       }
       l->l->y += 15.0;
     } else {
       l->l->y = 0.0;
-      if (g->x_axis->draw_axis_label) 
+      if (g->x_axis->draw_axis_label)
         l->l->y = MIN(l->l->y, g->x_axis->label->ymin);
-      if (g->x_axis->draw_hash_labels) 
+      if (g->x_axis->draw_hash_labels)
         l->l->y = MIN(l->l->y, g->x_axis->hl->ymin);
       if (g->x_axis->draw_hash_marks) {
         l->l->y = MIN(l->l->y, g->x_axis->draw_hash_marks_at);
-        l->l->y = MIN(l->l->y, g->x_axis->draw_hash_marks_at + 
+        l->l->y = MIN(l->l->y, g->x_axis->draw_hash_marks_at +
                                HASH_DIR(g->x_axis) * HASH_SIZE);
       }
       l->l->y -= 15.0;
@@ -251,22 +301,47 @@ Graph g;
   else if (l->l->vj == 'c') y = height / 2.0;
   else y = height;
 
-  for (c = first(g->curves); c != nil(g->curves); c = next(c)) {
-    if (c->l->label != CNULL) {
-      c->l->x = hdist + x;
-      c->l->y = y;
-      c->l->vj = 't';
-      c->l->hj = 'l';
-      c->l->rotate = 0.0;
-      process_label(c->l, g, 0);
-      y = c->l->ymin - l->linebreak;
+  fprintf(stderr, "Initial x: %f\n", x);
+  fprintf(stderr, "Initial y: %f\n", y);
+  initial_x = x;
+  initial_y = y;
+
+  col = 0;
+  c = first(g->curves);
+  for(col = 0; col < l->columns; col++) {
+    i = 0;
+    if(col == 0) {
+      entries = entries_per_col + overflow;
+    } else {
+      entries = entries_per_col;
+    }
+    y = initial_y;
+    while(c != nil(g->curves)) {
+      if (c->l->label != CNULL) {
+        c->l->x = x + ((hdist + max_col_width) * col);
+        c->l->y = y;
+        fprintf(stderr, "Entry: %s\n", c->l->label);
+        fprintf(stderr, "Entry x: %f\n", c->l->x);
+        fprintf(stderr, "Entry y: %f\n", c->l->y);
+        c->l->vj = 't';
+        c->l->hj = 'l';
+        c->l->rotate = 0.0;
+        process_label(c->l, g, 0);
+        y = c->l->ymin - l->linebreak;
+        i++;
+        if(i == entries) {
+          c = next(c);
+          break;
+        }
+      }
+      c = next(c);
     }
   }
-  
+
   process_label_max_n_mins(l->l, width, height);
 }
 
-float find_reasonable_hash_interval(a) 
+float find_reasonable_hash_interval(a)
 Axis a;
 {
   float s, d;
@@ -299,7 +374,7 @@ float find_reasonable_hash_start(a)
 Axis a;
 {
   int i;
-  
+
   if (a->is_lg) return 0.0;
   if (a->max > 0.0 && a->min < 0.0) return 0.0;
   i = ((int) (a->min / a->hash_interval));
@@ -353,9 +428,9 @@ Axis a;
 int find_reasonable_minor_hashes(a)
 Axis a;
 {
-  float d;  
+  float d;
   int i;
-  
+
   if (a->is_lg) {
     d = a->log_base;
     while(d > 10.0) d /= 10.0;
@@ -383,7 +458,7 @@ Graph g;
   if (a->min == FSIG) {
     if (a->pmin == FSIG) {
       error_header();
-      fprintf(stderr, 
+      fprintf(stderr,
               "Graph %d: %c axis has no minimum, and cannot derive one\n",
               g->num, AXIS_CHAR(a));
       fprintf(stderr, "  Use %caxis min\n", AXIS_CHAR(a));
@@ -391,7 +466,7 @@ Graph g;
     } else if (a->pmin <= 0.0 && a->is_lg) {
       error_header();
       fprintf(stderr, "Trying to derive %c axis\n", AXIS_CHAR(a));
-      fprintf(stderr, 
+      fprintf(stderr,
         "        Minimum value %f will be -infinity with log axes\n", a->pmin);
       exit(1);
     } else a->min = a->pmin;
@@ -399,7 +474,7 @@ Graph g;
   if (a->max == FSIG) {
     if (a->pmax == FSIG) {
       error_header();
-      fprintf(stderr, 
+      fprintf(stderr,
               "Graph %d: %c axis has no maximum, and cannot derive one\n",
               g->num, AXIS_CHAR(a));
       fprintf(stderr, "  Use %caxis max\n", AXIS_CHAR(a));
@@ -407,7 +482,7 @@ Graph g;
     } else if (a->pmax <= 0.0 && a->is_lg) {
       error_header();
       fprintf(stderr, "Trying to derive %c axis\n", AXIS_CHAR(a));
-      fprintf(stderr, 
+      fprintf(stderr,
         "        Maximum value %f will be -infinity with log axes\n", a->pmax);
       exit(1);
     } else a->max = a->pmax;
@@ -422,8 +497,8 @@ Graph g;
   if (a->is_lg) {
     if (a->min <= 0.0) {
       error_header();
-      fprintf(stderr, 
-        "Graph %d, %c axis: Min value = %f.  This is -infinity with logrhythmic axes\n", 
+      fprintf(stderr,
+        "Graph %d, %c axis: Min value = %f.  This is -infinity with logrhythmic axes\n",
         g->num, (a->is_x) ? 'x' : 'y', a->min);
       exit(1);
     }
@@ -455,7 +530,7 @@ Graph g;
   Axis other;
 
   other = (a->is_x) ? g->y_axis : g->x_axis;
-  if (a->draw_at == FSIG) 
+  if (a->draw_at == FSIG)
     a->draw_at = (HASH_DIR(a) == -1) ? 0.0 : other->psize;
   else a->draw_at = ctop(a->draw_at, other);
 
@@ -472,7 +547,7 @@ Graph g;
   for (h = first(a->hash_lines) ; h != nil(a->hash_lines); h = next(h)) {
     h->loc = ctop(h->loc, a);
   }
-  
+
   for (s = first(a->hash_labels); s != nil(a->hash_labels); s = next(s)) {
     s->s->x = ctop(s->s->x, a);
     s->s->y = ctop(s->s->y, a);
@@ -551,7 +626,7 @@ Graph g;
   else a->draw_hash_labels_at = ctop(a->draw_hash_labels_at, other);
 
   if (a->is_x) {
-    a->hl->y = a->draw_hash_labels_at; 
+    a->hl->y = a->draw_hash_labels_at;
     if (a->hl->hj == '0')
       a->hl->hj = 'c';
     if (a->hl->vj == '0')
@@ -585,49 +660,49 @@ Graph g;
   /* HERE -- now either test or continue */
 
   if (a->is_x) {
-    if (a->label->x == FSIG) 
+    if (a->label->x == FSIG)
       a->label->x = a->psize / 2.0;
       else a->label->x = ctop(a->label->x, g->x_axis);
     if (a->label->y == FSIG) {
       ymin = 0.0;
       ymax = other->psize;
       if (a->draw_hash_labels) {
-        ymin = MIN(ymin, a->hl->ymin); 
-        ymax = MAX(ymax, a->hl->ymax); 
-      } 
+        ymin = MIN(ymin, a->hl->ymin);
+        ymax = MAX(ymax, a->hl->ymax);
+      }
       if (a->draw_hash_marks) {
         ymin = MIN(ymin, a->draw_hash_marks_at);
         ymin = MIN(ymin, a->draw_hash_marks_at + a->hash_scale * HASH_SIZE);
         ymax = MAX(ymax, a->draw_hash_marks_at);
         ymax = MAX(ymax, a->draw_hash_marks_at + a->hash_scale * HASH_SIZE);
-      } 
+      }
       a->label->y = (HASH_DIR(a) == -1) ? ymin - 8.0 : ymax + 8.0 ;
     } else a->label->y = ctop(a->label->y, g->y_axis);
     if (a->label->hj == '0') a->label->hj = 'c';
     if (a->label->vj == '0') a->label->vj = (HASH_DIR(a) == -1) ? 't' : 'b' ;
     if (a->label->rotate == FSIG) a->label->rotate = 0.0;
   } else {
-    if (a->label->y == FSIG) 
+    if (a->label->y == FSIG)
       a->label->y = a->psize / 2.0;
       else a->label->y = ctop(a->label->y, g->y_axis);
     if (a->label->x == FSIG) {
       xmin = 0.0;
       xmax = other->psize;
       if (a->draw_hash_labels) {
-        xmin = MIN(xmin, a->hl->xmin); 
-        xmax = MAX(xmax, a->hl->xmax); 
-      } 
+        xmin = MIN(xmin, a->hl->xmin);
+        xmax = MAX(xmax, a->hl->xmax);
+      }
       if (a->draw_hash_marks) {
         xmin = MIN(xmin, a->draw_hash_marks_at);
         xmin = MIN(xmin, a->draw_hash_marks_at + a->hash_scale * HASH_SIZE);
         xmax = MAX(xmax, a->draw_hash_marks_at);
         xmax = MAX(xmax, a->draw_hash_marks_at + a->hash_scale * HASH_SIZE);
-      } 
+      }
       a->label->x = (HASH_DIR(a) == -1) ? xmin - 8.0 : xmax + 8.0 ;
     } else a->label->x = ctop(a->label->x, g->x_axis);
     if (a->label->hj == '0') a->label->hj = 'c';
     if (a->label->vj == '0') a->label->vj = 'b';
-    if (a->label->rotate == FSIG) 
+    if (a->label->rotate == FSIG)
       a->label->rotate = (HASH_DIR(a) == -1) ? 90.0 : -90.0;
   }
   process_label (a->label, g, 0);
@@ -644,6 +719,8 @@ int adjust;
   char *s;
 
   if (l->label == CNULL) return;
+
+  fprintf(stderr, "Processing label: %s\n", l->label);
 
   if (adjust) {
     l->x = ctop(l->x, g->x_axis);
@@ -674,7 +751,7 @@ int adjust;
   height = (l->fontsize * (fnl+1) + l->linesep * fnl) * FCPI / FPPI;
   process_label_max_n_mins(l, len, height);
 }
-   
+
 void process_label_max_n_mins(l, len, height)
 Label l;
 float len;
@@ -687,7 +764,7 @@ float height;
   ylen = height * cos((l->rotate + 90.0) * Pi / 180.00);
   xheight = len * sin(l->rotate * Pi / 180.00);
   yheight = height * sin((l->rotate + 90.0) * Pi / 180.00);
-  
+
   x = l->x;
   y = l->y;
 
@@ -722,6 +799,7 @@ float height;
   l->ymax = MAX(l->ymax, y + yheight);
   l->ymax = MAX(l->ymax, y + xheight + yheight);
 
+  fprintf(stderr, "xmin: %f, xmax: %f\n", l->xmin, l->xmax);
 }
 
 void process_strings(g)
@@ -745,14 +823,14 @@ Graph g;
     fprintf(stderr, "  Bezier must have 3n + 1 points (n > 0)\n");
     exit(1);
   }
-  c->marksize[0] = (c->marksize[0] == FSIG) ? 
+  c->marksize[0] = (c->marksize[0] == FSIG) ?
                    4.0 : disttop(c->marksize[0], g->x_axis);
-  c->marksize[1] = (c->marksize[1] == FSIG) ? 
+  c->marksize[1] = (c->marksize[1] == FSIG) ?
                    4.0 : disttop(c->marksize[1], g->y_axis);
   if (c->marktype == 'o') c->marksize[1] = c->marksize[0];
-  c->asize[0] = (c->asize[0] == FSIG) ? 
+  c->asize[0] = (c->asize[0] == FSIG) ?
                    6.0 : disttop(c->asize[0], g->x_axis);
-  c->asize[1] = (c->asize[1] == FSIG) ? 
+  c->asize[1] = (c->asize[1] == FSIG) ?
                    2.0 : disttop(c->asize[1], g->y_axis) / 2.0;
   c->lmark->x = disttop(c->lmark->x, g->x_axis);
   c->lmark->y = disttop(c->lmark->y, g->y_axis);
@@ -770,7 +848,7 @@ Graph g;
     process_curve(c, g);
   }
 }
- 
+
 void process_extrema(g)  /* This finds all the minval/maxvals for bbox calc */
 Graph g;
 {
@@ -785,7 +863,7 @@ Graph g;
   g->yminval = 0.0;
   g->xmaxval = xa->psize;
   g->ymaxval = ya->psize;
-  
+
   if (xa->draw_axis_label) process_label_extrema(xa->label, g);
   if (ya->draw_axis_label) process_label_extrema(ya->label, g);
   if (xa->draw_hash_labels) process_label_extrema(xa->hl, g);
@@ -793,21 +871,21 @@ Graph g;
 
   if (xa->draw_hash_marks) {
       g->yminval = MIN(g->yminval, xa->draw_hash_marks_at);
-      g->yminval = MIN(g->yminval, 
+      g->yminval = MIN(g->yminval,
                        xa->draw_hash_marks_at + HASH_DIR(xa) * HASH_SIZE);
       g->ymaxval = MAX(g->ymaxval, xa->draw_hash_marks_at);
-      g->ymaxval = MAX(g->ymaxval, 
+      g->ymaxval = MAX(g->ymaxval,
                        xa->draw_hash_marks_at + HASH_DIR(xa) * HASH_SIZE);
   }
   if (ya->draw_hash_marks) {
       g->xminval = MIN(g->xminval, ya->draw_hash_marks_at);
-      g->xminval = MIN(g->xminval, 
+      g->xminval = MIN(g->xminval,
                        ya->draw_hash_marks_at + HASH_DIR(ya) * HASH_SIZE);
       g->xmaxval = MAX(g->xmaxval, ya->draw_hash_marks_at);
-      g->xmaxval = MAX(g->xmaxval, 
+      g->xmaxval = MAX(g->xmaxval,
                        ya->draw_hash_marks_at + HASH_DIR(ya) * HASH_SIZE);
   }
-  process_label_extrema(g->title, g);  
+  process_label_extrema(g->title, g);
 
   if (g->legend->type == 'c') {
     for (c = first(g->curves); c != nil(g->curves); c = next(c)) {
@@ -902,6 +980,6 @@ Graphs gs;
       the_g->bb[1] = (int) (min_y - 1.0);
       the_g->bb[2] = (int) (max_x + 1.0);
       the_g->bb[3] = (int) (max_y + 1.0);
-    } 
+    }
   }
 }

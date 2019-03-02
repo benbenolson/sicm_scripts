@@ -8,12 +8,16 @@
 static struct option long_options[] = {
     {"metric", required_argument, 0, 'm'},
     {"node", required_argument, 0, 'n'},
+    {"site", required_argument, 0, 's'},
+    {"graph_title", required_argument, 0, 't'},
+    {"filename", required_argument, 0, 'o'},
+    {"eps", no_argument, 0, 'e'},
     {0,        0,                 0, 0}
 };
 
 int main(int argc, char **argv) {
   metrics *info;
-  int option_index;
+  int option_index, site;
   char *metric, c, *path;
   unsigned long node;
 
@@ -22,7 +26,7 @@ int main(int argc, char **argv) {
   metric = NULL;
   while(1) {
     option_index = 0;
-    c = getopt_long(argc, argv, "m:n:",
+    c = getopt_long(argc, argv, "m:n:s:t:eo:",
                     long_options, &option_index);
     if(c == -1) {
       break;
@@ -33,10 +37,12 @@ int main(int argc, char **argv) {
         printf("option %s\n", long_options[option_index].name);
         break;
       case 'm':
+        /* Metric name. Required. */
         metric = (char *) malloc(sizeof(char) * (strlen(optarg) + 1));
         strcpy(metric, optarg);
         break;
       case 'n':
+        /* A NUMA node ID. */
         node = strtoul(optarg, NULL, 0);
         /* Necessary because strtoul returns 0 on failure,
          * which could be the node number the user passed in.
@@ -45,6 +51,28 @@ int main(int argc, char **argv) {
           fprintf(stderr, "Invalid node number: '%s'. Aborting.\n", optarg);
           exit(1);
         }
+        break;
+      case 's':
+        /* A site ID. Integer. */
+        site = strtoul(optarg, NULL, 0);
+        if(site <= 0) {
+          fprintf(stderr, "Invalid site number: '%d'. Aborting.\n", optarg);
+          exit(1);
+        }
+        break;
+      case 't':
+        /* Title of the output graph. We'll store this in the global in `stat.h`. */
+        graph_title = (char *) malloc(sizeof(char) * (strlen(optarg) + 1));
+        strcpy(graph_title, optarg);
+        break;
+      case 'o':
+        /* This is an output filename that can be used to output a PNG or table to. */
+        output_filename = (char *) malloc(sizeof(char) * (strlen(optarg) + 1));
+        strcpy(output_filename, optarg);
+        break;
+      case 'e':
+        /* This is an output filename that can be used to output a PNG or table to. */
+        output_filetype = 1;
         break;
       case '?':
         exit(1);
@@ -67,7 +95,7 @@ int main(int argc, char **argv) {
 
   /* Initialize and do the parsing */
   info = init_metrics();
-  parse_metrics(info, path, metric, node);
+  parse_metrics(info, path, metric, node, site);
   free_metrics(info);
 
   /* Clean up */

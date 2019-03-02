@@ -1,6 +1,6 @@
 /* jgraph.h
  * James S. Plank
- 
+
 Jgraph - A program for plotting graphs in postscript.
 
  * $Source: /Users/plank/src/jgraph/RCS/jgraph.h,v $
@@ -166,7 +166,7 @@ typedef struct deflt {
   char vj;
   char marktype;
 } *Default;
-  
+
 typedef struct axis {
   Label label;
   Label hl;
@@ -211,6 +211,9 @@ typedef struct axis {
 } *Axis;
 
 typedef struct legend {
+  int columns;
+  float columnsep;
+  float linethick;
   float linelength;
   float linebreak;
   int anylines;
@@ -247,8 +250,8 @@ typedef struct graphs {
   float height;
   float width;
   int bb[4]; /* Bounding box */
-  char *preamble; 
-  char *epilogue; 
+  char *preamble;
+  char *epilogue;
   int prefile;
   int epifile;
   int page;

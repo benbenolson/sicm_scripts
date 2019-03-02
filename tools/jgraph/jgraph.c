@@ -1,6 +1,6 @@
 /* jgraph.c
  * James S. Plank
- 
+
 Jgraph - A program for plotting graphs in postscript.
 
  * $Source: /Users/plank/src/jgraph/RCS/jgraph.c,v $
@@ -53,7 +53,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 
 
-#ifdef VMS 
+#ifdef VMS
 #include <redexp.VMS>
 #endif
 
@@ -62,11 +62,11 @@ POSSIBILITY OF SUCH DAMAGE.
 int NMARKTYPES = 17;
 int NORMALMARKTYPES = 6;
 
-char *MARKTYPESTRS[] = { "circle", "box", "diamond", "triangle", "x", "cross", 
+char *MARKTYPESTRS[] = { "circle", "box", "diamond", "triangle", "x", "cross",
                          "ellipse", "general", "general_nf", "general_bez",
-                         "general_bez_nf", "postscript", "eps", 
+                         "general_bez_nf", "postscript", "eps",
                          "xbar", "ybar", "none", "text"};
-char MARKTYPES[] = {     'o',      'b',   'd',       't',        'x', 'c', 
+char MARKTYPES[] = {     'o',      'b',   'd',       't',        'x', 'c',
 			 'e',       'g',       'G',          'Z',
                          'B',              'p',          'E',
                          'X',    'Y',    'n',    'l' };
@@ -235,6 +235,9 @@ Legend new_legend()
 {
   Legend l;
   l = (Legend) malloc (sizeof(struct legend));
+  l->columns = 1;
+  l->columnsep = FSIG;
+  l->linethick = FSIG;
   l->linelength = FSIG;
   l->linebreak = FSIG;
   l->midspace = FSIG;
@@ -304,7 +307,7 @@ Default new_default()
   new_d->marksize[1] = FSIG;
 }
 */
-  
+
 Graph new_graph(gs, num)
 Graph gs;
 int num;
@@ -372,7 +375,7 @@ char **argv;
   int comments;
   int nfiles;
 
-#ifdef VMS 
+#ifdef VMS
   IOSTREAM = stdin;	/* for token.c -hdd */
 #endif
   show = 0;
@@ -401,5 +404,3 @@ char **argv;
   exit(0);
   return 0;
 }
-
-

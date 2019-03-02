@@ -3,7 +3,7 @@
 # First argument is the PEBS frequency
 # Second is the sampling rate
 # Third is skip intervals for capacity profiling
-function profile_all_and_cap {
+function profile_cache_miss_and_cap {
   FREQ="$1"
   RATE="$2"
 
@@ -14,9 +14,7 @@ function profile_all_and_cap {
   # Enable profiling
   export SH_PROFILE_ALL="1"
   export SH_PROFILE_RATE_NSECONDS=$(echo "$RATE * 1000000" | bc)
-  #export SH_PROFILE_ALL_EVENTS="MEM_LOAD_UOPS_RETIRED:L3_MISS"
-  export SH_PROFILE_ALL_EVENTS="MEM_LOAD_UOPS_LLC_MISS_RETIRED:LOCAL_DRAM,MEM_LOAD_UOPS_RETIRED:LOCAL_PMM"
-  #export SH_PROFILE_ALL_NODES="1"
+  export SH_PROFILE_ALL_EVENTS="MEM_LOAD_UOPS_RETIRED:L1_HIT,MEM_LOAD_UOPS_RETIRED:L2_HIT,MEM_LOAD_UOPS_RETIRED:L3_HIT,MEM_LOAD_UOPS_RETIRED:L3_MISS"
   export SH_MAX_SAMPLE_PAGES="512"
   export SH_SAMPLE_FREQ="${FREQ}"
 
@@ -32,28 +30,14 @@ function profile_all_and_cap {
   done
 }
 
-function profile_all_and_allocs {
-  export SH_PROFILE_ALLOCS="1"
-  export SH_PROFILE_ALLOCS_SKIP_INTERVALS="$3"
-  export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 3`
-  profile_all_and_cap $@
-}
-
-function profile_all_and_extent_size {
+function profile_cache_miss_and_extent_size {
   export SH_PROFILE_EXTENT_SIZE="1"
   export SH_PROFILE_EXTENT_SIZE_SKIP_INTERVALS="$3"
   export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
-  profile_all_and_cap $@
+  profile_cache_miss_and_cap $@
 }
 
-function profile_all_and_extent_size_intervals {
+function profile_cache_miss_and_extent_size_intervals {
   export SH_PROFILE_INTERVALS="1"
-  profile_all_and_extent_size $@
-}
-
-function profile_all_and_rss {
-  export SH_PROFILE_RSS="1"
-  export SH_PROFILE_RSS_SKIP_INTERVALS="$3"
-  export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
-  profile_all_and_cap $@
+  profile_cache_miss_and_extent_size $@
 }

@@ -1,6 +1,6 @@
 /* edit.c
  * James S. Plank
- 
+
 Jgraph - A program for plotting graphs in postscript.
 
  * $Source: /Users/plank/src/jgraph/RCS/edit.c,v $
@@ -141,8 +141,8 @@ Curve c1, c2;
   copy_label(c1->lmark, c2->lmark);
   c1->l->label = CNULL;
   c1->clip = c2->clip;
-  for (f = first(c2->gen_linetype); 
-       f != nil(c2->gen_linetype); 
+  for (f = first(c2->gen_linetype);
+       f != nil(c2->gen_linetype);
        f = next(f)) {
     newf = (Flist) get_node((List) c1->gen_linetype);
     newf->f = f->f;
@@ -160,8 +160,8 @@ Curve c1, c2;
   c1->marksize[0] = c2->marksize[0];
   c1->marksize[1] = c2->marksize[1];
   c1->mrotate = c2->mrotate;
-  for (p = first(c2->general_marks); 
-       p != nil(c2->general_marks); 
+  for (p = first(c2->general_marks);
+       p != nil(c2->general_marks);
        p = next(p)) {
     newp = (Point) get_node((List) c1->general_marks);
     newp->x = p->x;
@@ -289,18 +289,18 @@ Graphs all_gs;
       }
       gs = prev(gs);
     }
-    error_header(); 
+    error_header();
     fprintf(stderr, "Cannot perform copycurve on first curve\n");
     exit(1);
   } else {
     if (first(g->curves) == nil(g->curves))
       newc = new_curve(g->curves, 0);
     else newc = new_curve(g->curves, last(g->curves)->num + 1);
-    lastc = g->curves; 
+    lastc = g->curves;
     while(1) {
       lastc = prev(lastc);
       if (lastc == nil(g->curves) || lastc->num < num) {
-        error_header(); 
+        error_header();
         fprintf(stderr, "copycurve: curve #%d not found\n", num);
         exit(1);
       }
@@ -342,7 +342,7 @@ Graphs all_gs;
       }
       gs = prev(gs);
     }
-    error_header(); 
+    error_header();
     fprintf(stderr, "Cannot perform copystring on first string\n");
     exit(1);
     return newl->s; /* To shut lint up */
@@ -350,11 +350,11 @@ Graphs all_gs;
     if (first(g->strings) == nil(g->strings))
       newl = new_string(g->strings, 0);
     else newl = new_string(g->strings, last(g->strings)->num + 1);
-    lastl = g->strings; 
+    lastl = g->strings;
     while(1) {
       lastl = prev(lastl);
       if (lastl == nil(g->strings) || lastl->num < num) {
-        error_header(); 
+        error_header();
         fprintf(stderr, "copystring: string #%d not found\n", num);
         exit(1);
       }
@@ -377,7 +377,7 @@ Graphs all_gs;
   lastg = prev(g);
   while(lastg == nil(gs->g)) {
     if (prev(gs) == nil(all_gs)) {
-      error_header(); 
+      error_header();
       fprintf(stderr, "First graph cannot inherit axes\n");
       exit(1);
     } else {
@@ -391,6 +391,9 @@ Graphs all_gs;
 void copy_legend(l1, l2)
 Legend l1, l2;
 {
+  l1->columnsep = l2->columnsep;
+  l1->columns = l2->columns;
+  l1->linethick = l2->linethick;
   l1->linelength = l2->linelength;
   l1->linebreak = l2->linebreak;
   l1->midspace = l2->midspace;
@@ -432,7 +435,7 @@ float *a;
         rejecttoken();
       }
       i = NPATTERNS + 1;
-    } 
+    }
   }
   if (i == NPATTERNS) {
     error_header(); fprintf(stderr, "Bad %s: %s\n", key, inp_str);
@@ -465,14 +468,14 @@ Graph g;
       while (getfloat(&x)) {
         if (e == 'p') {
           if (!getfloat(&y)) {
-            error_header(); 
+            error_header();
             fprintf(stderr, "Reading Points, no y value for x=%f\n", x);
             exit(1);
           }
         } else {
           if (!getfloat(&y) || !getfloat(&e1) || !getfloat(&e2)) {
             error_header();
-              fprintf(stderr, 
+              fprintf(stderr,
                       "Reading %s, need 4 values per data point\n", inp_str);
               exit(1);
           }
@@ -527,16 +530,16 @@ Graph g;
     } else if (strcmp(inp_str, "label") == 0) {
       edit_label(c->l);
     } else if (strcmp(inp_str, "marksize") == 0) {
-      if (!getfloat(&f)) rejecttoken(); 
+      if (!getfloat(&f)) rejecttoken();
       else {
         c->marksize[0] = f;
-        if (!getfloat(&f)) rejecttoken(); 
+        if (!getfloat(&f)) rejecttoken();
         else c->marksize[1] = f;
       }
     } else if (strcmp(inp_str, "gmarks") == 0) {
       while (getfloat(&x)) {
         if (!getfloat(&y)) {
-          error_header(); 
+          error_header();
           fprintf(stderr, "Reading GMarks, no y value for x=%f\n", x);
           exit(1);
         }
@@ -586,8 +589,8 @@ Graph g;
     } else if (strcmp(inp_str, "acfill") == 0) {
 	c->afilltype = 'c';
 	for( i = 0 ; i < 3 ; i++ )  {
-	  if(!getfloat(&f)) { 
-	    rejecttoken(); 
+	  if(!getfloat(&f)) {
+	    rejecttoken();
  	    c->afilltype = 'n';
             break ;
 	  } else c->afill[i] = f ;
@@ -612,7 +615,7 @@ Graph g;
         fl = (Flist) get_node((List) c->gen_linetype);
         fl->f = f;
         insert((List) fl, (List) c->gen_linetype);
-      } 
+      }
       rejecttoken();
     } else if (strcmp(inp_str, "pattern") == 0) {
       getpattern(inp_str, "pattern", &(c->pattern), &(c->parg));
@@ -634,9 +637,9 @@ Graph g;
       else if (strcmp(inp_str, "general") == 0) c->linetype = 'g';
       else {
         error_header(); fprintf(stderr, "Bad line type: %s\n", inp_str);
-        error_header(); fprintf(stderr, "             Valid marks are %s\n", 
-          "solid, dotted, dashed, longdash, dotdash,"); 
-        error_header(); fprintf(stderr, "             %s.\n", 
+        error_header(); fprintf(stderr, "             Valid marks are %s\n",
+          "solid, dotted, dashed, longdash, dotdash,");
+        error_header(); fprintf(stderr, "             %s.\n",
           "dotdotdash, dotdotdashdash, none");
         exit(1);
       }
@@ -691,7 +694,7 @@ Graph g;
         fi = fopen(c->postscript, "r");
         if (fi == NULL) {
           error_header();
-          fprintf(stderr, "couldn't open postscript file '%s'\n", 
+          fprintf(stderr, "couldn't open postscript file '%s'\n",
                   c->postscript);
           exit(1);
         }
@@ -722,10 +725,10 @@ Graph g;
     } else if (strcmp(inp_str, "nobezier") == 0) {
       c->bezier = 0;
     } else if (strcmp(inp_str, "asize") == 0) {
-      if (!getfloat(&f)) rejecttoken(); 
+      if (!getfloat(&f)) rejecttoken();
       else {
         c->asize[0] = f;
-        if (!getfloat(&f)) rejecttoken(); 
+        if (!getfloat(&f)) rejecttoken();
         else c->asize[1] = f;
       }
     } else if (strcmp(inp_str, "clip") == 0) {
@@ -759,7 +762,7 @@ Axis a;
         if ((s = getlabel()) == CNULL) return;
       } else if (strcmp(inp_str, "at") == 0) {
         if (getfloat(&f)) {
-          at = f;  
+          at = f;
         } else {
           rejecttoken();
           done = 1;
@@ -775,7 +778,7 @@ Axis a;
       if (s == CNULL) return;
       if (at == FSIG) {
         error_header();
-        fprintf(stderr, 
+        fprintf(stderr,
           "hash_label either needs \"at\" or an associated \"hash_at\"\n");
         exit(1);
       }
@@ -812,7 +815,7 @@ Axis a;
       if ( getfloat(&f)) {
         a->hash_start = f;
         a->start_given = 1;
-        } 
+        }
       else rejecttoken();
     } else if (strcmp(inp_str, "mhash") == 0) {
       if (getint(&i)) a->minor_hashes = i; else rejecttoken();
@@ -846,7 +849,7 @@ Axis a;
           error_header();
           fprintf(stderr, "\"log_base %f\": log_base must be > 1.0\n", f);
           exit(1);
-        } else a->log_base = f; 
+        } else a->log_base = f;
       } else rejecttoken();
     } else if (strcmp(inp_str, "draw_at") == 0) {
       if ( getfloat(&f)) a->draw_at = f; else rejecttoken();
@@ -874,7 +877,7 @@ Axis a;
         insert((List) h, (List) a->hash_lines);
       } else rejecttoken();
     } else if (strcmp(inp_str, "hash_label") == 0) {
-      edit_hash_label(a);       
+      edit_hash_label(a);
     } else if (strcmp(inp_str, "hash_scale") == 0) {
       if ( getfloat(&f)) a->hash_scale = f; else rejecttoken();
     } else if (strcmp(inp_str, "auto_hash_marks") == 0) {
@@ -960,7 +963,7 @@ Axis a;
         } else a->mgr_gray[i] = f ;
       }
     } else {
-      rejecttoken(); 
+      rejecttoken();
       return;
     }
   }
@@ -971,20 +974,21 @@ Legend l;
 {
   char inp_str[256];
   float f;
+  int num;
 
   while ( getstring(inp_str) ) {
     if (strcmp(inp_str, "x") == 0) {
-      if (!getfloat(&f)) rejecttoken(); 
+      if (!getfloat(&f)) rejecttoken();
       else {
-        l->l->x = f; 
+        l->l->x = f;
         l->l->hj = 'l';
         l->l->vj = 't';
         l->type = 'u';
       }
     } else if (strcmp(inp_str, "y") == 0) {
-      if (!getfloat(&f)) rejecttoken(); 
+      if (!getfloat(&f)) rejecttoken();
       else {
-        l->l->y = f; 
+        l->l->y = f;
         l->l->hj = 'l';
         l->l->vj = 't';
         l->type = 'u';
@@ -992,34 +996,40 @@ Legend l;
     } else if (strcmp(inp_str, "right") == 0 ||
                strcmp(inp_str, "on") == 0) {
       l->type = 'u';
-      l->l->y = FSIG; 
-      l->l->x = FSIG; 
+      l->l->y = FSIG;
+      l->l->x = FSIG;
       l->l->hj = 'l';
       l->l->vj = 'c';
     } else if (strcmp(inp_str, "left") == 0) {
       l->type = 'u';
-      l->l->y = FSIG; 
-      l->l->x = FSIG; 
+      l->l->y = FSIG;
+      l->l->x = FSIG;
       l->l->hj = 'r';
       l->l->vj = 'c';
     } else if (strcmp(inp_str, "off") == 0) {
       l->type = 'n';
     } else if (strcmp(inp_str, "top") == 0) {
       l->type = 'u';
-      l->l->y = FSIG; 
-      l->l->x = FSIG; 
+      l->l->y = FSIG;
+      l->l->x = FSIG;
       l->l->hj = 'l';
       l->l->vj = 'b';
     } else if (strcmp(inp_str, "bottom") == 0) {
       l->type = 'u';
-      l->l->y = FSIG; 
-      l->l->x = FSIG; 
+      l->l->y = FSIG;
+      l->l->x = FSIG;
       l->l->hj = 'l';
       l->l->vj = 't';
     } else if (strcmp(inp_str, "custom") == 0) {
       l->type = 'c';
     } else if (strcmp(inp_str, "linelength") == 0) {
       if (!getfloat(&f)) rejecttoken(); else l->linelength = f;
+    } else if (strcmp(inp_str, "columns") == 0) {
+      if (!getint(&num)) rejecttoken(); else l->columns = num;
+    } else if (strcmp(inp_str, "columnsep") == 0) {
+      if (!getfloat(&f)) rejecttoken(); else l->columnsep = f;
+    } else if (strcmp(inp_str, "linethickness") == 0) {
+      if (!getfloat(&f)) rejecttoken(); else l->linethick = f;
     } else if (strcmp(inp_str, "linebreak") == 0) {
       if (!getfloat(&f)) rejecttoken(); else l->linebreak = f;
     } else if (strcmp(inp_str, "midspace") == 0) {
@@ -1104,7 +1114,7 @@ Graphs all_gs;
     } else {
       rejecttoken();
       return;
-    } 
+    }
   }
 }
 
@@ -1193,6 +1203,6 @@ Graphs gs;
     } else {
       error_header(); fprintf(stderr, "Bad token: %s\n", inp_str);
       exit(1);
-    } 
+    }
   }
 }

@@ -1,6 +1,7 @@
 #!/bin/bash
 
 DO_MEMRESERVE=false
+DO_DEBUG=false
 MEMRESERVE_RATIO=""
 
 function online_base {
@@ -54,6 +55,7 @@ function online_base {
   # Turn on online
   export SH_PROFILE_ONLINE="1"
   export SH_PROFILE_ONLINE_SKIP_INTERVALS="$ONLINE_SKIP_INTERVALS"
+  export SH_PROFILE_ONLINE_WEIGHTS="1,5"
 
   export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
 
@@ -62,7 +64,9 @@ function online_base {
   for i in $(seq 0 $MAX_ITER); do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
-    export SH_PROFILE_ONLINE_OUTPUT_FILE="${DIR}/online.txt"
+    if [ "$DO_DEBUG" = true ]; then
+      export SH_PROFILE_ONLINE_DEBUG_FILE="${DIR}/online.txt"
+    fi
     export SH_PROFILE_OUTPUT_FILE="${DIR}/profile.txt"
     drop_caches
     if [ "$DO_MEMRESERVE" = true ]; then
@@ -109,6 +113,22 @@ function online_memreserve_extent_size {
   MEMRESERVE_RATIO="$6"
 
   online_extent_size $@
+}
+
+function online_memreserve_extent_size_orig {
+  DO_MEMRESERVE=true
+  MEMRESERVE_RATIO="$6"
+  export SH_PROFILE_ONLINE_STRAT_ORIG="1"
+  export SH_PROFILE_ONLINE_RECONF_WEIGHT_RATIO="$7"
+  export SH_PROFILE_ONLINE_HOT_INTERVALS="$8"
+
+  online_extent_size $@
+}
+
+function online_memreserve_extent_size_orig_debug {
+  DO_DEBUG=true
+
+  online_memreserve_extent_size_orig $@
 }
 
 function online_memreserve_extent_size_nobind {

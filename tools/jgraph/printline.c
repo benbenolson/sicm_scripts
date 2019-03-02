@@ -1,6 +1,6 @@
 /* printline.c
  * James S. Plank
- 
+
 Jgraph - A program for plotting graphs in postscript.
 
  * $Source: /Users/plank/src/jgraph/RCS/printline.c,v $
@@ -60,6 +60,7 @@ void setgray();
 void printline();
 void print_ebar();
 void start_line();
+void start_legend_line();
 void cont_line();
 void end_line();
 void bezier_control();
@@ -96,7 +97,7 @@ void gsave()
   if (Jgraph_gsave_level == -100) {
     Jgraph_gsave_level = 0;
     Jgraph_fonts = (Fontlist) make_list(sizeof(struct fontlist));
-  } 
+  }
   Jgraph_gsave_level++;
   printf(" gsave ");
 }
@@ -142,7 +143,7 @@ float s;
     printf("/%s findfont %f scalefont setfont\n", f, s);
   }
 }
-  
+
 void setfill( x, y, t, f, p, a)
 char t, p ;
 float x, y;
@@ -183,12 +184,12 @@ void printline(x1, y1,x2, y2, orientation)
 float x1, y1, x2, y2;
 char orientation;
 {
-  if (orientation == 'x') 
+  if (orientation == 'x')
     printf("newpath %f %f moveto %f %f lineto stroke\n", x1, y1, x2, y2);
   else
     printf("newpath %f %f moveto %f %f lineto stroke\n", y1, x1, y2, x2);
   fflush(stdout);
-} 
+}
 
 void print_ebar(x1, y1, x2, ms, orientation)
 float x1, y1, x2, ms;
@@ -196,6 +197,15 @@ char orientation;
 {
   printline(x1, y1, x2, y1, orientation);
   printline(x2, y1-ms, x2, y1+ms, orientation);
+}
+
+void start_legend_line(x1, y1, c, linethick)
+float x1, y1, linethick;
+Curve c;
+{
+  setlinewidth(linethick);
+  setlinestyle(c->linetype, c->gen_linetype);
+  printf("%f %f moveto ", x1, y1);
 }
 
 void start_line(x1, y1, c)
@@ -313,7 +323,7 @@ Label l;
   if (l->graytype == 'g') {
     printf("  %f setgray\n", l->gray[0]);
   } else if (l->graytype == 'c') {
-    printf("  %f %f %f setrgbcolor\n", l->gray[0], l->gray[1], 
+    printf("  %f %f %f setrgbcolor\n", l->gray[0], l->gray[1],
            l->gray[2]);
   }
 
@@ -321,11 +331,11 @@ Label l;
     printf("0 %f translate ", fnl * (l->fontsize + l->linesep) * FCPI / FPPI);
   } else if (l->vj == 'c') {
     if (nlines % 2 == 0) {
-      printf("0 %f translate ", 
+      printf("0 %f translate ",
              (fnl/2.0*(l->fontsize + l->linesep) - l->fontsize/2.0)
               * FCPI / FPPI);
     } else {
-      printf("0 %f translate ", 
+      printf("0 %f translate ",
              ((fnl-1.0)/2.0*(l->fontsize + l->linesep) + l->linesep/2.0)
               * FCPI / FPPI);
     }
@@ -344,12 +354,12 @@ Label l;
       printf("pop 0 0 moveto\n");
     }
     /* I would put string blanking in here if I had the time... */
- 
+
     if (i != nlines) {
       f = strlen(s);
       s[f] = '\n';
       s = &(s[f+1]);
-      printf("show 0 %f translate\n", 
+      printf("show 0 %f translate\n",
               - (l->fontsize + l->linesep) * FCPI / FPPI);
     } else {
       printf("show\n");
@@ -379,7 +389,7 @@ Flist glist;
     case 'd': printf(" [5 3 1 3] 0 setdash\n"); break;
     case 'D': printf(" [5 3 1 2 1 3] 0 setdash\n"); break;
     case '2': printf(" [5 3 5 3 1 2 1 3] 0 setdash\n"); break;
-    case 'g': 
+    case 'g':
       printf(" [");
       for (fl = first(glist); fl != nil(glist); fl = next(fl))
         printf("%f ", fl->f);
@@ -390,4 +400,3 @@ Flist glist;
              break;
   }
 }
-
