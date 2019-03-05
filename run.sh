@@ -16,6 +16,8 @@ source $SCRIPTS_DIR/benchmarks/${1}/${1}_sizes.sh
 COMMAND=""
 if [[ $2 == "small" ]]; then
   COMMAND="$SMALL"
+elif [[ $2 == "medium" ]]; then
+  COMMAND="$MEDIUM"
 elif [[ $2 == "large" ]]; then
   COMMAND="$LARGE"
 else

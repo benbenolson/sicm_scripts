@@ -155,7 +155,7 @@ function firsttouch_exclusive_device {
     cat ${RESULTS_DIR}/../${CANARY_CFG}/stdout.txt | sicm_memreserve 1 64 ratio ${RATIO} hold bind &>> ${RESULTS_DIR}/memreserve.txt &
     sleep 5
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
-    background "${RESULTS_DIR}" &
+    numastat_background "${RESULTS_DIR}" &
     background_pid=$!
     eval "env time -v numactl --preferred=1 " "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
     kill $background_pid
