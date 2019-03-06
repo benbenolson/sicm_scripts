@@ -1,19 +1,6 @@
 #!/bin/bash
 
 ################################################################################
-#                        numastat_background                                   #
-################################################################################
-# First arg is directory to write to
-function numastat_background {
-  rm $1/numastat.txt
-  while true; do
-    echo "=======================================" &>> $1/numastat.txt
-    numastat -m &>> $1/numastat.txt
-    sleep 2
-  done
-}
-
-################################################################################
 #                        offline_pebs_guided_percent                           #
 ################################################################################
 # First argument is results directory

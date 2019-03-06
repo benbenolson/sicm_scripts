@@ -4,11 +4,14 @@
 # The third argument is the BASH function of the experiment.
 # All subsequent arguments are its arguments
 
+source $SCRIPTS_DIR/all/tools.sh
 source $SCRIPTS_DIR/all/firsttouch.sh
 source $SCRIPTS_DIR/all/pebs.sh
 source $SCRIPTS_DIR/all/offline_pebs.sh
 
-echo "Loading Spack module of SICM..."
+# For the PCM tools
+sudo modprobe msr
+
 module load sicm-high-develop-gcc-7.2.0-bz67eff
 
 # Set $COMMAND to the command that runs the benchmark

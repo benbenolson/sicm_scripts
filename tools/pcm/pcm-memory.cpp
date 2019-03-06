@@ -291,12 +291,11 @@ void display_bandwidth(PCM *m, memdata_t *md, uint32 no_columns, const bool show
             if (m->MCDRAMmemoryTrafficMetricsAvailable())
             {
                 cout << "\
-                    \r|---------------------------------------||---------------------------------------|\n\
-                    \r|--                              Processor socket " << skt << "                            --|\n\
-                    \r|---------------------------------------||---------------------------------------|\n\
-                    \r|--       DDR4 Channel Monitoring     --||--      MCDRAM Channel Monitoring    --|\n\
-                    \r|---------------------------------------||---------------------------------------|\n\
-                    \r";
+|---------------------------------------||---------------------------------------|\n\
+|--                              Processor socket " << skt << "                          --|\n\
+|---------------------------------------||---------------------------------------|\n\
+|--       DDR4 Channel Monitoring     --||--      MCDRAM Channel Monitoring    --|\n\
+|---------------------------------------||---------------------------------------|\n";
                 uint32 max_channels = max_imc_channels <= max_edc_channels ? max_edc_channels : max_imc_channels;
                 if (show_channel_output) {
 	   float iMC_Rd, iMC_Wr, EDC_Rd, EDC_Wr;
@@ -345,11 +344,10 @@ void display_bandwidth(PCM *m, memdata_t *md, uint32 no_columns, const bool show
 	   }
                 }
                 cout << "\
-                    \r|-- DDR4 Mem Read  (MB/s):"<<setw(11)<<md->iMC_Rd_socket[skt]<<" --||-- MCDRAM Read (MB/s):"<<setw(14)<<md->EDC_Rd_socket[skt]<<" --|\n\
-                    \r|-- DDR4 Mem Write (MB/s):"<<setw(11)<<md->iMC_Wr_socket[skt]<<" --||-- MCDRAM Write(MB/s):"<<setw(14)<<md->EDC_Wr_socket[skt]<<" --|\n\
-                    \r|-- DDR4 Memory (MB/s)   :"<<setw(11)<<md->iMC_Rd_socket[skt]+md->iMC_Wr_socket[skt]<<" --||-- MCDRAM (MB/s)     :"<<setw(14)<<md->EDC_Rd_socket[skt]+md->EDC_Wr_socket[skt]<<" --|\n\
-                    \r|---------------------------------------||---------------------------------------|\n\
-                    \r";
+|-- DDR4 Mem Read  (MB/s):"<<setw(11)<<md->iMC_Rd_socket[skt]<<" --||-- MCDRAM Read (MB/s):"<<setw(14)<<md->EDC_Rd_socket[skt]<<" --|\n\
+|-- DDR4 Mem Write (MB/s):"<<setw(11)<<md->iMC_Wr_socket[skt]<<" --||-- MCDRAM Write(MB/s):"<<setw(14)<<md->EDC_Wr_socket[skt]<<" --|\n\
+|-- DDR4 Memory (MB/s)   :"<<setw(11)<<md->iMC_Rd_socket[skt]+md->iMC_Wr_socket[skt]<<" --||-- MCDRAM (MB/s)     :"<<setw(14)<<md->EDC_Rd_socket[skt]+md->EDC_Wr_socket[skt]<<" --|\n\
+|---------------------------------------||---------------------------------------|\n";
 
                 sysReadDRAM  += (md->iMC_Rd_socket[skt]+md->EDC_Rd_socket[skt]);
                 sysWriteDRAM += (md->iMC_Wr_socket[skt]+md->EDC_Wr_socket[skt]);
@@ -358,14 +356,14 @@ void display_bandwidth(PCM *m, memdata_t *md, uint32 no_columns, const bool show
 	    else
 	    {
                 cout << "\
-                    \r|---------------------------------------|\n\
-                    \r|--             Socket "<<skt<<"              --|\n\
-                    \r|---------------------------------------|\n";
+                    |---------------------------------------|\n\
+                    |--             Socket "<<skt<<"              --|\n\
+                    |---------------------------------------|\n";
                 if (show_channel_output) {
 	  cout << "\
-                    \r|--     Memory Channel Monitoring     --|\n\
-                    \r|---------------------------------------|\n\
-                    \r"; 
+                    |--     Memory Channel Monitoring     --|\n\
+                    |---------------------------------------|\n\
+                    "; 
                   for(uint64 channel = 0; channel < max_imc_channels; ++channel)
                   {
                     if(md->iMC_Rd_socket_chan[skt][channel] < 0.0 && md->iMC_Wr_socket_chan[skt][channel] < 0.0) //If the channel read neg. value, the channel is not working; skip it.
@@ -381,28 +379,28 @@ void display_bandwidth(PCM *m, memdata_t *md, uint32 no_columns, const bool show
                   }
 	}
                 cout << "\
-                    \r|-- NODE"<<skt<<" Mem Read (MB/s)  :"<<setw(8)<<md->iMC_Rd_socket[skt]<<"  --|\n\
-                    \r|-- NODE"<<skt<<" Mem Write (MB/s) :"<<setw(8)<<md->iMC_Wr_socket[skt]<<"  --|\n";
+                    |-- NODE"<<skt<<" Mem Read (MB/s)  :"<<setw(8)<<md->iMC_Rd_socket[skt]<<"  --|\n\
+                    |-- NODE"<<skt<<" Mem Write (MB/s) :"<<setw(8)<<md->iMC_Wr_socket[skt]<<"  --|\n";
                 if(md->PMM)
                 {
                     cout << "\
-                        \r|-- NODE"<<skt<<" PMM Read (MB/s):"<<setw(8)<<md->iMC_PMM_Rd_socket[skt]<<"  --|\n\
-                        \r|-- NODE"<<skt<<" PMM Write(MB/s):"<<setw(8)<<md->iMC_PMM_Wr_socket[skt]<<"  --|\n";
+                        |-- NODE"<<skt<<" PMM Read (MB/s):"<<setw(8)<<md->iMC_PMM_Rd_socket[skt]<<"  --|\n\
+                        |-- NODE"<<skt<<" PMM Write(MB/s):"<<setw(8)<<md->iMC_PMM_Wr_socket[skt]<<"  --|\n";
                     for (uint32 ctrl = 0; ctrl < max_imc_controllers; ++ctrl)
                     {
-                        cout << "\r|-- NODE"<<setw(2)<<skt<<"."<<ctrl<<" NM read hit rate :"<<setw(6)<<md->M2M_NM_read_hit_rate[skt][ctrl]<<" --|\n";
+                        cout << "|-- NODE"<<setw(2)<<skt<<"."<<ctrl<<" NM read hit rate :"<<setw(6)<<md->M2M_NM_read_hit_rate[skt][ctrl]<<" --|\n";
                     }
                 }
                 else
                 {
                     cout <<
-                       "\r|-- NODE"<<skt<<" P. Write (T/s) :"<<setw(10)<<dec<<md->partial_write[skt]<<"  --|\n";
+                       "|-- NODE"<<skt<<" P. Write (T/s) :"<<setw(10)<<dec<<md->partial_write[skt]<<"  --|\n";
                 }
                 cout <<
-                   "\r|-- NODE"<<skt<<" Memory (MB/s): "<<setw(8)<<md->iMC_Rd_socket[skt]+md->iMC_Wr_socket[skt]+
+                   "|-- NODE"<<skt<<" Memory (MB/s): "<<setw(8)<<md->iMC_Rd_socket[skt]+md->iMC_Wr_socket[skt]+
                     md->iMC_PMM_Rd_socket[skt]+md->iMC_PMM_Wr_socket[skt]<<"     --|\n\
-                    \r|---------------------------------------|\n\
-                    \r";
+                    |---------------------------------------|\n\
+                    ";
 
                 sysReadDRAM += md->iMC_Rd_socket[skt];
                 sysWriteDRAM += md->iMC_Wr_socket[skt];
@@ -414,18 +412,18 @@ void display_bandwidth(PCM *m, memdata_t *md, uint32 no_columns, const bool show
     }
     {
         cout << "\
-            \r|---------------------------------------||---------------------------------------|\n";
+|---------------------------------------||---------------------------------------|\n";
 	if(md->PMM)
            cout << "\
-            \r|--            System DRAM Read Throughput(MB/s):"<<setw(14)<<sysReadDRAM<<"                --|\n\
-            \r|--           System DRAM Write Throughput(MB/s):"<<setw(14)<<sysWriteDRAM<<"                --|\n\
-            \r|--             System PMM Read Throughput(MB/s):"<<setw(14)<<sysReadPMM<<"                --|\n\
-            \r|--            System PMM Write Throughput(MB/s):"<<setw(14)<<sysWritePMM<<"                --|\n";
+            |--            System DRAM Read Throughput(MB/s):"<<setw(14)<<sysReadDRAM<<"                --|\n\
+            |--           System DRAM Write Throughput(MB/s):"<<setw(14)<<sysWriteDRAM<<"                --|\n\
+            |--             System PMM Read Throughput(MB/s):"<<setw(14)<<sysReadPMM<<"                --|\n\
+            |--            System PMM Write Throughput(MB/s):"<<setw(14)<<sysWritePMM<<"                --|\n";
         cout << "\
-            \r|--                 System Read Throughput(MB/s):"<<setw(14)<<sysReadDRAM+sysReadPMM<<"                --|\n\
-            \r|--                System Write Throughput(MB/s):"<<setw(14)<<sysWriteDRAM+sysWritePMM<<"                --|\n\
-            \r|--               System Memory Throughput(MB/s):"<<setw(14)<<sysReadDRAM+sysReadPMM+sysWriteDRAM+sysWritePMM<<"                --|\n\
-            \r|---------------------------------------||---------------------------------------|" << endl;
+|--                 System Read Throughput(MB/s):"<<setw(14)<<sysReadDRAM+sysReadPMM<<"                --|\n\
+|--                System Write Throughput(MB/s):"<<setw(14)<<sysWriteDRAM+sysWritePMM<<"                --|\n\
+|--               System Memory Throughput(MB/s):"<<setw(14)<<sysReadDRAM+sysReadPMM+sysWriteDRAM+sysWritePMM<<"                --|\n\
+|---------------------------------------||---------------------------------------|" << endl;
     }
 }
 
@@ -725,12 +723,12 @@ void calculate_bandwidth(PCM *m, const ServerUncorePowerState uncState1[], const
         else //Display one socket in this row
         {
             cout << "\
-                \r|-------------------------------------------|\n\
-                \r|--               Socket "<<skt<<"                --|\n\
-                \r|-------------------------------------------|\n\
-                \r|--           DIMM Rank Monitoring        --|\n\
-                \r|-------------------------------------------|\n\
-                \r";
+                |-------------------------------------------|\n\
+                |--               Socket "<<skt<<"                --|\n\
+                |-------------------------------------------|\n\
+                |--           DIMM Rank Monitoring        --|\n\
+                |-------------------------------------------|\n\
+                ";
             for(uint32 channel = 0; channel < max_imc_channels; ++channel)
             {
                 if(rankA >=0)
@@ -757,8 +755,8 @@ void calculate_bandwidth(PCM *m, const ServerUncorePowerState uncState1[], const
                       <<"  --|\n";
             }
             cout << "\
-                \r|-------------------------------------------|\n\
-                \r";
+                |-------------------------------------------|\n\
+                ";
 	
             skt += 1;
         }
