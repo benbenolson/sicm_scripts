@@ -27,9 +27,7 @@ function mbi {
     # Set the site that we want to isolate
     echo "Profiling: ${site}"
     export SH_PROFILE_ONE="${site}"
-    echo 3 | sudo tee /proc/sys/vm/drop_caches
-		sleep 5
+    drop_caches
     eval "sudo -E" "${COMMAND}" &>> ${RESULTS_DIR}/${site}.txt
-		sleep 5
   done
 }

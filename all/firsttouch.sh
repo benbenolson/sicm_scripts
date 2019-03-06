@@ -57,15 +57,13 @@ function firsttouch_all_default {
 
   # Run 5 iters
   for iter in {1..2}; do
-    echo 3 | sudo tee /proc/sys/vm/drop_caches
-		sleep 5
+    drop_caches
+    numastat_background "${RESULTS_DIR}"
+    pcm_background "${RESULTS_DIR}"
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
-    numastat_background "${RESULTS_DIR}" &
-    background_pid=$!
     eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
-    kill $background_pid
-    wait $background_pid 2>/dev/null
-		sleep 5
+    numastat_kill
+    pcm_kill
   done
 }
 
@@ -94,15 +92,13 @@ function firsttouch_all_shared_site {
 
   # Run 5 iters
   for iter in {1..2}; do
-    echo 3 | sudo tee /proc/sys/vm/drop_caches
-		sleep 5
+    drop_caches
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
-    numastat_background "${RESULTS_DIR}" &
-    background_pid=$!
+    numastat_background "${RESULTS_DIR}"
+    pcm_background "${RESULTS_DIR}"
     eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
-    kill $background_pid
-    wait $background_pid 2>/dev/null
-		sleep 5
+    numastat_kill
+    pcm_kill
   done
 }
 
@@ -135,16 +131,15 @@ function firsttouch_exclusive_device {
 
   # Run 5 iters
   for iter in {1..2}; do
-    echo 3 | sudo tee /proc/sys/vm/drop_caches
-    sleep 5
+    drop_caches
     cat ${RESULTS_DIR}/../${CANARY_CFG}/stdout.txt | sicm_memreserve 1 64 ratio ${RATIO} hold bind &>> ${RESULTS_DIR}/memreserve.txt &
     sleep 5
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
-    numastat_background "${RESULTS_DIR}" &
-    background_pid=$!
+    numastat_background "${RESULTS_DIR}"
+    pcm_background "${RESULTS_DIR}"
     eval "env time -v numactl --preferred=1 " "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
-    kill $background_pid
-    wait $background_pid 2>/dev/null
+    numastat_kill
+    pcm_kill
     pkill memreserve
     sleep 5
   done
