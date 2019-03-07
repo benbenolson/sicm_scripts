@@ -16,3 +16,4 @@ unzip
 numactl
 libpfm4
 libpfm4-dev
+valgrind
