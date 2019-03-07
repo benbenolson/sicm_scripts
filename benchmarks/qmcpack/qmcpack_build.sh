@@ -20,7 +20,7 @@ bench_build c "" ""
 #spack config edit compilers
 
 # QMCPACK deps
-spack install qmcpack@3.6.0 -phdf5 -mpi -qe +soa %clang@6.0.1 ^cmake@3.6.0 ^hdf5~hl~fortran~mpi ^fftw~mpi ^netlib-lapack@3.8.0
+#spack install qmcpack@3.6.0 -phdf5 -mpi -qe +soa %clang@6.0.1 ^cmake@3.6.0 ^hdf5~hl~fortran~mpi ^fftw~mpi ^netlib-lapack@3.8.0
 
 # The above QMCPACK compilation may fail, but we don't care, as long as the dependencies are installed.
 # Now let's load them into the environment. This is the easiest way to do so without
@@ -53,3 +53,4 @@ cmake -DBUILD_UNIT_TESTS=False \
       -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=True \
       ..
 make -j $(nproc --all)
+cp bin/qmcpack ../../run/qmcpack

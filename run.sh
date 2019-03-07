@@ -12,7 +12,7 @@ source $SCRIPTS_DIR/all/offline_pebs.sh
 # For the PCM tools
 sudo modprobe msr
 
-module load sicm-high-develop-gcc-7.2.0-bz67eff
+module load sicm-high-develop-gcc-7.2.0-yqtlckm
 
 # Set $COMMAND to the command that runs the benchmark
 source $SCRIPTS_DIR/benchmarks/${1}/${1}_sizes.sh
