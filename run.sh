@@ -46,6 +46,5 @@ mkdir -p ${DIRECTORY}
 # ${DIRECTORY} contains the directory that we want to write results into
 # ${COMMAND} contains the command to run the benchmark
 # ${@:4} contains the arguments to pass to the BASH function
-echo "USING COMMAND: '${COMMAND}'"
 cd $BENCH_DIR/${1}/run
 eval "$3 '${DIRECTORY}' '${COMMAND}' ${@:4}"
