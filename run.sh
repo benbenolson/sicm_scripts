@@ -12,7 +12,7 @@ source $SCRIPTS_DIR/all/offline_pebs.sh
 # For the PCM tools
 sudo modprobe msr
 
-module load sicm-high-develop-gcc-7.2.0-bz67eff
+module load sicm-high-develop-gcc-7.2.0-yqtlckm
 
 # Set $COMMAND to the command that runs the benchmark
 source $SCRIPTS_DIR/benchmarks/${1}/${1}_sizes.sh
@@ -46,6 +46,5 @@ mkdir -p ${DIRECTORY}
 # ${DIRECTORY} contains the directory that we want to write results into
 # ${COMMAND} contains the command to run the benchmark
 # ${@:4} contains the arguments to pass to the BASH function
-echo "USING COMMAND: '${COMMAND}'"
 cd $BENCH_DIR/${1}/run
 eval "$3 '${DIRECTORY}' '${COMMAND}' ${@:4}"

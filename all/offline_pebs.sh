@@ -48,19 +48,18 @@ function offline_pebs_guided_percent {
   # Generate the hotset/knapsack/thermos
   cat "${PEBS_FILE}" | \
     sicm_hotset pebs ${PACK_ALGO} ratio ${RATIO} 1 > \
-    ${RESULTS_DIR}/guidance.txt
+      ${RESULTS_DIR}/guidance.txt
   for iter in {1..2}; do
-    echo 3 | sudo tee /proc/sys/vm/drop_caches
-		sleep 5
+    drop_caches
     cat "${PEAK_RSS_FILE}" | \
       sicm_memreserve 1 64 ratio ${RATIO} hold bind &
     sleep 5
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
-    numastat_background "${RESULTS_DIR}" &
-    background_pid=$!
+    numastat_background "${RESULTS_DIR}"
+    pcm_background "${RESULTS_DIR}"
     eval "env time -v " "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
-    kill $background_pid
-    wait $background_pid 2>/dev/null
+    numastat_kill
+    pcm_kill
     pkill sicm_memreserve
     sleep 5
   done
@@ -118,14 +117,13 @@ function offline_pebs_guided {
     sicm_hotset pebs ${PACK_ALGO} ratio ${RATIO} 1 > \
     ${RESULTS_DIR}/guidance.txt
   for iter in {1..2}; do
-    echo 3 | sudo tee /proc/sys/vm/drop_caches
-		sleep 5
+    drop_caches
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
-    numastat_background "${RESULTS_DIR}" &
-    background_pid=$!
+    numastat_background "${RESULTS_DIR}"
+    pcm_background "${RESULTS_DIR}"
     eval "env time -v " "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
-    kill $background_pid
-    wait $background_pid 2>/dev/null
+    numastat_kill
+    pcm_kill
     pkill sicm_memreserve
     sleep 5
   done

@@ -28,7 +28,6 @@ function pebs {
   export OMP_NUM_THREADS="64"
 
   echo 1 | sudo tee /proc/sys/kernel/perf_event_paranoid
-  echo 3 | sudo tee /proc/sys/vm/drop_caches
-  sleep 5
+  drop_caches
   eval "env time -v" "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
 }
