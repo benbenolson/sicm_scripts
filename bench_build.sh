@@ -5,10 +5,10 @@ source $SCRIPTS_DIR/all/bench_build.sh
 
 echo "Loading Spack module of SICM..."
 . $SPACK_DIR/share/spack/setup-env.sh
-spack load pgmath
-spack load flang@20180921 /a2g3n2ugv7xdhzkntxfzxainujapch5v
-spack load llvm@flang-20180921
-spack load sicm-high
+module load pgmath-20180921-gcc-7.2.0-um2qwjd
+module load flang-20180921-gcc-7.2.0-a2g3n2u
+module load llvm-flang-20180921-gcc-7.2.0-f2bzfqn
+module load sicm-high-develop-gcc-7.2.0-yqtlckm
 
 # Clean up the source directory first
 cd $BENCH_DIR/${1}/src
