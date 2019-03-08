@@ -53,4 +53,5 @@ cmake -DBUILD_UNIT_TESTS=False \
       -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=True \
       ..
 make -j $(nproc --all)
+mkdir -p ../../run
 cp bin/qmcpack ../../run/qmcpack
