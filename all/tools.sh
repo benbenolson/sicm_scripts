@@ -43,7 +43,8 @@ function pcm_background {
   pcm_pid=$!
 }
 function pcm_kill {
-  sudo kill $pcm_pid
+  sudo kill -9 $pcm_pid
+  sudo pkill -9 pcm-memory.x
   wait $pcm_pid 2>/dev/null
   sleep 5
 }

@@ -1,10 +1,11 @@
 #!/usr/bin/env perl
 use strict; use warnings;
 use Getopt::Long qw(GetOptions);
-use Data::Dumper;
+use Data::Dumper qw(Dumper);
+use parse; # Does most of the nitty-gritty parsing
 
 my $dir =  $ENV{'BENCH_DIR'}; 
-my $metric = "perf";
+my $metric = 'runtime';
 my @benches = ('lulesh,imagick,fotonik3d,roms,qmcpack,snap,pennant');
 my @benches_arg;
 my $size = 'small';
@@ -16,7 +17,7 @@ GetOptions('metric:s' => \$metric,
            'benches:s' => \@benches_arg,
            'size:s' => \$size_arg,
            'cfgs:s' => \@cfgs_arg,
-          ) or die "Usage: $0 --metric [perf,rss]\n";
+          ) or die "Usage: $0 --metric=[perf,rss] --benches=[list of benches] --size=[small,medium,large] --cfgs=[list of cfgs]\n";
 
 # If any of these arrays are defined as arguments, overwrite the defaults
 if(scalar @benches_arg > 0) {
@@ -58,30 +59,14 @@ $max_col_length += 2;
 my %results;
 foreach my $cfg(@cfgs) {
   foreach my $bench(@benches) {
-    my $file = "$dir/$bench/run/results/$size/$cfg/stdout.txt";
-    if(-e $file) {
-      # Grab information about the runs
-      my @output = `cat $file | sicm_dump_info`;
-      foreach(@output) {
-        if($metric eq "perf") {
-          if(/Runtime: (\d+) \(..(\d+)\)/) {
-            $results{$cfg}{$bench} = "$1" . "-$2";
-          }
-        } elsif($metric eq "rss") {
-          if(/Peak RSS: (\d+)/) {
-            $results{$cfg}{$bench} = sprintf("%.2f", $1 / 1024 / 1024 / 1024);
-          }
-        }
-      }
-    } else {
-      if($metric eq "perf") {
-        $results{$cfg}{$bench} = "0-0";
-      } elsif($metric eq "rss") {
-        $results{$cfg}{$bench} = sprintf("%.2f", 0);
-      }
+    $results{$cfg}{$bench} = {};
+    parse_gnu_time("$dir/$bench/run/results/$size/$cfg/stdout.txt", $results{$cfg}{$bench});
+    parse_pcm_memory("$dir/$bench/run/results/$size/$cfg/pcm-memory.txt", $results{$cfg}{$bench});
+    if(not defined $results{$cfg}{$bench}{$metric}) {
+      die("Unknown metric '$metric'");
     }
-    if((length($results{$cfg}{$bench}) + 2) > $max_col_length) {
-      $max_col_length = length($results{$cfg}{$bench}) + 2;
+    if((length($results{$cfg}{$bench}{$metric}) + 2) > $max_col_length) {
+      $max_col_length = length($results{$cfg}{$bench}{$metric}) + 2;
     }
   }
 }
@@ -96,11 +81,7 @@ print("\n");
 foreach my $cfg(@cfgs) {
 	printf("%-${max_cfg_length}s", $cfg);
   foreach my $bench(@benches) {
-    if($metric eq "perf") {
-      printf("%${max_col_length}s", "$results{$cfg}{$bench}");
-    } elsif($metric eq "rss") {
-      printf("%${max_col_length}s", "$results{$cfg}{$bench}");
-    }
+    printf("%${max_col_length}s", "$results{$cfg}{$bench}{$metric}");
   }
 	print("\n");
 }
