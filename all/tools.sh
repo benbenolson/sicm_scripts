@@ -7,7 +7,7 @@ numastat_pid=0
 #                                drop_caches                                   #
 ################################################################################
 function drop_caches {
-  echo 3 | sudo tee /proc/sys/vm/drop_caches
+  echo 3 | sudo tee /proc/sys/vm/drop_caches &>/dev/null
   sleep 5
 }
 
@@ -43,7 +43,8 @@ function pcm_background {
   pcm_pid=$!
 }
 function pcm_kill {
-  sudo kill $pcm_pid
+  sudo kill -9 $pcm_pid
+  sudo pkill pcm-memory.x
   wait $pcm_pid 2>/dev/null
   sleep 5
 }
