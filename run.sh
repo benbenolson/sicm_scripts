@@ -14,6 +14,11 @@ sudo modprobe msr
 
 module load sicm-high-develop-gcc-7.2.0-yqtlckm
 
+if [[ $1 == "qmcpack" ]]; then
+  export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-debian9-x86_64/gcc-7.2.0/flang-20180921-a2g3n2ugv7xdhzkntxfzxainujapch5v/lib"
+  export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-debian9-x86_64/gcc-7.2.0/llvm-flang-20180921-f2bzfqn5xo223a3y3jputvl7wtx3g4bw/lib"
+fi
+
 # Set $COMMAND to the command that runs the benchmark
 source $SCRIPTS_DIR/benchmarks/${1}/${1}_sizes.sh
 COMMAND=""
@@ -23,6 +28,8 @@ elif [[ $2 == "medium" ]]; then
   COMMAND="$MEDIUM"
 elif [[ $2 == "large" ]]; then
   COMMAND="$LARGE"
+elif [[ $2 == "old" ]]; then
+  COMMAND="$OLD"
 else
   echo "Unknown benchmark size. Aborting."
   exit 1

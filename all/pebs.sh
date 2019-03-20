@@ -18,6 +18,7 @@ function pebs {
   echo "  Command: '${COMMAND}'"
 
   export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
+  export SH_MAX_SITES_PER_ARENA="4"
   export SH_PROFILE_ALL="1"
   export SH_PROFILE_ALL_RATE="0"
   export SH_MAX_SAMPLE_PAGES="512"

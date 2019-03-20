@@ -20,11 +20,11 @@ function firsttouch_all_exclusive_device {
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
-  export OMP_NUM_THREADS=64
+  export OMP_NUM_THREADS=272
   export SH_DEFAULT_NODE="${NODE}"
 
   # Run 5 iters
-  for iter in {1..1}; do
+  for iter in {1..2}; do
     drop_caches
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
     numastat_background "${RESULTS_DIR}"
@@ -53,11 +53,11 @@ function firsttouch_all_default {
   echo "  Command: '${COMMAND}'"
   echo "  Results directory: ${RESULTS_DIR}"
 
-  export OMP_NUM_THREADS=64
+  export OMP_NUM_THREADS=272
   export SH_DEFAULT_NODE="${NODE}"
 
   # Run 5 iters
-  for iter in {1..1}; do
+  for iter in {1..2}; do
     drop_caches
     numastat_background "${RESULTS_DIR}"
     pcm_background "${RESULTS_DIR}"
@@ -88,7 +88,7 @@ function firsttouch_all_shared_site {
   echo "  Results directory: ${RESULTS_DIR}"
 
   export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
-  export OMP_NUM_THREADS=64
+  export OMP_NUM_THREADS=272
   export SH_DEFAULT_NODE="${NODE}"
 
   # Run 5 iters

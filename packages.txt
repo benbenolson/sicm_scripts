@@ -18,3 +18,4 @@ libpfm4
 libpfm4-dev
 bc
 valgrind
+patchelf

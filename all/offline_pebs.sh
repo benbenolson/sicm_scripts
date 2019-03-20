@@ -43,7 +43,7 @@ function offline_pebs_guided_percent {
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_DEFAULT_NODE="0"
   export SH_GUIDANCE_FILE="${RESULTS_DIR}/guidance.txt"
-  export OMP_NUM_THREADS="64"
+  export OMP_NUM_THREADS="272"
   
   # Generate the hotset/knapsack/thermos
   cat "${PEBS_FILE}" | \
@@ -109,9 +109,10 @@ function offline_pebs_guided {
   echo "  Command: '${COMMAND}'"
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
+  export SH_MAX_SITES_PER_ARENA="4096"
   export SH_DEFAULT_NODE="0"
   export SH_GUIDANCE_FILE="${RESULTS_DIR}/guidance.txt"
-  export OMP_NUM_THREADS="64"
+  export OMP_NUM_THREADS="272"
   
   cat "${PEBS_FILE}" | \
     sicm_hotset pebs ${PACK_ALGO} ratio ${RATIO} 1 > \
@@ -124,7 +125,6 @@ function offline_pebs_guided {
     eval "env time -v " "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
     numastat_kill
     pcm_kill
-    pkill sicm_memreserve
     sleep 5
   done
 }
