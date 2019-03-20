@@ -7,7 +7,7 @@ numastat_pid=0
 #                                drop_caches                                   #
 ################################################################################
 function drop_caches {
-  echo 3 | sudo tee /proc/sys/vm/drop_caches
+  echo 3 | sudo tee /proc/sys/vm/drop_caches &>/dev/null
   sleep 5
 }
 
