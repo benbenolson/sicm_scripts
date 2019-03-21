@@ -7,7 +7,7 @@ use Data::Dumper qw(Dumper);
 # Export functions in this module
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT = qw(parse_gnu_time parse_pcm_memory);
+@EXPORT = qw(parse_gnu_time parse_pcm_memory parse_one_numastat);
 
 sub median {
   sum( (sort{ $a <=> $b } @_ )[ int( $#_/2 ), ceil( $#_/2 ) ] )/2;
@@ -28,6 +28,7 @@ sub parse_gnu_time {
   # Initialize all values to zero
   $results->{'runtime'} = 0;
   $results->{'rss'} = 0.0;
+  $results->{'rss_kbytes'} = 0.0;
 
   open(my $file, '<', $filename)
     or print("WARNING: '$filename' does not exist.\n") and return;
@@ -39,7 +40,8 @@ sub parse_gnu_time {
       $results->{'runtime'} = ($1 * 60) + $2;
     } elsif(/Maximum resident set size \(kbytes\): (\d+)/) {
       # Convert kilobytes to gigabytes, truncate to two decimal places
-      $results->{'rss'} = round_two($1 / 1024 / 1024)
+      $results->{'rss'} = round_two($1 / 1024 / 1024);
+      $results->{'rss_kbytes'} = $1;
     }
   }
   close($file);
@@ -105,6 +107,32 @@ sub parse_pcm_memory {
   $results->{'max_total_bandwidth'} = max(@total_bandwidth) or die "Didn't get any PCM samples";
   $results->{'min_total_bandwidth'} = min(@total_bandwidth) or die "Didn't get any PCM samples";
   $results->{'median_total_bandwidth'} = median(@total_bandwidth);
+}
+
+# Accepts a filename of a file that contains numastat output. Second
+# argument is a reference to a hash with which to fill with results.
+sub parse_one_numastat {
+  my $filename = shift;
+  my $results = shift; # This is a hash ref
+
+  $results->{'mcdram_free'} = 0.0;
+  $results->{'ddr_free'} = 0.0;
+  $results->{'total_free'} = 0.0;
+
+  open(my $file, '<', $filename)
+    or print("WARNING: '$filename' does not exist.\n") and return;
+
+  # Collect all samples into @*_bandwidth arrays
+  while(<$file>) {
+    chomp;
+    if(/MemFree\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)/) {
+      $results->{'ddr_free'} = $1;
+      $results->{'mcdram_free'} = $2;
+      $results->{'total_free'} = $3;
+    }
+  }
+  close($file);
+
 }
 
 1; # Truthiest module there is

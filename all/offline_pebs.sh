@@ -16,7 +16,8 @@ function offline_pebs_guided_percent {
   PEBS_SIZE="$4"
   PACK_ALGO="$5"
   RATIO=$(echo "${6}/100" | bc -l)
-  PEAK_RSS_FILE="${RESULTS_DIR}/../firsttouch_all_exclusive_device_0/stdout.txt"
+  CANARY_CFG="firsttouch_all_exclusive_device_0"
+  CANARY_STDOUT="${RESULTS_DIR}/../${CANARY_CFG}/stdout.txt"
   PEBS_FILE="${RESULTS_DIR}/../../${PEBS_SIZE}/pebs_${PEBS_FREQ}/stdout.txt"
 
   # This file is used for the profiling information
@@ -26,19 +27,23 @@ function offline_pebs_guided_percent {
   fi
 
   # This file is used to get the peak RSS
-  if [ ! -r "${PEAK_RSS_FILE}" ]; then
-    echo "ERROR: The file '${PEAK_RSS_FILE}' doesn't exist yet. Aborting."
+  if [ ! -r "${CANARY_STDOUT}" ]; then
+    echo "ERROR: The file '${CANARY_STDOUT}' doesn't exist yet. Aborting."
     exit
   fi
+
+  # This is in kilobytes
+  PEAK_RSS=$(${SCRIPTS_DIR}/stat.sh ${CANARY_STDOUT} rss_kbytes)
+  # How many pages we need to be free on MCDRAM
+  NUM_PAGES=$(echo "${PEAK_RSS} * ${RATIO} / 4" | bc)
 
   # User output
   echo "Running experiment:"
   echo "  Experiment: Offline PEBS-Guided"
   echo "  Profiling Frequency: '${PEBS_FREQ}'"
   echo "  Profiling size: '${PEBS_SIZE}'"
-  echo "  Ratio: '${RATIO}'"
   echo "  Packing algo: '${PACK_ALGO}'"
-  echo "  Command: '${COMMAND}'"
+  echo "  Ratio: '${RATIO}'"
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_DEFAULT_NODE="0"
@@ -51,17 +56,14 @@ function offline_pebs_guided_percent {
       ${RESULTS_DIR}/guidance.txt
   for iter in {1..2}; do
     drop_caches
-    cat "${PEAK_RSS_FILE}" | \
-      sicm_memreserve 1 64 ratio ${RATIO} hold bind &
-    sleep 5
+    memreserve ${RESULTS_DIR} ${NUM_PAGES}
     numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
     numastat_background "${RESULTS_DIR}"
     pcm_background "${RESULTS_DIR}"
     eval "env time -v " "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
     numastat_kill
     pcm_kill
-    pkill sicm_memreserve
-    sleep 5
+    memreserve_kill
   done
 }
 

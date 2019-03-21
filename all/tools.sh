@@ -2,18 +2,19 @@
 
 pcm_pid=0
 numastat_pid=0
+memreserve_pid=0
 
-################################################################################
-#                                drop_caches                                   #
-################################################################################
+#############
+# drop_caches
+#############
 function drop_caches {
   echo 3 | sudo tee /proc/sys/vm/drop_caches &>/dev/null
   sleep 5
 }
 
-################################################################################
-#                        numastat_background                                   #
-################################################################################
+#####################
+# numastat_background
+#####################
 # First arg is directory to write to
 function numastat_loop {
   rm -f $1/numastat.txt
@@ -28,14 +29,13 @@ function numastat_background {
   numastat_pid="$!"
 }
 function numastat_kill {
-  sudo kill $numastat_pid
+  sudo kill $numastat_pid &>/dev/null
   wait $numastat_pid 2>/dev/null
-  sleep 5
 }
 
-################################################################################
-#                             pcm_background                                   #
-################################################################################
+############
+# pcm_memory
+############
 # First arg is directory to write to
 function pcm_background {
   rm -f $1/pcm-memory.txt
@@ -43,8 +43,38 @@ function pcm_background {
   pcm_pid=$!
 }
 function pcm_kill {
-  sudo kill -9 $pcm_pid
-  sudo pkill -9 pcm-memory.x
+  sudo kill -9 $pcm_pid &>/dev/null
+  sudo pkill -9 pcm-memory.x &>/dev/null
   wait $pcm_pid 2>/dev/null
+}
+
+############
+# memreserve
+############
+# First arg is the directory to write to
+# Second arg is the amount that should be left on the MCDRAM
+function memreserve {
+
+  # Get the amount of free memory on the MCDRAM, in pages
+  numastat -m &> $1/numastat_noreserve.txt
+  MCDRAM_FREE_MBYTES=$(${SCRIPTS_DIR}/stat.sh \
+    $1/numastat_noreserve.txt mcdram_free)
+  MCDRAM_FREE_PAGES=$(echo "$MCDRAM_FREE_MBYTES * 1024 / 4" | bc)
+
+  # Get how much to reserve to get the requested amount
+  RESERVE=$(echo "$MCDRAM_FREE_PAGES - $2" | bc)
+  echo "Reserving ${RESERVE} pages."
+  
+  sicm_memreserve 1 64 ${RESERVE} hold bind \
+    &>> $1/memreserve.txt &
+  memreserve_pid="$!"
+
+  sleep 5
+}
+
+function memreserve_kill {
+  kill -9 $memreserve_pid &>/dev/null
+  pkill memreserve &>/dev/null
+  wait $memreserve 2>/dev/null
   sleep 5
 }

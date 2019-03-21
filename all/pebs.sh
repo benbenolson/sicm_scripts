@@ -26,7 +26,7 @@ function pebs {
   export SH_PROFILE_RSS_RATE="0"
   export SH_DEFAULT_NODE="0"
   export SH_SAMPLE_FREQ="${FREQ}"
-  export OMP_NUM_THREADS="64"
+  export OMP_NUM_THREADS="272"
 
   echo 1 | sudo tee /proc/sys/kernel/perf_event_paranoid
   drop_caches
