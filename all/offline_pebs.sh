@@ -46,6 +46,7 @@ function offline_pebs_guided_percent {
   echo "  Ratio: '${RATIO}'"
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
+  export SH_MAX_SITES_PER_ARENA="4096"
   export SH_DEFAULT_NODE="0"
   export SH_GUIDANCE_FILE="${RESULTS_DIR}/guidance.txt"
   export OMP_NUM_THREADS="272"

@@ -95,18 +95,20 @@ sub parse_pcm_memory {
   close($file);
 
   # Now aggregate the results into single numbers
-  $results->{'avg_ddr_bandwidth'} = round_two(sum(@ddr_bandwidth)/@ddr_bandwidth);
-  $results->{'max_ddr_bandwidth'} = max(@ddr_bandwidth) or die "Didn't get any PCM samples";
-  $results->{'min_ddr_bandwidth'} = min(@ddr_bandwidth) or die "Didn't get any PCM samples";
-  $results->{'median_ddr_bandwidth'} = median(@ddr_bandwidth);
-  $results->{'avg_mcdram_bandwidth'} = round_two(sum(@mcdram_bandwidth)/@mcdram_bandwidth);
-  $results->{'max_mcdram_bandwidth'} = max(@mcdram_bandwidth) or die "Didn't get any PCM samples";
-  $results->{'min_mcdram_bandwidth'} = min(@mcdram_bandwidth) or die "Didn't get any PCM samples";
-  $results->{'median_mcdram_bandwidth'} = median(@mcdram_bandwidth);
-  $results->{'avg_total_bandwidth'} = round_two(sum(@total_bandwidth)/@total_bandwidth);
-  $results->{'max_total_bandwidth'} = max(@total_bandwidth) or die "Didn't get any PCM samples";
-  $results->{'min_total_bandwidth'} = min(@total_bandwidth) or die "Didn't get any PCM samples";
-  $results->{'median_total_bandwidth'} = median(@total_bandwidth);
+  if((scalar(@ddr_bandwidth) > 0) and (scalar(@mcdram_bandwidth) > 0)) {
+    $results->{'avg_ddr_bandwidth'} = round_two(sum(@ddr_bandwidth)/@ddr_bandwidth);
+    $results->{'max_ddr_bandwidth'} = max(@ddr_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'min_ddr_bandwidth'} = min(@ddr_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'median_ddr_bandwidth'} = median(@ddr_bandwidth);
+    $results->{'avg_mcdram_bandwidth'} = round_two(sum(@mcdram_bandwidth)/@mcdram_bandwidth);
+    $results->{'max_mcdram_bandwidth'} = max(@mcdram_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'min_mcdram_bandwidth'} = min(@mcdram_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'median_mcdram_bandwidth'} = median(@mcdram_bandwidth);
+    $results->{'avg_total_bandwidth'} = round_two(sum(@total_bandwidth)/@total_bandwidth);
+    $results->{'max_total_bandwidth'} = max(@total_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'min_total_bandwidth'} = min(@total_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'median_total_bandwidth'} = median(@total_bandwidth);
+  }
 }
 
 # Accepts a filename of a file that contains numastat output. Second
