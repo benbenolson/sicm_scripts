@@ -61,20 +61,24 @@ function memreserve {
     $1/numastat_noreserve.txt mcdram_free)
   MCDRAM_FREE_PAGES=$(echo "$MCDRAM_FREE_MBYTES * 1024 / 4" | bc)
 
-  # Get how much to reserve to get the requested amount
-  RESERVE=$(echo "$MCDRAM_FREE_PAGES - $2" | bc)
-  echo "Reserving ${RESERVE} pages."
-  
-  sicm_memreserve 1 64 ${RESERVE} hold bind \
-    &>> $1/memreserve.txt &
-  memreserve_pid="$!"
+  if [[ ${MCDRAM_FREE_PAGES} -gt ${2} ]]; then
+    # Get how much to reserve to get the requested amount
+    RESERVE=$(echo "$MCDRAM_FREE_PAGES - $2" | bc)
+    echo "Reserving ${RESERVE} pages."
+    
+    sicm_memreserve 1 64 ${RESERVE} hold bind \
+      &>> $1/memreserve.txt &
+    memreserve_pid="$!"
 
-  sleep 5
+    sleep 5
+  fi
 }
 
 function memreserve_kill {
-  kill -9 $memreserve_pid &>/dev/null
-  pkill memreserve &>/dev/null
-  wait $memreserve 2>/dev/null
-  sleep 5
+  if [[ ${memreserve_pid} -ne 0 ]]; then
+    kill -9 $memreserve_pid &>/dev/null
+    pkill memreserve &>/dev/null
+    wait $memreserve 2>/dev/null
+    sleep 5
+  fi
 }

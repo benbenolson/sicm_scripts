@@ -136,6 +136,11 @@ function firsttouch_exclusive_device {
   echo "  Canary config: ${CANARY_CFG}"
   echo "  Command: '${COMMAND}'"
 
+  export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
+  export SH_MAX_SITES_PER_ARENA="5000"
+  export OMP_NUM_THREADS=272
+  export SH_DEFAULT_NODE="${NODE}"
+
   # Run 5 iters
   for iter in {1..2}; do
     drop_caches
