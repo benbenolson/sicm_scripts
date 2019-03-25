@@ -1,4 +1,5 @@
 #!/bin/bash
 
-SMALL="./qmcpack NiO-fcc-S16-dmc.xml"
-LARGE="./qmcpack NiO-fcc-S16-dmc.xml"
+SMALL="./qmcpack small.xml"
+LARGE="./qmcpack large2.xml"
+OLD="./qmcpack old.xml"

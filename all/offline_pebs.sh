@@ -96,10 +96,7 @@ function offline_pebs_guided {
     exit
   fi
 
-  # Figure out which percentage the 16GB MCDRAM is of the peak RSS
-  PEAK_RSS="$(cat "${PEAK_RSS_FILE}" | awk '/Maximum resident set size/ {printf "%d * 1024\n", $6; exit;}' | bc)"
-  MCDRAM_SIZE="$(numastat -m | awk '/MemTotal/ {printf "%d * 1024 * 1024\n", $3}' | bc)"
-  RATIO="$(echo "${MCDRAM_SIZE} / ${PEAK_RSS}" | bc -l)"
+  MCDRAM_SIZE="$(numastat -m | awk '/MemFree/ {printf "%d * 1024 * 1024\n", $3}' | bc)"
 
   # User output
   echo "Running experiment:"
@@ -107,8 +104,6 @@ function offline_pebs_guided {
   echo "  Profiling Frequency: '${PEBS_FREQ}'"
   echo "  Profiling size: '${PEBS_SIZE}'"
   echo "  Packing algo: '${PACK_ALGO}'"
-  echo "  Ratio of peak RSS to fit in MCDRAM: '${RATIO}'"
-  echo "  Command: '${COMMAND}'"
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="4096"
@@ -117,7 +112,7 @@ function offline_pebs_guided {
   export OMP_NUM_THREADS="272"
   
   cat "${PEBS_FILE}" | \
-    sicm_hotset pebs ${PACK_ALGO} ratio ${RATIO} 1 > \
+    sicm_hotset pebs ${PACK_ALGO} constant ${MCDRAM_SIZE} 1 > \
     ${RESULTS_DIR}/guidance.txt
   for iter in {1..2}; do
     drop_caches
@@ -127,6 +122,5 @@ function offline_pebs_guided {
     eval "env time -v " "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
     numastat_kill
     pcm_kill
-    sleep 5
   done
 }
