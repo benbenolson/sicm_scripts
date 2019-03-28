@@ -12,6 +12,8 @@ source $SCRIPTS_DIR/all/offline_pebs.sh
 # For the PCM tools
 sudo modprobe msr
 
+# This is the hash for SICM built with the `dev` branch of `jemalloc`.
+#module load sicm-high-develop-gcc-7.2.0-k3wihar
 module load sicm-high-develop-gcc-7.2.0-yqtlckm
 
 if [[ $1 == "qmcpack" ]]; then

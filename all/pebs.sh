@@ -27,6 +27,7 @@ function pebs {
   export SH_DEFAULT_NODE="0"
   export SH_SAMPLE_FREQ="${FREQ}"
   export OMP_NUM_THREADS="270" # Two threads for profiling
+  export JE_MALLOC_CONF="dirty_decay_ms:0"
 
   echo 1 | sudo tee /proc/sys/kernel/perf_event_paranoid
   drop_caches
