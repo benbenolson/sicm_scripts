@@ -7,7 +7,7 @@ use Data::Dumper qw(Dumper);
 # Export functions in this module
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT = qw(parse_gnu_time parse_pcm_memory parse_one_numastat);
+@EXPORT = qw(parse_gnu_time parse_pcm_memory parse_one_numastat median round_two);
 
 sub median {
   sum( (sort{ $a <=> $b } @_ )[ int( $#_/2 ), ceil( $#_/2 ) ] )/2;

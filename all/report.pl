@@ -4,7 +4,7 @@ use Getopt::Long qw(GetOptions);
 use Data::Dumper qw(Dumper);
 use parse; # Does most of the nitty-gritty parsing
 
-my $dir =  $ENV{'BENCH_DIR'}; 
+my $basedir =  "$ENV{'RESULTS_DIR'}"; 
 my $metric = 'runtime';
 my @benches = ('lulesh,imagick,fotonik3d,roms,qmcpack,snap,pennant');
 my @benches_arg;
@@ -59,14 +59,47 @@ $max_col_length += 2;
 my %results;
 foreach my $cfg(@cfgs) {
   foreach my $bench(@benches) {
-    $results{$cfg}{$bench} = {};
-    parse_gnu_time("$dir/$bench/run/results/$size/$cfg/stdout.txt", $results{$cfg}{$bench});
-    parse_pcm_memory("$dir/$bench/run/results/$size/$cfg/pcm-memory.txt", $results{$cfg}{$bench});
-    if(not defined $results{$cfg}{$bench}{$metric}) {
+    my $dir = "$basedir/$bench/$size/$cfg";
+
+    my $iter = 0;
+    while(1) {
+
+      # Break if this directory doesn't exist
+      my $idir = "$dir/i${iter}";
+      if((not -e $idir) or (not -d $idir)) {
+        last;
+      }
+
+      # Parse the results into the hash
+      $results{$cfg}{$bench}{${iter}} = {};
+      parse_gnu_time("$idir/stdout.txt", $results{$cfg}{$bench}{$iter});
+      parse_pcm_memory("$idir/pcm-memory.txt", $results{$cfg}{$bench}{$iter});
+
+      $iter += 1;
+    }
+
+    # Add up each iteration's values into a total for each metric
+    my $i;
+    my @metrics;
+    for($i = 0; $i < $iter; $i++) {
+      @metrics = ();
+      while(my($key, $val) = each %{$results{$cfg}{$bench}{$i}}) {
+        $results{$cfg}{$bench}{$key} += $val;
+        push(@metrics, $key);
+      }
+    }
+
+    # Divide by the number of iterations
+    foreach my $tmp_metric(@metrics) {
+      $results{$cfg}{$bench}{$tmp_metric} /= ($iter);
+    }
+
+    my $val = $results{$cfg}{$bench}{$metric};
+    if(not defined $val) {
       die("Unknown metric '$metric'");
     }
-    if((length($results{$cfg}{$bench}{$metric}) + 2) > $max_col_length) {
-      $max_col_length = length($results{$cfg}{$bench}{$metric}) + 2;
+    if((length($val) + 2) > $max_col_length) {
+      $max_col_length = length($val) + 2;
     }
   }
 }
