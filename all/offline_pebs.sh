@@ -55,7 +55,7 @@ function offline_pebs_guided {
   cat "${PEBS_FILE}" | \
     sicm_hotset pebs ${PACK_ALGO} ratio ${RATIO} 1 > \
       ${BASEDIR}/guidance.txt
-  for i in {1..2}; do
+  for i in {0..1}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
@@ -117,7 +117,7 @@ function offline_all_pebs_guided {
   cat "${PEBS_FILE}" | \
     sicm_hotset pebs ${PACK_ALGO} constant ${MCDRAM_SIZE} 1 > \
     ${BASEDIR}/guidance.txt
-  for i in {1..2}; do
+  for i in {0..1}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches

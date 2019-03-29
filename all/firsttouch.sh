@@ -23,7 +23,7 @@ function firsttouch_all_exclusive_device {
   export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
 
   # Run 5 iters
-  for i in {1..2}; do
+  for i in {0..1}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
@@ -57,7 +57,7 @@ function firsttouch_all_default {
   export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
 
   # Run 5 iters
-  for i in {1..2}; do
+  for i in {0..1}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
@@ -93,7 +93,7 @@ function firsttouch_all_shared_site {
   export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
 
   # Run 5 iters
-  for i in {1..2}; do
+  for i in {0..1}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
@@ -143,7 +143,7 @@ function firsttouch_exclusive_device {
   export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
 
   # Run 5 iters
-  for i in {1..2}; do
+  for i in {0..1}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
