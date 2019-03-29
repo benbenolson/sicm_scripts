@@ -7,16 +7,14 @@
 # Second argument is the command to run
 # Third argument is node to firsttouch onto
 function firsttouch_all_exclusive_device {
-  RESULTS_DIR="$1"
+  BASEDIR="$1"
   COMMAND="$2"
   NODE="$3"
 
   # User output
   echo "Running experiment:"
-  echo "  Experiment: Firsttouch Exclusive Device, 100%"
-  echo "  Node: ${NODE}"
-  echo "  Command: '${COMMAND}'"
-  echo "  Results directory: ${RESULTS_DIR}"
+  echo "  Config: 'firsttouch_all_exclusive_device'"
+  echo "  Node: '${NODE}'"
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
@@ -25,12 +23,14 @@ function firsttouch_all_exclusive_device {
   export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
 
   # Run 5 iters
-  for iter in {1..2}; do
+  for i in {1..2}; do
+    DIR="${BASEDIR}/i${i}"
+    mkdir ${DIR}
     drop_caches
-    numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
-    numastat_background "${RESULTS_DIR}"
-    pcm_background "${RESULTS_DIR}"
-    eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
+    numastat -m &>> ${DIR}/numastat_before.txt
+    numastat_background "${DIR}"
+    pcm_background "${DIR}"
+    eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
     numastat_kill
     pcm_kill
   done
@@ -43,28 +43,28 @@ function firsttouch_all_exclusive_device {
 # Second argument is the command to run
 # Third argument is the node to firsttouch to
 function firsttouch_all_default {
-  RESULTS_DIR="$1"
+  BASEDIR="$1"
   COMMAND="$2"
   NODE="$3"
 
   # User output
   echo "Running experiment:"
-  echo "  Experiment: Firsttouch Default Layout, 100%"
-  echo "  Node: ${NODE}"
-  echo "  Command: '${COMMAND}'"
-  echo "  Results directory: ${RESULTS_DIR}"
+  echo "  Config: 'firsttouch_all_default'"
+  echo "  Node: '${NODE}'"
 
   export OMP_NUM_THREADS=272
   export SH_DEFAULT_NODE="${NODE}"
   export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
 
   # Run 5 iters
-  for iter in {1..2}; do
+  for i in {1..2}; do
+    DIR="${BASEDIR}/i${i}"
+    mkdir ${DIR}
     drop_caches
-    numastat_background "${RESULTS_DIR}"
-    pcm_background "${RESULTS_DIR}"
-    numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
-    eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
+    numastat_background "${DIR}"
+    pcm_background "${DIR}"
+    numastat -m &>> ${DIR}/numastat_before.txt
+    eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
     numastat_kill
     pcm_kill
   done
@@ -78,16 +78,14 @@ function firsttouch_all_default {
 # Second argument is the command to run
 # Third argument is node to firsttouch onto
 function firsttouch_all_shared_site {
-  RESULTS_DIR="$1"
+  BASEDIR="$1"
   COMMAND="$2"
   NODE="$3"
 
   # User output
   echo "Running experiment:"
-  echo "  Experiment: Firsttouch Shared Site, 100%"
-  echo "  Node: ${NODE}"
-  echo "  Command: '${COMMAND}'"
-  echo "  Results directory: ${RESULTS_DIR}"
+  echo "  Config: 'firsttouch_all_shared_site'"
+  echo "  Node: '${NODE}'"
 
   export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
   export OMP_NUM_THREADS=272
@@ -95,12 +93,14 @@ function firsttouch_all_shared_site {
   export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
 
   # Run 5 iters
-  for iter in {1..2}; do
+  for i in {1..2}; do
+    DIR="${BASEDIR}/i${i}"
+    mkdir ${DIR}
     drop_caches
-    numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
-    numastat_background "${RESULTS_DIR}"
-    pcm_background "${RESULTS_DIR}"
-    eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
+    numastat -m &>> ${DIR}/numastat_before.txt
+    numastat_background "${DIR}"
+    pcm_background "${DIR}"
+    eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
     numastat_kill
     pcm_kill
   done
@@ -113,12 +113,12 @@ function firsttouch_all_shared_site {
 # Second argument is the command to run
 # Third argument is the percentage to reserve on the upper tier
 function firsttouch_exclusive_device {
-  RESULTS_DIR="$1"
+  BASEDIR="$1"
   COMMAND="$2"
   PERCENTAGE="$3"
   # Putting everything on DDR to get the peak RSS of the whole application
   CANARY_CFG="firsttouch_all_exclusive_device_0"
-  CANARY_STDOUT="${RESULTS_DIR}/../${CANARY_CFG}/stdout.txt"
+  CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/stdout.txt"
 
   if [ ! -r ${CANARY_STDOUT} ]; then
     echo "ERROR: The file '${CANARY_STDOUT} doesn't exist yet. Aborting."
@@ -134,10 +134,7 @@ function firsttouch_exclusive_device {
   # User output
   echo "Running experiment:"
   echo "  Experiment: Firsttouch Exclusive Device"
-  echo "  Ratio: ${RATIO}"
-  echo "  Peak RSS: ${PEAK_RSS}"
-  echo "  Canary config: ${CANARY_CFG}"
-  echo "  Command: '${COMMAND}'"
+  echo "  Percentage: ${PERCENTAGE}"
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
@@ -146,13 +143,15 @@ function firsttouch_exclusive_device {
   export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
 
   # Run 5 iters
-  for iter in {1..2}; do
+  for i in {1..2}; do
+    DIR="${BASEDIR}/i${i}"
+    mkdir ${DIR}
     drop_caches
-    memreserve ${RESULTS_DIR} ${NUM_PAGES}
-    numastat -m &>> ${RESULTS_DIR}/numastat_before.txt
-    numastat_background "${RESULTS_DIR}"
-    pcm_background "${RESULTS_DIR}"
-    eval "env time -v numactl --preferred=1 " "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
+    memreserve ${DIR} ${NUM_PAGES}
+    numastat -m &>> ${DIR}/numastat_before.txt
+    numastat_background "${DIR}"
+    pcm_background "${DIR}"
+    eval "env time -v numactl --preferred=1 " "${COMMAND}" &>> ${DIR}/stdout.txt
     numastat_kill
     pcm_kill
     memreserve_kill

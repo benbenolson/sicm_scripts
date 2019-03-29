@@ -7,15 +7,14 @@
 # Second argument is the command to run
 # Third argument is the PEBS frequency
 function pebs {
-  RESULTS_DIR="$1"
+  BASEDIR="$1"
   COMMAND="$2"
   FREQ="$3"
 
   # User output
   echo "Running experiment:"
-  echo "  Experiment: PEBS Profiling"
-  echo "  Sample Frequency: ${FREQ}"
-  echo "  Command: '${COMMAND}'"
+  echo "  Config: 'pebs'"
+  echo "  Sample Frequency: '${FREQ}'"
 
   export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="4"
@@ -29,7 +28,9 @@ function pebs {
   export OMP_NUM_THREADS="270" # Two threads for profiling
   export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
 
+  DIR="${BASEDIR}/i0"
+  mkdir ${DIR}
   echo 1 | sudo tee /proc/sys/kernel/perf_event_paranoid
   drop_caches
-  eval "env time -v" "${COMMAND}" &>> ${RESULTS_DIR}/stdout.txt
+  eval "env time -v" "${COMMAND}" &>> ${DIR}/stdout.txt
 }

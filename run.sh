@@ -46,7 +46,7 @@ done
 
 # Create the results directory for this experiment,
 # and pass that to the BASH function
-DIRECTORY="${BENCH_DIR}/${1}/run/results/${2}/${CONFIG}"
+DIRECTORY="${RESULTS_DIR}/${1}/${2}/${CONFIG}"
 rm -rf ${DIRECTORY}
 mkdir -p ${DIRECTORY}
 
