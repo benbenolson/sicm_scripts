@@ -22,6 +22,7 @@ function firsttouch_all_exclusive_device {
   export SH_MAX_SITES_PER_ARENA="5000"
   export OMP_NUM_THREADS=272
   export SH_DEFAULT_NODE="${NODE}"
+  export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
 
   # Run 5 iters
   for iter in {1..2}; do
@@ -55,6 +56,7 @@ function firsttouch_all_default {
 
   export OMP_NUM_THREADS=272
   export SH_DEFAULT_NODE="${NODE}"
+  export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
 
   # Run 5 iters
   for iter in {1..2}; do
@@ -90,6 +92,7 @@ function firsttouch_all_shared_site {
   export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
   export OMP_NUM_THREADS=272
   export SH_DEFAULT_NODE="${NODE}"
+  export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
 
   # Run 5 iters
   for iter in {1..2}; do
@@ -140,6 +143,7 @@ function firsttouch_exclusive_device {
   export SH_MAX_SITES_PER_ARENA="5000"
   export OMP_NUM_THREADS=272
   export SH_DEFAULT_NODE="${NODE}"
+  export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
 
   # Run 5 iters
   for iter in {1..2}; do

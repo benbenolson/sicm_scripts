@@ -13,8 +13,8 @@ source $SCRIPTS_DIR/all/offline_pebs.sh
 sudo modprobe msr
 
 # This is the hash for SICM built with the `dev` branch of `jemalloc`.
-#module load sicm-high-develop-gcc-7.2.0-k3wihar
-module load sicm-high-develop-gcc-7.2.0-yqtlckm
+module load sicm-high-develop-gcc-7.2.0-k3wihar
+#module load sicm-high-develop-gcc-7.2.0-yqtlckm
 
 if [[ $1 == "qmcpack" ]]; then
   export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-debian9-x86_64/gcc-7.2.0/flang-20180921-a2g3n2ugv7xdhzkntxfzxainujapch5v/lib"
