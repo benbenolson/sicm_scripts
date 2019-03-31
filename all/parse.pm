@@ -7,7 +7,12 @@ use Data::Dumper qw(Dumper);
 # Export functions in this module
 require Exporter;
 @ISA = qw(Exporter);
-@EXPORT = qw(parse_gnu_time parse_pcm_memory parse_one_numastat median round_two);
+@EXPORT = qw(parse_gnu_time 
+             parse_pcm_memory 
+             parse_one_numastat 
+             parse_numastat
+             median 
+             round_two);
 
 sub median {
   sum( (sort{ $a <=> $b } @_ )[ int( $#_/2 ), ceil( $#_/2 ) ] )/2;
@@ -113,6 +118,7 @@ sub parse_pcm_memory {
 
 # Accepts a filename of a file that contains numastat output. Second
 # argument is a reference to a hash with which to fill with results.
+# Only stores one numastat output, not multiple.
 sub parse_one_numastat {
   my $filename = shift;
   my $results = shift; # This is a hash ref
@@ -134,7 +140,72 @@ sub parse_one_numastat {
     }
   }
   close($file);
+}
 
+# Accepts a filename of a file that contains numastat output. Second
+# argument is a reference to a hash with which to fill with results.
+# This expects multiple numastat outputs, which it aggregates into
+# more meaningful stats.
+sub parse_numastat {
+  my $filename = shift;
+  my $results = shift; # This is a hash ref
+
+  my @ddr_free;
+  my @mcdram_free;
+  my @total_free;
+
+  $results->{'avg_ddr_free'} = 0.0;
+  $results->{'avg_mcdram_free'} = 0.0;
+  $results->{'avg_total_free'} = 0.0;
+
+  $results->{'max_ddr_free'} = 0.0;
+  $results->{'max_mcdram_free'} = 0.0;
+  $results->{'max_total_free'} = 0.0;
+
+  $results->{'min_ddr_free'} = -1;
+  $results->{'min_mcdram_free'} = -1;
+  $results->{'min_total_free'} = -1;
+
+  open(my $file, '<', $filename)
+    or print("WARNING: '$filename' does not exist.\n") and return;
+
+  # Collect all samples into @*_bandwidth arrays
+  while(<$file>) {
+    chomp;
+    if(/MemFree\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)/) {
+      push(@ddr_free, $1);
+      push(@mcdram_free, $2);
+      push(@total_free, $3);
+
+      # Max
+      if($1 > $results->{'max_ddr_free'}) {
+        $results->{'max_ddr_free'} = $1;
+      }
+      if($2 > $results->{'max_mcdram_free'}) {
+        $results->{'max_mcdram_free'} = $2;
+      }
+      if($3 > $results->{'max_total_free'}) {
+        $results->{'max_total_free'} = $3;
+      }
+
+      # Min
+      if(($1 < $results->{'min_ddr_free'}) or ($results->{'min_ddr_free'} == -1)) {
+        $results->{'min_ddr_free'} = $1;
+      }
+      if(($2 < $results->{'min_mcdram_free'}) or ($results->{'min_mcdram_free'} == -1)) {
+        $results->{'min_mcdram_free'} = $2;
+      }
+      if(($3 < $results->{'min_total_free'}) or ($results->{'min_total_free'} == -1)) {
+        $results->{'min_total_free'} = $3;
+      }
+    }
+  }
+
+  $results->{'avg_ddr_free'} = round_two(sum(@ddr_free)/@ddr_free);
+  $results->{'avg_mcdram_free'} = round_two(sum(@mcdram_free)/@mcdram_free);
+  $results->{'avg_total_free'} = round_two(sum(@total_free)/@total_free);
+
+  close($file);
 }
 
 1; # Truthiest module there is

@@ -74,6 +74,7 @@ foreach my $cfg(@cfgs) {
       $results{$cfg}{$bench}{${iter}} = {};
       parse_gnu_time("$idir/stdout.txt", $results{$cfg}{$bench}{$iter});
       parse_pcm_memory("$idir/pcm-memory.txt", $results{$cfg}{$bench}{$iter});
+      parse_numastat("$idir/numastat.txt", $results{$cfg}{$bench}{$iter});
 
       $iter += 1;
     }
