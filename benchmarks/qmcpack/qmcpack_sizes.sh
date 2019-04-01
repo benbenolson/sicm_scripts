@@ -1,5 +1,6 @@
 #!/bin/bash
 
 SMALL="./qmcpack small.xml"
-LARGE="./qmcpack large2.xml"
+MEDIUM="./qmcpack medium.xml"
+LARGE="./qmcpack large.xml"
 OLD="./qmcpack old.xml"

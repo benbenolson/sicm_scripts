@@ -40,9 +40,11 @@ sub parse_gnu_time {
 
   while(<$file>) {
     chomp;
-    if(/Elapsed \(wall clock\) time \(h:mm:ss or m:ss\): (\d+):(\d+)\.(\d+)/) {
+    if(/Elapsed \(wall clock\) time \(h:mm:ss or m:ss\): (\d+):([\d\.]+)$/) {
       # Convert m:ss to seconds
       $results->{'runtime'} = ($1 * 60) + $2;
+    } elsif(/Elapsed \(wall clock\) time \(h:mm:ss or m:ss\): (\d+):(\d+):([\d\.]+)$/) {
+      $results->{'runtime'} = ($1 * 60 * 60) + ($2 * 60) + $3;
     } elsif(/Maximum resident set size \(kbytes\): (\d+)/) {
       # Convert kilobytes to gigabytes, truncate to two decimal places
       $results->{'rss'} = round_two($1 / 1024 / 1024);
