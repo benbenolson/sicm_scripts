@@ -171,7 +171,6 @@ sub parse_numastat {
   open(my $file, '<', $filename)
     or print("WARNING: '$filename' does not exist.\n") and return;
 
-  # Collect all samples into @*_bandwidth arrays
   while(<$file>) {
     chomp;
     if(/MemFree\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)/) {
@@ -203,9 +202,11 @@ sub parse_numastat {
     }
   }
 
-  $results->{'avg_ddr_free'} = round_two(sum(@ddr_free)/@ddr_free);
-  $results->{'avg_mcdram_free'} = round_two(sum(@mcdram_free)/@mcdram_free);
-  $results->{'avg_total_free'} = round_two(sum(@total_free)/@total_free);
+  if((scalar(@ddr_free) > 0) and (scalar(@mcdram_free) > 0) and (scalar(@total_free) > 0)) {
+    $results->{'avg_ddr_free'} = round_two(sum(@ddr_free)/@ddr_free);
+    $results->{'avg_mcdram_free'} = round_two(sum(@mcdram_free)/@mcdram_free);
+    $results->{'avg_total_free'} = round_two(sum(@total_free)/@total_free);
+  }
 
   close($file);
 }

@@ -20,10 +20,11 @@ function firsttouch_all_exclusive_device {
   export SH_MAX_SITES_PER_ARENA="5000"
   export OMP_NUM_THREADS=272
   export SH_DEFAULT_NODE="${NODE}"
-  export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
+  #export JE_MALLOC_CONF="oversize_threshold:42949672960,background_thread:true"
+  export JE_MALLOC_CONF="oversize_threshold:42949672960"
 
   # Run 5 iters
-  for i in {0..1}; do
+  for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches

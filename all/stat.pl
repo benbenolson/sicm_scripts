@@ -8,5 +8,8 @@ my $stat = $ARGV[1];
 my %results;
 parse_gnu_time("$file", \%results);
 parse_one_numastat("$file", \%results);
+parse_gnu_time("$file", \%results);
+parse_pcm_memory("$file", \%results);
+parse_numastat("$file", \%results);
 
 print($results{$stat});

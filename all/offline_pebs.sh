@@ -101,6 +101,8 @@ function offline_all_pebs_guided {
   fi
 
   MCDRAM_SIZE="$(numastat -m | awk '/MemFree/ {printf "%d * 1024 * 1024\n", $3}' | bc)"
+  PEAK_RSS_KBYTES=$(${SCRIPTS_DIR}/stat.sh ${PEAK_RSS_FILE} rss_kbytes)
+  PEAK_RSS=$(echo "${PEAK_RSS_KBYTES} * 1024" | bc)
 
   # User output
   echo "Running experiment:"
@@ -108,18 +110,20 @@ function offline_all_pebs_guided {
   echo "  Profiling frequency: '${PEBS_FREQ}'"
   echo "  Profiling size: '${PEBS_SIZE}'"
   echo "  Packing algorithm: '${PACK_ALGO}'"
-
+  echo "  Packing into MCDRAM: '${MCDRAM_SIZE}'"
+  
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="4096"
   export SH_DEFAULT_NODE="0"
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
   export OMP_NUM_THREADS="272"
-  export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
+  #export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
+  export JE_MALLOC_CONF="oversize_threshold:42949672960"
   
   cat "${PEBS_FILE}" | \
-    sicm_hotset pebs ${PACK_ALGO} constant ${MCDRAM_SIZE} 1 > \
+    sicm_hotset pebs ${PACK_ALGO} constant ${MCDRAM_SIZE} 1 ${PEAK_RSS} > \
     ${BASEDIR}/guidance.txt
-  for i in {0..1}; do
+  for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
