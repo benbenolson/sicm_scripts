@@ -24,7 +24,7 @@ function firsttouch_all_exclusive_device {
   export JE_MALLOC_CONF="oversize_threshold:42949672960"
 
   # Run 5 iters
-  for i in {0..0}; do
+  for i in {0..1}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
