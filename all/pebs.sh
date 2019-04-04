@@ -26,8 +26,7 @@ function pebs {
   export SH_DEFAULT_NODE="0"
   export SH_SAMPLE_FREQ="${FREQ}"
   export OMP_NUM_THREADS="270" # Two threads for profiling
-  #export JE_MALLOC_CONF="oversize_threshold:42949672960,background_thread:true,max_background_threads:1"
-  export JE_MALLOC_CONF="oversize_threshold:42949672960"
+  export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true,max_background_threads:4"
 
   DIR="${BASEDIR}/i0"
   mkdir ${DIR}

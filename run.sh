@@ -26,12 +26,16 @@ source $SCRIPTS_DIR/benchmarks/${1}/${1}_sizes.sh
 COMMAND=""
 if [[ $2 == "small" ]]; then
   COMMAND="$SMALL"
+  ENVIRON="$SMALL_ENV"
 elif [[ $2 == "medium" ]]; then
   COMMAND="$MEDIUM"
+  ENVIRON="$MEDIUM_ENV"
 elif [[ $2 == "large" ]]; then
   COMMAND="$LARGE"
+  ENVIRON="$LARGE_ENV"
 elif [[ $2 == "old" ]]; then
   COMMAND="$OLD"
+  ENVIRON="$OLD_ENV"
 else
   echo "Unknown benchmark size. Aborting."
   exit 1

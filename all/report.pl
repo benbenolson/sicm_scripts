@@ -64,7 +64,6 @@ foreach my $size(@sizes) {
   foreach my $cfg(@cfgs) {
     foreach my $bench(@benches) {
       my $dir = "$basedir/$bench/$size/$cfg";
-
       my $iter = 0;
       while(1) {
 
