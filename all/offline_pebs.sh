@@ -123,7 +123,7 @@ function offline_all_pebs_guided {
   cat "${PEBS_FILE}" | \
     sicm_hotset pebs ${PACK_ALGO} constant ${MCDRAM_SIZE} 1 ${PEAK_RSS} > \
     ${BASEDIR}/guidance.txt
-  for i in {0..0}; do
+  for i in {0..1}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches

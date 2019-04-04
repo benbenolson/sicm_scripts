@@ -30,7 +30,7 @@ function numastat_background {
 }
 function numastat_kill {
   sudo kill $numastat_pid &>/dev/null
-  wait $numastat_pid 2>/dev/null
+  wait $numastat_pid &>/dev/null
 }
 
 ############
