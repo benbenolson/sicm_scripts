@@ -16,6 +16,6 @@ for cfg in ${CFGS[@]}; do
 done
 
 ./report.sh --cfgs="${CFGSTR}" \
-            --benches=lulesh \
+            --benches=$1 \
             --sizes=small,medium,large \
             --metric=runtime

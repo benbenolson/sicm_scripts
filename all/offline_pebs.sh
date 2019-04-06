@@ -18,7 +18,7 @@ function offline_pebs_guided {
   RATIO=$(echo "${6}/100" | bc -l)
   CANARY_CFG="firsttouch_all_exclusive_device_0"
   CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
-  PEBS_FILE="${BASEDIR}/../../${PEBS_SIZE}/i0/pebs_${PEBS_FREQ}/stdout.txt"
+  PEBS_FILE="${BASEDIR}/../../${PEBS_SIZE}/pebs_${PEBS_FREQ}/i0/stdout.txt"
 
   # This file is used for the profiling information
   if [ ! -r "${PEBS_FILE}" ]; then
