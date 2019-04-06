@@ -50,7 +50,7 @@ function offline_pebs_guided {
   export SH_DEFAULT_NODE="0"
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
   export OMP_NUM_THREADS="272"
-  export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
+  export JE_MALLOC_CONF="oversize_threshold:42949672960"
   
   # Generate the hotset/knapsack/thermos
   cat "${PEBS_FILE}" | \
@@ -117,7 +117,6 @@ function offline_all_pebs_guided {
   export SH_DEFAULT_NODE="0"
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
   export OMP_NUM_THREADS="272"
-  #export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
   export JE_MALLOC_CONF="oversize_threshold:42949672960"
   
   cat "${PEBS_FILE}" | \
