@@ -41,6 +41,10 @@ else
   exit 1
 fi
 
+# Set a function to do arbitrary commands depending on the benchmark
+# and benchmark size.
+export PRERUN="${1}_${2}"
+
 # Construct a string of the arguments to the BASH function.
 # This is used to generate the results directory.
 CONFIG="${3}"

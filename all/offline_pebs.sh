@@ -34,8 +34,11 @@ function offline_pebs_guided {
 
   # This is in kilobytes
   PEAK_RSS=$(${SCRIPTS_DIR}/stat.sh ${CANARY_STDOUT} rss_kbytes)
+  PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
   # How many pages we need to be free on MCDRAM
   NUM_PAGES=$(echo "${PEAK_RSS} * ${RATIO} / 4" | bc)
+  NUM_BYTES_FLOAT=$(echo "${PEAK_RSS} * ${RATIO} * 1024" | bc)
+  NUM_BYTES=${NUM_BYTES_FLOAT%.*}
 
   # User output
   echo "Running experiment:"
@@ -44,6 +47,8 @@ function offline_pebs_guided {
   echo "  Profiling size: '${PEBS_SIZE}'"
   echo "  Packing algorithm: '${PACK_ALGO}'"
   echo "  Percentage: '${6}%'"
+  echo "  Packing into bytes: '${NUM_BYTES}'"
+  echo "  Scaling down to peak RSS: '${PEAK_RSS}'"
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="4096"
@@ -51,10 +56,12 @@ function offline_pebs_guided {
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
   export OMP_NUM_THREADS="272"
   export JE_MALLOC_CONF="oversize_threshold:42949672960"
+
+  eval "${PRERUN}"
   
   # Generate the hotset/knapsack/thermos
   cat "${PEBS_FILE}" | \
-    sicm_hotset pebs ${PACK_ALGO} ratio ${RATIO} 1 > \
+    sicm_hotset pebs ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > \
       ${BASEDIR}/guidance.txt
   for i in {0..1}; do
     DIR="${BASEDIR}/i${i}"
@@ -118,6 +125,8 @@ function offline_all_pebs_guided {
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
   export OMP_NUM_THREADS="272"
   export JE_MALLOC_CONF="oversize_threshold:42949672960"
+
+  eval "${PRERUN}"
   
   cat "${PEBS_FILE}" | \
     sicm_hotset pebs ${PACK_ALGO} constant ${MCDRAM_SIZE} 1 ${PEAK_RSS} > \

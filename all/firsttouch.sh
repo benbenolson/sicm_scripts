@@ -22,6 +22,8 @@ function firsttouch_all_exclusive_device {
   export SH_DEFAULT_NODE="${NODE}"
   export JE_MALLOC_CONF="oversize_threshold:42949672960"
 
+  eval "${PRERUN}"
+
   # Run 5 iters
   for i in {0..1}; do
     DIR="${BASEDIR}/i${i}"
@@ -55,6 +57,8 @@ function firsttouch_all_default {
   export OMP_NUM_THREADS=272
   export SH_DEFAULT_NODE="${NODE}"
   export JE_MALLOC_CONF="oversize_threshold:42949672960"
+
+  eval "${PRERUN}"
 
   # Run 5 iters
   for i in {0..1}; do
@@ -91,6 +95,8 @@ function firsttouch_all_shared_site {
   export OMP_NUM_THREADS=272
   export SH_DEFAULT_NODE="${NODE}"
   export JE_MALLOC_CONF="oversize_threshold:42949672960"
+
+  eval "${PRERUN}"
 
   # Run 5 iters
   for i in {0..1}; do
@@ -141,6 +147,8 @@ function firsttouch_exclusive_device {
   export OMP_NUM_THREADS=272
   export SH_DEFAULT_NODE="${NODE}"
   export JE_MALLOC_CONF="oversize_threshold:42949672960"
+
+  eval "${PRERUN}"
 
   # Run 5 iters
   for i in {0..1}; do
