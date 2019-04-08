@@ -18,7 +18,7 @@ function offline_pebs_guided {
   RATIO=$(echo "${6}/100" | bc -l)
   CANARY_CFG="firsttouch_all_exclusive_device_0"
   CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
-  PEBS_FILE="${BASEDIR}/../../${PEBS_SIZE}/i0/pebs_${PEBS_FREQ}/stdout.txt"
+  PEBS_FILE="${BASEDIR}/../../${PEBS_SIZE}/pebs_${PEBS_FREQ}/i0/stdout.txt"
 
   # This file is used for the profiling information
   if [ ! -r "${PEBS_FILE}" ]; then
@@ -50,7 +50,7 @@ function offline_pebs_guided {
   export SH_DEFAULT_NODE="0"
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
   export OMP_NUM_THREADS="272"
-  export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
+  export JE_MALLOC_CONF="oversize_threshold:42949672960"
   
   # Generate the hotset/knapsack/thermos
   cat "${PEBS_FILE}" | \
@@ -117,7 +117,6 @@ function offline_all_pebs_guided {
   export SH_DEFAULT_NODE="0"
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
   export OMP_NUM_THREADS="272"
-  #export JE_MALLOC_CONF="oversize_threshold:2147483648,background_thread:true"
   export JE_MALLOC_CONF="oversize_threshold:42949672960"
   
   cat "${PEBS_FILE}" | \

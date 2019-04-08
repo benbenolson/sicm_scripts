@@ -118,7 +118,7 @@ function firsttouch_exclusive_device {
   PERCENTAGE="$3"
   # Putting everything on DDR to get the peak RSS of the whole application
   CANARY_CFG="firsttouch_all_exclusive_device_0"
-  CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/stdout.txt"
+  CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
 
   if [ ! -r ${CANARY_STDOUT} ]; then
     echo "ERROR: The file '${CANARY_STDOUT} doesn't exist yet. Aborting."
