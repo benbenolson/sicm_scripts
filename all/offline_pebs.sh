@@ -55,7 +55,7 @@ function offline_pebs_guided {
   export SH_DEFAULT_NODE="0"
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
   export OMP_NUM_THREADS="272"
-  export JE_MALLOC_CONF="oversize_threshold:42949672960"
+  export JE_MALLOC_CONF="oversize_threshold:0"
 
   eval "${PRERUN}"
   
@@ -124,7 +124,7 @@ function offline_all_pebs_guided {
   export SH_DEFAULT_NODE="0"
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
   export OMP_NUM_THREADS="272"
-  export JE_MALLOC_CONF="oversize_threshold:42949672960"
+  export JE_MALLOC_CONF="oversize_threshold:0"
 
   eval "${PRERUN}"
   
