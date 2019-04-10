@@ -15,7 +15,7 @@ else
   module load pgmath-20180921-gcc-7.2.0-um2qwjd
   module load flang-20180921-gcc-7.2.0-a2g3n2u
   module load llvm-flang-20180921-gcc-7.2.0-f2bzfqn
-  module load sicm-high-develop-gcc-7.2.0-k3wihar
+  module load sicm-high-develop-gcc-7.2.0-ajlq464
 fi
 
 # Clean up the source directory first
