@@ -145,7 +145,7 @@ function firsttouch_exclusive_device {
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
   export OMP_NUM_THREADS=272
-  export SH_DEFAULT_NODE="${NODE}"
+  export SH_DEFAULT_NODE=1
   export JE_MALLOC_CONF="oversize_threshold:0"
 
   eval "${PRERUN}"
