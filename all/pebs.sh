@@ -25,7 +25,6 @@ function pebs {
   export SH_PROFILE_RSS_RATE="0"
   export SH_DEFAULT_NODE="0"
   export SH_SAMPLE_FREQ="${FREQ}"
-  export OMP_NUM_THREADS="270" # Two threads for profiling
   export JE_MALLOC_CONF="oversize_threshold:0"
 
   eval "${PRERUN}"

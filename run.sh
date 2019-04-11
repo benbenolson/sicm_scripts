@@ -43,6 +43,21 @@ else
   exit 1
 fi
 
+# Set OMP_NUM_THREADS
+if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+  if [[ "$3" = "pebs_128" ]]; then
+    export OMP_NUM_THREADS=46
+  else
+    export OMP_NUM_THREADS=48
+  fi
+else
+  if [[ "$3" = "pebs_128" ]]; then
+    export OMP_NUM_THREADS=270
+  else
+    export OMP_NUM_THREADS=272
+  fi
+fi
+
 # Construct a string of the arguments to the BASH function.
 # This is used to generate the results directory.
 CONFIG="${3}"
