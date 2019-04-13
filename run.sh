@@ -8,6 +8,7 @@ source $SCRIPTS_DIR/all/tools.sh
 source $SCRIPTS_DIR/all/firsttouch.sh
 source $SCRIPTS_DIR/all/pebs.sh
 source $SCRIPTS_DIR/all/offline_pebs.sh
+source $SCRIPTS_DIR/all/mbi.sh
 
 # For the PCM tools
 sudo modprobe msr
