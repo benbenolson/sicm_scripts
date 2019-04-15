@@ -28,16 +28,20 @@ source $SCRIPTS_DIR/benchmarks/${1}/${1}_sizes.sh
 COMMAND=""
 if [[ $2 == "small" ]]; then
   COMMAND="$SMALL"
-  ENVIRON="$SMALL_ENV"
 elif [[ $2 == "medium" ]]; then
   COMMAND="$MEDIUM"
-  ENVIRON="$MEDIUM_ENV"
 elif [[ $2 == "large" ]]; then
   COMMAND="$LARGE"
-  ENVIRON="$LARGE_ENV"
 elif [[ $2 == "old" ]]; then
   COMMAND="$OLD"
-  ENVIRON="$OLD_ENV"
+elif [[ $2 == "small_aep" ]]; then
+  COMMAND="$SMALL_AEP"
+elif [[ $2 == "medium_aep" ]]; then
+  COMMAND="$MEDIUM_AEP"
+elif [[ $2 == "large_aep" ]]; then
+  COMMAND="$LARGE_AEP"
+elif [[ $2 == "huge_aep" ]]; then
+  COMMAND="$HUGE_AEP"
 else
   echo "Unknown benchmark size. Aborting."
   exit 1
