@@ -11,6 +11,7 @@ require Exporter;
              parse_pcm_memory 
              parse_one_numastat 
              parse_numastat
+             parse_pebs
              median 
              round_two);
 
@@ -215,6 +216,37 @@ sub parse_numastat {
     $results->{'avg_ddr_free'} = round_two(sum(@ddr_free)/@ddr_free);
     $results->{'avg_mcdram_free'} = round_two(sum(@mcdram_free)/@mcdram_free);
     $results->{'avg_total_free'} = round_two(sum(@total_free)/@total_free);
+  }
+
+  close($file);
+}
+
+# Accepts a filename of a file that contains PEBS output. Second
+# argument is a reference to a hash with which to fill with results.
+# This expects one PEBS output.
+sub parse_pebs {
+  my $filename = shift;
+  my $results = shift; # This is a hash ref
+
+  $results->{'num_sites'} = 0;
+  $results->{'sites'} = ();
+
+  open(my $file, '<', $filename)
+    or print("WARNING: '$filename' does not exist.\n") and return;
+
+  my $in_pebs_results = 0;
+  while(<$file>) {
+    chomp;
+    if(/===== PEBS RESULTS =====/) {
+      $in_pebs_results = 1;
+    } elsif(/(\d+) sites: ([\d\s]+)/) {
+      # Stored in $1 is the number of sites in this arena
+      # Stored in $2 is the list of site IDs, delimited by spaces
+      $results->{'num_sites'}++;
+      foreach(split(/ /, $2)) {
+        push(@{$results->{'sites'}}, $_);
+      }
+    }
   }
 
   close($file);
