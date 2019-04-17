@@ -28,7 +28,7 @@ function firsttouch_all_exclusive_device {
 
   # Run 5 iters
   ulimit -c unlimited
-  for i in {0..1}; do
+  for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
@@ -70,7 +70,7 @@ function firsttouch_all_default {
   eval "${PRERUN}"
 
   # Run 5 iters
-  for i in {0..1}; do
+  for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
@@ -115,7 +115,7 @@ function firsttouch_all_shared_site {
   eval "${PRERUN}"
 
   # Run 5 iters
-  for i in {0..1}; do
+  for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
@@ -147,7 +147,7 @@ function firsttouch_exclusive_device {
   NODE="${4}"
   SLOWNODE="${5}"
   # Putting everything on DDR to get the peak RSS of the whole application
-  CANARY_CFG="firsttouch_all_exclusive_device_0"
+  CANARY_CFG="firsttouch_all_exclusive_device_0_0"
   CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
 
   if [ ! -r ${CANARY_STDOUT} ]; then
@@ -167,6 +167,7 @@ function firsttouch_exclusive_device {
   echo "  Percentage: ${PERCENTAGE}"
   echo "  Upper tier: ${NODE}"
   echo "  Lower tier: ${SLOWNODE}"
+  echo "  Pages on upper tier: ${NUM_PAGES}"
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
@@ -176,7 +177,7 @@ function firsttouch_exclusive_device {
   eval "${PRERUN}"
 
   # Run 5 iters
-  for i in {0..1}; do
+  for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches

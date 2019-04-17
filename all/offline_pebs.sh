@@ -8,7 +8,8 @@
 # Third argument is the frequency of PEBS sampling to use
 # Fourth argument is the size of the PEBS sampling to use
 # Fifth argument is the packing strategy
-# Sixth argument is the percentage of the peak RSS that should be available on the MCDRAM
+# Sixth argument is the percentage of the peak RSS that should be available on the node
+# Seventh argument is the NUMA node to pack onto
 function offline_pebs_guided {
   BASEDIR="$1"
   COMMAND="$2"
@@ -16,7 +17,8 @@ function offline_pebs_guided {
   PEBS_SIZE="$4"
   PACK_ALGO="$5"
   RATIO=$(echo "${6}/100" | bc -l)
-  CANARY_CFG="firsttouch_all_exclusive_device_0"
+  NODE=${7}
+  CANARY_CFG="firsttouch_all_exclusive_device_0_0"
   CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
   PEBS_FILE="${BASEDIR}/../../${PEBS_SIZE}/pebs_${PEBS_FREQ}/i0/stdout.txt"
 
@@ -62,11 +64,11 @@ function offline_pebs_guided {
   cat "${PEBS_FILE}" | \
     sicm_hotset pebs ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > \
       ${BASEDIR}/guidance.txt
-  for i in {0..1}; do
+  for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
-    memreserve ${DIR} ${NUM_PAGES}
+    memreserve ${DIR} ${NUM_PAGES} ${NODE}
     numastat -m &>> ${DIR}/numastat_before.txt
     numastat_background "${DIR}"
     pcm_background "${DIR}"
@@ -91,7 +93,7 @@ function offline_all_pebs_guided {
   PEBS_FREQ="$3"
   PEBS_SIZE="$4"
   PACK_ALGO="$5"
-  PEAK_RSS_FILE="${BASEDIR}/../firsttouch_all_exclusive_device_0/i0/stdout.txt"
+  PEAK_RSS_FILE="${BASEDIR}/../firsttouch_all_exclusive_device_0_0/i0/stdout.txt"
   PEBS_FILE="${BASEDIR}/../../${PEBS_SIZE}/pebs_${PEBS_FREQ}/i0/stdout.txt"
 
   # This file is used for the profiling information
@@ -129,7 +131,7 @@ function offline_all_pebs_guided {
   cat "${PEBS_FILE}" | \
     sicm_hotset pebs ${PACK_ALGO} constant ${MCDRAM_SIZE} 1 ${PEAK_RSS} > \
     ${BASEDIR}/guidance.txt
-  for i in {0..1}; do
+  for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches

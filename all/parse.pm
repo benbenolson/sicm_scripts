@@ -148,6 +148,8 @@ sub parse_one_numastat {
     } elsif(/MemFree\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)/) {
       $results->{'ddr_free'} = $1;
       $results->{'mcdram_free'} = $2;
+      $results->{'node0_free'} = $1;
+      $results->{'node1_free'} = $2;
       $results->{'total_free'} = $3;
     }
   }

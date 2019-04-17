@@ -28,7 +28,6 @@ function mbi {
 
   eval "${PRERUN}"
 
-  # NEEDS GENERALIZATION
   for site in $(${SCRIPTS_DIR}/stat.sh "${PEBS_STDOUT}" sites); do
     echo "  Site: ${site}"
     export SH_PROFILE_ONE="${site}"

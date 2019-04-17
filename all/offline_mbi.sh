@@ -7,14 +7,16 @@
 # Second argument is the command to run
 # Third argument is the size of the MBI sampling to use
 # Fourth argument is the packing strategy
-# Fifth argument is the percentage of the peak RSS that should be available on the MCDRAM
+# Fifth argument is the percentage of the peak RSS that should be available on the node
+# Sixth argument is the node to pack onto
 function offline_mbi_guided {
   BASEDIR="$1"
   COMMAND="$2"
   MBI_SIZE="$3"
   PACK_ALGO="$4"
   RATIO=$(echo "${5}/100" | bc -l)
-  CANARY_CFG="firsttouch_all_exclusive_device_0"
+  NODE=${6}
+  CANARY_CFG="firsttouch_all_exclusive_device_0_0"
   CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
   MBI_DIR="${BASEDIR}/../../${MBI_SIZE}/mbi"
   PEBS_STDOUT="${BASEDIR}/../pebs_128/i0/stdout.txt"
@@ -65,7 +67,7 @@ function offline_mbi_guided {
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
-    memreserve ${DIR} ${NUM_PAGES}
+    memreserve ${DIR} ${NUM_PAGES} ${NODE}
     numastat -m &>> ${DIR}/numastat_before.txt
     numastat_background "${DIR}"
     pcm_background "${DIR}"
@@ -90,7 +92,7 @@ function offline_all_mbi_guided {
   MBI_FREQ="$3"
   MBI_SIZE="$4"
   PACK_ALGO="$5"
-  PEAK_RSS_FILE="${BASEDIR}/../firsttouch_all_exclusive_device_0/i0/stdout.txt"
+  PEAK_RSS_FILE="${BASEDIR}/../firsttouch_all_exclusive_device_0_0/i0/stdout.txt"
   MBI_FILE="${BASEDIR}/../../${MBI_SIZE}/mbi_${MBI_FREQ}/i0/stdout.txt"
 
   # This file is used for the profiling information
@@ -129,7 +131,7 @@ function offline_all_mbi_guided {
   cat "${MBI_FILE}" | \
     sicm_hotset mbi ${PACK_ALGO} constant ${MCDRAM_SIZE} 1 ${PEAK_RSS} > \
     ${BASEDIR}/guidance.txt
-  for i in {0..1}; do
+  for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
