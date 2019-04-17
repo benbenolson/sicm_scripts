@@ -130,13 +130,22 @@ sub parse_one_numastat {
   $results->{'ddr_free'} = 0.0;
   $results->{'total_free'} = 0.0;
 
+  $results->{'node2_free'} = 0.0;
+  $results->{'node1_free'} = 0.0;
+  $results->{'node0_free'} = 0.0;
+  $results->{'total_free'} = 0.0;
+
   open(my $file, '<', $filename)
     or print("WARNING: '$filename' does not exist.\n") and return;
 
-  # Collect all samples into @*_bandwidth arrays
   while(<$file>) {
     chomp;
-    if(/MemFree\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)/) {
+    if(/MemFree\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)/) {
+      $results->{'node0_free'} = $1;
+      $results->{'node1_free'} = $2;
+      $results->{'node2_free'} = $2;
+      $results->{'total_free'} = $3;
+    } elsif(/MemFree\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)/) {
       $results->{'ddr_free'} = $1;
       $results->{'mcdram_free'} = $2;
       $results->{'total_free'} = $3;

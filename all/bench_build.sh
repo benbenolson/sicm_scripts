@@ -17,7 +17,11 @@ function bench_build {
   # Define the variables for the compiler wrappers
   export LD_COMPILER="clang++ -Wno-unused-command-line-argument -Ofast -march=knl" # Compiles from .bc -> .o
   export CXX_COMPILER="clang++ $3 -g -Wno-unused-command-line-argument -Ofast -march=knl"
-  export FORT_COMPILER="flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -Ofast -march=knl -I$(spack location -i flang@20180921 /a2g3n2ugv7xdhzkntxfzxainujapch5v)/include"
+  if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+    export FORT_COMPILER="flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -Ofast -march=knl -I$(spack location -i flang@20180921 /lqmxife)/include"
+  else
+    export FORT_COMPILER="flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -Ofast -march=knl -I$(spack location -i flang@20180921 /a2g3n2ugv7xdhzkntxfzxainujapch5v)/include"
+  fi
   export C_COMPILER="clang -g $3 -Wno-unused-command-line-argument -Ofast -march=knl"
   export LLVMLINK="llvm-link"
   export OPT="opt"
