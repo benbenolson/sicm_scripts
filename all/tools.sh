@@ -52,25 +52,26 @@ function pcm_kill {
 # memreserve
 ############
 # First arg is the directory to write to
-# Second arg is the amount that should be left on the MCDRAM
+# Second arg is the amount that should be left on the node
+# Third arg is the NUMA node to reserve memory on
 function memreserve {
 
-  # Get the amount of free memory on the MCDRAM, in pages
+  # Get the amount of free memory on the node, in pages
   numastat -m &> $1/numastat_noreserve.txt
-  MCDRAM_FREE_MBYTES=$(${SCRIPTS_DIR}/stat.sh \
-    $1/numastat_noreserve.txt mcdram_free)
-  MCDRAM_FREE_PAGES=$(echo "$MCDRAM_FREE_MBYTES * 1024 / 4" | bc)
+  NODE_FREE_MBYTES=$(${SCRIPTS_DIR}/stat.sh \
+    $1/numastat_noreserve.txt node${3}_free)
+  NODE_FREE_PAGES=$(echo "$NODE_FREE_MBYTES * 1024 / 4" | bc)
 
-  if [[ ${MCDRAM_FREE_PAGES} -gt ${2} ]]; then
+  if [[ ${NODE_FREE_PAGES} -gt ${2} ]]; then
     # Get how much to reserve to get the requested amount
-    RESERVE=$(echo "$MCDRAM_FREE_PAGES - $2" | bc)
+    RESERVE=$(echo "$NODE_FREE_PAGES - $2" | bc)
     echo "Reserving ${RESERVE} pages."
     
-    sicm_memreserve 1 64 ${RESERVE} hold bind \
+    sicm_memreserve ${3} 64 ${RESERVE} hold bind \
       &>> $1/memreserve.txt &
     memreserve_pid="$!"
 
-    sleep 5
+    sleep 60
   fi
 }
 

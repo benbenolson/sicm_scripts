@@ -6,10 +6,12 @@
 # First argument is results directory
 # Second argument is the command to run
 # Third argument is node to firsttouch onto
+# Fourth argument is the node to use as a lower tier
 function firsttouch_all_exclusive_device {
   BASEDIR="$1"
   COMMAND="$2"
   NODE="$3"
+  SLOWNODE="$4"
 
   # User output
   echo "Running experiment:"
@@ -24,14 +26,15 @@ function firsttouch_all_exclusive_device {
   eval "${PRERUN}"
 
   # Run 5 iters
-  for i in {0..1}; do
+  ulimit -c unlimited
+  for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
     numastat -m &>> ${DIR}/numastat_before.txt
     numastat_background "${DIR}"
     pcm_background "${DIR}"
-    eval "env time -v numactl --cpunodebind=1 --preferred=${NODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
+    eval "env time -v numactl --cpunodebind=0 --membind=${NODE},${SLOWNODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
     numastat_kill
     pcm_kill
   done
@@ -115,10 +118,14 @@ function firsttouch_all_shared_site {
 # First argument is the results directory
 # Second argument is the command to run
 # Third argument is the percentage to reserve on the upper tier
+# Fourth argument is the NUMA node to use as an upper tier
+# Fifth argument is the NUMA node to use as a lower tier
 function firsttouch_exclusive_device {
   BASEDIR="$1"
   COMMAND="$2"
   PERCENTAGE="$3"
+  NODE="${4}"
+  SLOWNODE="${5}"
   # Putting everything on DDR to get the peak RSS of the whole application
   CANARY_CFG="firsttouch_all_exclusive_device_0"
   CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
@@ -141,7 +148,7 @@ function firsttouch_exclusive_device {
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
-  export SH_DEFAULT_NODE=1
+  export SH_DEFAULT_NODE=${NODE}
   export JE_MALLOC_CONF="oversize_threshold:0"
 
   eval "${PRERUN}"
@@ -151,11 +158,11 @@ function firsttouch_exclusive_device {
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
-    memreserve ${DIR} ${NUM_PAGES}
+    memreserve ${DIR} ${NUM_PAGES} ${NODE}
     numastat -m &>> ${DIR}/numastat_before.txt
     numastat_background "${DIR}"
     pcm_background "${DIR}"
-    eval "env time -v numactl --preferred=1 " "${COMMAND}" &>> ${DIR}/stdout.txt
+    eval "env time -v numactl --cpunodebind=0 --membind=${NODE},${SLOWNODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
     numastat_kill
     pcm_kill
     memreserve_kill
