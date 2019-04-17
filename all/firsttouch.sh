@@ -16,7 +16,8 @@ function firsttouch_all_exclusive_device {
   # User output
   echo "Running experiment:"
   echo "  Config: 'firsttouch_all_exclusive_device'"
-  echo "  Node: '${NODE}'"
+  echo "  Upper tier: '${NODE}'"
+  echo "  Lower tier: '${SLOWNODE}'"
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
@@ -27,14 +28,18 @@ function firsttouch_all_exclusive_device {
 
   # Run 5 iters
   ulimit -c unlimited
-  for i in {0..0}; do
+  for i in {0..1}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
     numastat -m &>> ${DIR}/numastat_before.txt
     numastat_background "${DIR}"
     pcm_background "${DIR}"
-    eval "env time -v numactl --cpunodebind=0 --membind=${NODE},${SLOWNODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
+    if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+      eval "env time -v numactl --cpunodebind=0 --membind=${NODE},${SLOWNODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
+    else
+      eval "env time -v numactl --preferred=${NODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
+    fi
     numastat_kill
     pcm_kill
   done
@@ -46,15 +51,18 @@ function firsttouch_all_exclusive_device {
 # First argument is the results directory
 # Second argument is the command to run
 # Third argument is the node to firsttouch to
+# Fourth argument is the node to use as a lower tier
 function firsttouch_all_default {
   BASEDIR="$1"
   COMMAND="$2"
   NODE="$3"
+  SLOWNODE="$4"
 
   # User output
   echo "Running experiment:"
   echo "  Config: 'firsttouch_all_default'"
-  echo "  Node: '${NODE}'"
+  echo "  Upper tier: '${NODE}'"
+  echo "  Lower tier: '${SLOWNODE}'"
 
   export SH_DEFAULT_NODE="${NODE}"
   export JE_MALLOC_CONF="oversize_threshold:0"
@@ -69,7 +77,12 @@ function firsttouch_all_default {
     numastat_background "${DIR}"
     pcm_background "${DIR}"
     numastat -m &>> ${DIR}/numastat_before.txt
-    eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
+    if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+      # Due to limitations in numactl, if ${NODE} is different from node 0, memory may not default to it.
+      eval "env time -v numactl --cpunodebind=0 --membind=${NODE},${SLOWNODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
+    else
+      eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
+    fi
     numastat_kill
     pcm_kill
   done
@@ -82,15 +95,18 @@ function firsttouch_all_default {
 # First argument is the results directory
 # Second argument is the command to run
 # Third argument is node to firsttouch onto
+# Fourth argument is the node to use as a lower tier
 function firsttouch_all_shared_site {
   BASEDIR="$1"
   COMMAND="$2"
   NODE="$3"
+  SLOWNODE="$4"
 
   # User output
   echo "Running experiment:"
   echo "  Config: 'firsttouch_all_shared_site'"
-  echo "  Node: '${NODE}'"
+  echo "  Upper tier: '${NODE}'"
+  echo "  Lower tier: '${SLOWNODE}'"
 
   export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
   export SH_DEFAULT_NODE="${NODE}"
@@ -106,7 +122,11 @@ function firsttouch_all_shared_site {
     numastat -m &>> ${DIR}/numastat_before.txt
     numastat_background "${DIR}"
     pcm_background "${DIR}"
-    eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
+    if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+      eval "env time -v numactl --cpunodebind=0 --membind==${NODE},${SLOWNODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
+    else
+      eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
+    fi
     numastat_kill
     pcm_kill
   done
@@ -145,6 +165,8 @@ function firsttouch_exclusive_device {
   echo "Running experiment:"
   echo "  Experiment: Firsttouch Exclusive Device"
   echo "  Percentage: ${PERCENTAGE}"
+  echo "  Upper tier: ${NODE}"
+  echo "  Lower tier: ${SLOWNODE}"
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
@@ -162,7 +184,11 @@ function firsttouch_exclusive_device {
     numastat -m &>> ${DIR}/numastat_before.txt
     numastat_background "${DIR}"
     pcm_background "${DIR}"
-    eval "env time -v numactl --cpunodebind=0 --membind=${NODE},${SLOWNODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
+    if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+      eval "env time -v numactl --cpunodebind=0 --membind=${NODE},${SLOWNODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
+    else
+      eval "env time -v numactl --preferred=${NODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
+    fi
     numastat_kill
     pcm_kill
     memreserve_kill
