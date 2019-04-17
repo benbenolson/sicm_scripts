@@ -33,5 +33,9 @@ function pebs {
   mkdir ${DIR}
   echo 1 | sudo tee /proc/sys/kernel/perf_event_paranoid
   drop_caches
-  eval "env time -v" "${COMMAND}" &>> ${DIR}/stdout.txt
+  if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+    eval "env time -v" "${COMMAND}" &>> ${DIR}/stdout.txt
+  else
+    eval "env time -v numactl --preferred=1" "${COMMAND}" &>> ${DIR}/stdout.txt
+  fi
 }
