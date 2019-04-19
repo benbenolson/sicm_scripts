@@ -16,8 +16,9 @@ function offline_mbi_guided {
   PACK_ALGO="$4"
   RATIO=$(echo "${5}/100" | bc -l)
   NODE=${6}
-  CANARY_CFG="firsttouch_all_exclusive_device_0_0"
+  CANARY_CFG="firsttouch_all_exclusive_device_1_0"
   CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
+  CANARY_MEMORY="${BASEDIR}/../${CANARY_CFG}/i0/pcm-memory.txt"
   MBI_DIR="${BASEDIR}/../../${MBI_SIZE}/mbi"
   PEBS_STDOUT="${BASEDIR}/../pebs_128/i0/stdout.txt"
 
@@ -42,6 +43,9 @@ function offline_mbi_guided {
   NUM_BYTES_FLOAT=$(echo "${PEAK_RSS} * ${RATIO} * 1024" | bc)
   NUM_BYTES=${NUM_BYTES_FLOAT%.*}
 
+  # Also get the background bandwidth on NUMA node 0 (that we're not binding to)
+  BACKGROUND_BANDWIDTH=$(${SCRIPTS_DIR}/stat.sh ${CANARY_MEMORY} avg_ddr_bandwidth)
+
   # User output
   echo "Running experiment:"
   echo "  Config: 'offline_mbi_guided'"
@@ -49,6 +53,7 @@ function offline_mbi_guided {
   echo "  Packing algorithm: '${PACK_ALGO}'"
   echo "  Packing into bytes: '${NUM_BYTES}'"
   echo "  Scaling down to peak RSS: '${PEAK_RSS}'"
+  echo "  Background bandwidth: '${BACKGROUND_BANDWIDTH}'"
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="4096"
@@ -60,9 +65,8 @@ function offline_mbi_guided {
   eval "${PRERUN}"
   
   # Generate the hotset/knapsack/thermos
-  cat ${MBI_DIR}/* ${PEBS_STDOUT} | \
-    sicm_hotset mbi ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > \
-      ${BASEDIR}/guidance.txt
+  cat ${MBI_DIR}/* ${PEBS_STDOUT} | ${SCRIPTS_DIR}/all/background_bandwidth.pl ${BACKGROUND_BANDWIDTH} | \
+    sicm_hotset mbi ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > ${BASEDIR}/guidance.txt
   for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
