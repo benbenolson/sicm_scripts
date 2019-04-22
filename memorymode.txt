@@ -1,4 +1,4 @@
-===== GETTING INTO MEMORY MODE =====
+===== GETTING INTO NUMA MODE =====
 
 1. Change the memory to "1LM" mode in the BIOS.
 2. Boot into a new enough kernel (5.1+).
@@ -59,3 +59,25 @@
 
     https://lwn.net/ml/linux-kernel/20190225185727.BCBD768C@viggo.jf.intel.com/
     https://lwn.net/ml/linux-kernel/20190225185740.8660866F@viggo.jf.intel.com/
+
+===== GETTING BACK INTO MEMORY MODE =====
+
+1. Change the memory to "2LM" mode in the BIOS.
+2. Disable and destroy all namspaces:
+
+   ndctl list -N
+   ndctl disable-namespace namespace0.0
+   ndctl destroy-namespace namespace0.0
+
+3. Disable all regions:
+   
+   ndctl list -R
+   ndctl disable-region region0
+   ndctl disable-region region1
+
+4. Put all of each socket's memory in Memory Mode:
+
+   ipmctl create -goal -socket 0 MemoryMode=100
+   ipmctl create -goal -socket 1 MemoryMode=100
+
+5. Reboot.

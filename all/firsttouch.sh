@@ -27,8 +27,7 @@ function firsttouch_all_exclusive_device {
   eval "${PRERUN}"
 
   # Run 5 iters
-  ulimit -c unlimited
-  for i in {0..0}; do
+  for i in {0..4}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
@@ -36,7 +35,7 @@ function firsttouch_all_exclusive_device {
     numastat_background "${DIR}"
     pcm_background "${DIR}"
     if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-      eval "env time -v numactl --cpunodebind=0 --membind=${NODE},${SLOWNODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
+      eval "env time -v numactl --preferred=${NODE} numactl --cpunodebind=${NODE} --membind=${NODE},${SLOWNODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
     else
       eval "env time -v numactl --preferred=${NODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
     fi
@@ -78,8 +77,7 @@ function firsttouch_all_default {
     pcm_background "${DIR}"
     numastat -m &>> ${DIR}/numastat_before.txt
     if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-      # Due to limitations in numactl, if ${NODE} is different from node 0, memory may not default to it.
-      eval "env time -v numactl --cpunodebind=0 --membind=${NODE},${SLOWNODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
+      eval "env time -v numactl --preferred=${NODE} numactl --cpunodebind=${NODE} --membind=${NODE},${SLOWNODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
     else
       eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
     fi
@@ -123,7 +121,7 @@ function firsttouch_all_shared_site {
     numastat_background "${DIR}"
     pcm_background "${DIR}"
     if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-      eval "env time -v numactl --cpunodebind=0 --membind==${NODE},${SLOWNODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
+      eval "env time -v numactl --preferred=${NODE} numactl --cpunodebind=${NODE} --membind==${NODE},${SLOWNODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
     else
       eval "env time -v numactl --preferred=${NODE}" "${COMMAND}" &>> ${DIR}/stdout.txt
     fi
@@ -147,7 +145,11 @@ function firsttouch_exclusive_device {
   NODE="${4}"
   SLOWNODE="${5}"
   # Putting everything on DDR to get the peak RSS of the whole application
-  CANARY_CFG="firsttouch_all_exclusive_device_0_0"
+  if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+    CANARY_CFG="firsttouch_all_exclusive_device_1_3"
+  else
+    CANARY_CFG="firsttouch_all_exclusive_device_0_0"
+  fi
   CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
 
   if [ ! -r ${CANARY_STDOUT} ]; then
@@ -186,7 +188,7 @@ function firsttouch_exclusive_device {
     numastat_background "${DIR}"
     pcm_background "${DIR}"
     if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-      eval "env time -v numactl --cpunodebind=0 --membind=${NODE},${SLOWNODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
+      eval "env time -v numactl --preferred=${NODE} numactl --cpunodebind=${NODE} --membind=${SLOWNODE},${NODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
     else
       eval "env time -v numactl --preferred=${NODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
     fi

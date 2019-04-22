@@ -64,6 +64,8 @@ sub parse_pcm_memory {
   my $results = shift; # This is a hash ref
   my @ddr_bandwidth; # Used before aggregating
   my @mcdram_bandwidth; # Used before aggregating
+  my @node0_bandwidth;
+  my @node1_bandwidth;
   my @total_bandwidth;
 
   # DDR
@@ -77,6 +79,16 @@ sub parse_pcm_memory {
   $results->{'max_mcdram_bandwidth'} = 0.0;
   $results->{'min_mcdram_bandwidth'} = 0.0;
   $results->{'median_mcdram_bandwidth'} = 0.0;
+
+  $results->{'avg_node0_bandwidth'} = 0.0;
+  $results->{'max_node0_bandwidth'} = 0.0;
+  $results->{'min_node0_bandwidth'} = 0.0;
+  $results->{'median_node0_bandwidth'} = 0.0;
+
+  $results->{'avg_node1_bandwidth'} = 0.0;
+  $results->{'max_node1_bandwidth'} = 0.0;
+  $results->{'min_node1_bandwidth'} = 0.0;
+  $results->{'median_node1_bandwidth'} = 0.0;
 
   # Total
   $results->{'avg_total_bandwidth'} = 0.0;
@@ -96,6 +108,8 @@ sub parse_pcm_memory {
       # Convert to GB/s
       push(@ddr_bandwidth, $1 + ($2 / 100));
       push(@mcdram_bandwidth, $3 + ($4 / 100));
+      push(@node0_bandwidth, $1 + ($2 / 100));
+      push(@node1_bandwidth, $3 + ($4 / 100));
     } elsif(/^\|\-\-\s+System Memory Throughput\(MB\/s\)\:\s+(\d+)\.(\d\d)\s+\-\-\|$/) {
       push(@total_bandwidth, $1 + ($2 / 100));
     }
