@@ -12,6 +12,7 @@ require Exporter;
              parse_one_numastat 
              parse_numastat
              parse_pebs
+             parse_fom
              median 
              round_two);
 
@@ -266,6 +267,30 @@ sub parse_pebs {
   }
 
   close($file);
+}
+
+# First argument is the filename
+# Second argument is the reference to a hash
+# Third argument is the benchmark name
+# Expects the other parsing functions to have been run, grabs
+# results from them
+sub parse_fom {
+  my $filename = shift;
+  my $results = shift;
+  my $bench = shift;
+
+  open(my $file, '<', $filename)
+    or print("WARNING: '$filename' does not exist.\n") and return;
+
+  $results->{'fom'} = 0.0;
+
+  while(<$file>) {
+    if($bench eq "lulesh") {
+      if(/FOM\s+=\s+([\d\.]+)\s+\(z\/s\)/) {
+        $results->{'fom'} = $1;
+      }
+    }
+  }
 }
 
 1; # Truthiest module there is

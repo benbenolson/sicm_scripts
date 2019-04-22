@@ -78,6 +78,7 @@ foreach my $size(@sizes) {
         parse_gnu_time("$idir/stdout.txt", $results{$cfg}{$bench}{$iter});
         parse_pcm_memory("$idir/pcm-memory.txt", $results{$cfg}{$bench}{$iter});
         parse_numastat("$idir/numastat.txt", $results{$cfg}{$bench}{$iter});
+        parse_fom("$idir/stdout.txt", $results{$cfg}{$bench}{$iter}, $bench);
 
         $iter += 1;
       }
