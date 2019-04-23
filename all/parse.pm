@@ -289,6 +289,10 @@ sub parse_fom {
       if(/FOM\s+=\s+([\d\.]+)\s+\(z\/s\)/) {
         $results->{'fom'} = $1;
       }
+    } elsif($bench eq "amg") {
+      if(/Figure of Merit \(FOM_2\):\s+(.*)/) {
+        $results->{'fom'} = $1;
+      }
     }
   }
 }

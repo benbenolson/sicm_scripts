@@ -10,7 +10,7 @@
 ./run.sh $1 small firsttouch_all_shared_site 1 0
 
 ./run.sh $1 small pebs 128
-./run.sh $1 small mbi
+#./run.sh $1 small mbi
 
 ./run.sh $1 small firsttouch_exclusive_device 5 1 0
 ./run.sh $1 small firsttouch_exclusive_device 10 1 0
