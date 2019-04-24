@@ -26,7 +26,14 @@
    ndctl create-namespace -m dax
 
    This will put the DIMMs that you added to your memory goal (in Step 6) into a 
-   namespace with the proper driver.
+   namespace with the proper driver. If you have multiple regions, you can specify
+   a region by looking at the output of:
+
+   ndctl list -R
+
+   Choosing a region, and then specifying it with:
+
+   ndctl create-namespace --region region0 -m dax
 
 9. Ensure that the `kmem` module is running:
 

@@ -23,12 +23,17 @@ function pebs {
   export SH_MAX_SAMPLE_PAGES="512"
   export SH_PROFILE_RSS="1"
   export SH_PROFILE_RSS_RATE="0"
-  export SH_DEFAULT_NODE="0"
+  if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+    export SH_DEFAULT_NODE="1"
+  else
+    export SH_DEFAULT_NODE="1"
+  fi
   export SH_SAMPLE_FREQ="${FREQ}"
   export JE_MALLOC_CONF="oversize_threshold:0"
 
   eval "${PRERUN}"
 
+  ulimit -c unlimited
   DIR="${BASEDIR}/i0"
   mkdir ${DIR}
   echo 1 | sudo tee /proc/sys/kernel/perf_event_paranoid
