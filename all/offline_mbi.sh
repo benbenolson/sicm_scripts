@@ -67,7 +67,7 @@ function offline_mbi_guided {
   # Generate the hotset/knapsack/thermos
   cat ${MBI_DIR}/* ${PEBS_STDOUT} | ${SCRIPTS_DIR}/all/background_bandwidth.pl ${BACKGROUND_BANDWIDTH} | \
     sicm_hotset mbi ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > ${BASEDIR}/guidance.txt
-  for i in {0..0}; do
+  for i in {0..4}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
@@ -135,7 +135,7 @@ function offline_all_mbi_guided {
   cat "${MBI_FILE}" | \
     sicm_hotset mbi ${PACK_ALGO} constant ${MCDRAM_SIZE} 1 ${PEAK_RSS} > \
     ${BASEDIR}/guidance.txt
-  for i in {0..0}; do
+  for i in {0..4}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches

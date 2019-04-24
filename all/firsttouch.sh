@@ -69,7 +69,7 @@ function firsttouch_all_default {
   eval "${PRERUN}"
 
   # Run 5 iters
-  for i in {0..0}; do
+  for i in {0..4}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
@@ -113,7 +113,7 @@ function firsttouch_all_shared_site {
   eval "${PRERUN}"
 
   # Run 5 iters
-  for i in {0..0}; do
+  for i in {0..4}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
@@ -179,7 +179,7 @@ function firsttouch_exclusive_device {
   eval "${PRERUN}"
 
   # Run 5 iters
-  for i in {0..0}; do
+  for i in {0..4}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
