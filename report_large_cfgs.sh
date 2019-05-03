@@ -17,6 +17,9 @@ offline_all_pebs_guided_128_medium_thermos_1_0
 offline_all_pebs_guided_128_large_knapsack_1_0
 offline_all_pebs_guided_128_large_hotset_1_0
 offline_all_pebs_guided_128_large_thermos_1_0
+offline_all_mbi_guided_small_knapsack_1_0
+offline_all_mbi_guided_small_hotset_1_0
+offline_all_mbi_guided_small_thermos_1_0
 )
 CFGSTR=""
 for cfg in ${CFGS[@]}; do
