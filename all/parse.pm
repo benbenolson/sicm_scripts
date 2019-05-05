@@ -185,14 +185,17 @@ sub parse_numastat {
 
   $results->{'avg_ddr_free'} = 0.0;
   $results->{'avg_mcdram_free'} = 0.0;
+  $results->{'avg_aep_free'} = 0.0;
   $results->{'avg_total_free'} = 0.0;
 
   $results->{'max_ddr_free'} = 0.0;
   $results->{'max_mcdram_free'} = 0.0;
+  $results->{'max_aep_free'} = 0.0;
   $results->{'max_total_free'} = 0.0;
 
   $results->{'min_ddr_free'} = -1;
   $results->{'min_mcdram_free'} = -1;
+  $results->{'min_aep_free'} = -1;
   $results->{'min_total_free'} = -1;
 
   open(my $file, '<', $filename)

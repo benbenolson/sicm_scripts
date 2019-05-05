@@ -9,6 +9,7 @@
 # Fourth argument is the packing strategy
 # Fifth argument is the percentage of the peak RSS that should be available on the node
 # Sixth argument is the node to pack onto
+# Seventh argument is the node to use as a lower tier
 function offline_mbi_guided {
   BASEDIR="$1"
   COMMAND="$2"
@@ -16,7 +17,8 @@ function offline_mbi_guided {
   PACK_ALGO="$4"
   RATIO=$(echo "${5}/100" | bc -l)
   NODE=${6}
-  CANARY_CFG="firsttouch_all_exclusive_device_1_0"
+  SLOWNODE=${7}
+  CANARY_CFG="reference_bandwidth"
   CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
   CANARY_MEMORY="${BASEDIR}/../${CANARY_CFG}/i0/pcm-memory.txt"
   MBI_DIR="${BASEDIR}/../../${MBI_SIZE}/mbi"
@@ -43,7 +45,7 @@ function offline_mbi_guided {
   NUM_BYTES_FLOAT=$(echo "${PEAK_RSS} * ${RATIO} * 1024" | bc)
   NUM_BYTES=${NUM_BYTES_FLOAT%.*}
 
-  # Also get the background bandwidth on NUMA node 0 (that we're not binding to)
+  # Also get the background bandwidth on the NUMA node that we're not binding to
   BACKGROUND_BANDWIDTH=$(${SCRIPTS_DIR}/stat.sh ${CANARY_MEMORY} avg_ddr_bandwidth)
 
   # User output
@@ -57,7 +59,7 @@ function offline_mbi_guided {
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="4096"
-  export SH_DEFAULT_NODE="0"
+  export SH_DEFAULT_NODE="${SLOWNODE}"
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
   export OMP_NUM_THREADS="272"
   export JE_MALLOC_CONF="oversize_threshold:0"
@@ -66,7 +68,7 @@ function offline_mbi_guided {
   
   # Generate the hotset/knapsack/thermos
   cat ${MBI_DIR}/* ${PEBS_STDOUT} | ${SCRIPTS_DIR}/all/background_bandwidth.pl ${BACKGROUND_BANDWIDTH} | \
-    sicm_hotset mbi ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > ${BASEDIR}/guidance.txt
+    sicm_hotset band ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > ${BASEDIR}/guidance.txt
   for i in {0..4}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
@@ -75,7 +77,11 @@ function offline_mbi_guided {
     numastat -m &>> ${DIR}/numastat_before.txt
     numastat_background "${DIR}"
     pcm_background "${DIR}"
-    eval "env time -v " "${COMMAND}" &>> ${DIR}/stdout.txt
+    if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+      eval "env time -v numactl --cpunodebind=${NODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
+    else
+      eval "env time -v " "${COMMAND}" &>> ${DIR}/stdout.txt
+    fi
     numastat_kill
     pcm_kill
     memreserve_kill
@@ -153,7 +159,7 @@ function offline_all_mbi_guided {
   
   # Generate the hotset/knapsack/thermos
   cat ${MBI_DIR}/* ${PEBS_STDOUT} | ${SCRIPTS_DIR}/all/background_bandwidth.pl ${BACKGROUND_BANDWIDTH} | \
-    sicm_hotset mbi ${PACK_ALGO} constant ${UPPER_SIZE} ${NODE} ${PEAK_RSS_BYTES} > ${BASEDIR}/guidance.txt
+    sicm_hotset band ${PACK_ALGO} constant ${UPPER_SIZE} ${NODE} ${PEAK_RSS_BYTES} > ${BASEDIR}/guidance.txt
   for i in {0..4}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}

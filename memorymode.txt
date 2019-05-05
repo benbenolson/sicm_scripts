@@ -34,6 +34,7 @@
    Choosing a region, and then specifying it with:
 
    ndctl create-namespace --region region0 -m dax
+   ndctl create-namespace --region region1 -m dax
 
 9. Ensure that the `kmem` module is running:
 

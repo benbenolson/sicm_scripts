@@ -6,23 +6,31 @@
 function bench_build {
   # Use Spack to load SICM into the environment
   if [ "$1" = "fort" ]; then
-    export LD_LINKER="flang $2 -g -Wno-unused-command-line-argument -Wl,-rpath,$(spack location -i llvm@flang-20180921)/lib -Wl,-rpath,$(spack location -i flang@20180921 /a2g3n2ugv7xdhzkntxfzxainujapch5v)/lib -Wl,-rpath,$(spack location -i pgmath)/lib"
+    if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+      export LD_LINKER="flang $2 -g -Wno-unused-command-line-argument -Wl,-rpath,$(spack location -i llvm@flang-20180921)/lib -Wl,-rpath,$(spack location -i flang@20180921 /lqmxife)/lib -Wl,-rpath,$(spack location -i pgmath)/lib"
+    else
+      export LD_LINKER="flang $2 -g -Wno-unused-command-line-argument -Wl,-rpath,$(spack location -i llvm@flang-20180921)/lib -Wl,-rpath,$(spack location -i flang@20180921 /a2g3n2ugv7xdhzkntxfzxainujapch5v)/lib -Wl,-rpath,$(spack location -i pgmath)/lib"
+    fi
   elif [ "$1" = "c" ]; then
-    export LD_LINKER="clang++ $2 -g -Wno-unused-command-line-argument -Wl,-rpath,$(spack location -i llvm@flang-20180921)/lib"
+    if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+      export LD_LINKER="clang++ $2 -g -Wno-unused-command-line-argument -Wl,-rpath,$(spack location -i llvm@flang-20180921)/lib -Wl,-rpath,$(spack location -i flang@20180921 /lqmxife)/lib -Wl,-rpath,$(spack location -i pgmath)/lib"
+    else
+      export LD_LINKER="clang++ $2 -g -Wno-unused-command-line-argument -Wl,-rpath,$(spack location -i llvm@flang-20180921)/lib -Wl,-rpath,$(spack location -i flang@20180921 /a2g3n2ugv7xdhzkntxfzxainujapch5v)/lib -Wl,-rpath,$(spack location -i pgmath)/lib"
+    fi
   else
     echo "No linker specified. Aborting."
     exit
   fi
 
   # Define the variables for the compiler wrappers
-  export LD_COMPILER="clang++ -Wno-unused-command-line-argument -Ofast -march=knl" # Compiles from .bc -> .o
-  export CXX_COMPILER="clang++ $3 -g -Wno-unused-command-line-argument -Ofast -march=knl"
+  export LD_COMPILER="clang++ -Wno-unused-command-line-argument -Ofast -march=native" # Compiles from .bc -> .o
+  export CXX_COMPILER="clang++ $3 -g -Wno-unused-command-line-argument -Ofast -march=native"
   if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-    export FORT_COMPILER="flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -Ofast -march=knl -I$(spack location -i flang@20180921 /lqmxife)/include"
+    export FORT_COMPILER="flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -Ofast -march=native -I$(spack location -i flang@20180921 /lqmxife)/include"
   else
-    export FORT_COMPILER="flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -Ofast -march=knl -I$(spack location -i flang@20180921 /a2g3n2ugv7xdhzkntxfzxainujapch5v)/include"
+    export FORT_COMPILER="flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -Ofast -march=native -I$(spack location -i flang@20180921 /a2g3n2ugv7xdhzkntxfzxainujapch5v)/include"
   fi
-  export C_COMPILER="clang -g $3 -Wno-unused-command-line-argument -Ofast -march=knl"
+  export C_COMPILER="clang -g $3 -Wno-unused-command-line-argument -Ofast -march=native"
   export LLVMLINK="llvm-link"
   export OPT="opt"
 

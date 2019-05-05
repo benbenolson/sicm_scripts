@@ -9,6 +9,7 @@ source $SCRIPTS_DIR/all/firsttouch.sh
 source $SCRIPTS_DIR/all/pebs.sh
 source $SCRIPTS_DIR/all/offline_pebs.sh
 source $SCRIPTS_DIR/all/offline_mbi.sh
+source $SCRIPTS_DIR/all/offline_manual.sh
 source $SCRIPTS_DIR/all/mbi.sh
 
 # For the PCM tools
@@ -21,8 +22,9 @@ else
 fi
 
 if [[ $1 == "qmcpack" ]]; then
-  export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-debian9-x86_64/gcc-7.2.0/flang-20180921-a2g3n2ugv7xdhzkntxfzxainujapch5v/lib"
-  export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-debian9-x86_64/gcc-7.2.0/llvm-flang-20180921-f2bzfqn5xo223a3y3jputvl7wtx3g4bw/lib"
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-fedora27-x86_64/gcc-7.2.0/flang-20180921-lqmxifeyjbpzmay6qajf6e3s2zds44im/lib"
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-fedora27-x86_64/gcc-7.2.0/llvm-flang-20180921-drt5ldcolcud5ufd3ho5tplaliufhdlm/lib"
+    export LD_PRELOAD="/home/macslayer/spack/opt/spack/linux-fedora27-x86_64/gcc-7.2.0/flang-20180921-lqmxifeyjbpzmay6qajf6e3s2zds44im/lib/libflang.so /home/macslayer/spack/opt/spack/linux-fedora27-x86_64/gcc-7.2.0/flang-20180921-lqmxifeyjbpzmay6qajf6e3s2zds44im/lib/libflangrti.so"
 fi
 
 # Set $COMMAND to the command that runs the benchmark
@@ -78,8 +80,10 @@ export PRERUN="${1}_${2}_${CONFIG}"
 # Create the results directory for this experiment,
 # and pass that to the BASH function
 DIRECTORY="${RESULTS_DIR}/${1}/${2}/${CONFIG}"
-rm -rf ${DIRECTORY}
-mkdir -p ${DIRECTORY}
+if [[ ${3} != "offline_all_manual" ]]; then
+  rm -rf ${DIRECTORY}
+  mkdir -p ${DIRECTORY}
+fi
 
 # Execute the BASH function with arguments
 # $3 contains the BASH function name

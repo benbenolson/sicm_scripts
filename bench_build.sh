@@ -7,8 +7,8 @@ echo "Loading Spack module of SICM..."
 . $SPACK_DIR/share/spack/setup-env.sh
 
 if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-  module load pgmath-20180921-gcc-7.2.0-zo4t6i2
   module load flang-20180921-gcc-7.2.0-lqmxife
+  module load pgmath-20180921-gcc-7.2.0-zo4t6i2
   module load llvm-flang-20180921-gcc-7.2.0-drt5ldc
   module load sicm-high-develop-gcc-7.2.0-3z2gouy
 else

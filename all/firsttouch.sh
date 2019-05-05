@@ -35,7 +35,7 @@ function firsttouch_all_exclusive_device {
     numastat_background "${DIR}"
     pcm_background "${DIR}"
     if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-      eval "env time -v numactl --preferred=${NODE} numactl --cpunodebind=${NODE} --membind=${NODE},${SLOWNODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
+      eval "env time -v numactl --preferred=${NODE} numactl --cpunodebind=1 --membind=${NODE},${SLOWNODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
     else
       eval "env time -v numactl --preferred=${NODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
     fi
@@ -179,7 +179,7 @@ function firsttouch_exclusive_device {
   eval "${PRERUN}"
 
   # Run 5 iters
-  for i in {0..4}; do
+  for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches

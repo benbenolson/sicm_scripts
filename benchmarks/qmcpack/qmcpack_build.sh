@@ -5,12 +5,12 @@ bench_build c "" ""
 
 # Get Spack into the environment and load Clang 6.0.1.
 # This is a dependency of SICM, so should already be installed.
-#spack load llvm@flang-20180921
+spack load llvm@flang-20180921
 
 # Also install an unpatched Flang. We need this because the SICM-patched
 # Flang will try to look for "sh_" symbols, which we don't have.
 #spack find flang@20180921 >> $SCRIPTS_DIR/patched_flang.txt
-#spack install flang@20180921 %gcc@7.2.0
+#spack install -j1 flang@20180921 %gcc@7.2.0
 #spack find flang@20180921 >> $SCRIPTS_DIR/unpatched_flang.txt
 
 # Make sure Clang is in the environment. Should bring in Flang, too.
@@ -46,9 +46,9 @@ cmake -DBUILD_UNIT_TESTS=False \
       -DQMC_CUDA=0 \
       -DCMAKE_CXX_COMPILER:PATH=${COMPILER_WRAPPER} \
       -DCMAKE_C_COMPILER:PATH=${COMPILER_WRAPPER} \
-      -DCMAKE_CXX_FLAGS="-Wno-#warnings -Wno-deprecated -Wno-#pragma-messages" \
+      -DCMAKE_CXX_FLAGS="-Wno-warnings -Wno-deprecated -Wno-pragma-messages" \
       -DCMAKE_LINKER:PATH=${LD_WRAPPER} \
-      -DCMAKE_CXX_LINK_EXECUTABLE="<CMAKE_LINKER> -lhdf5 -lxml2 -lfftw3 -llapack -lblas -Wl,-rpath,$(spack location -i hdf5)/lib -Wl,-rpath,$(spack location -i fftw)/lib -Wl,-rpath,$(spack location -i netlib-lapack)/lib <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>" \
+      -DCMAKE_CXX_LINK_EXECUTABLE="<CMAKE_LINKER> -lhdf5 -lxml2 -lfftw3 -llapack -lblas -Wl,-rpath,$(spack location -i hdf5)/lib -Wl,-rpath,$(spack location -i fftw)/lib -Wl,-rpath,$(spack location -i netlib-lapack)/lib -Wl,-rpath,$(spack location -i netlib-lapack)/lib64 <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>" \
       -DCMAKE_AR:PATH=${AR_WRAPPER} \
       -DCMAKE_RANLIB:PATH="${RANLIB_WRAPPER}" \
       -DCMAKE_BUILD_WITH_INSTALL_RPATH=True \
