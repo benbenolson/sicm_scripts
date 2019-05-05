@@ -20,7 +20,11 @@ function offline_pebs_guided {
   RATIO=$(echo "${6}/100" | bc -l)
   NODE=${7}
   SLOWNODE=${8}
-  CANARY_CFG="firsttouch_all_exclusive_device_0_0"
+  if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+    CANARY_CFG="firsttouch_all_exclusive_device_1_3"
+  else
+    CANARY_CFG="firsttouch_all_exclusive_device_1_0"
+  fi
   CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
   PEBS_FILE="${BASEDIR}/../../${PEBS_SIZE}/pebs_${PEBS_FREQ}/i0/stdout.txt"
 
@@ -64,7 +68,7 @@ function offline_pebs_guided {
   
   # Generate the hotset/knapsack/thermos
   cat "${PEBS_FILE}" | \
-    sicm_hotset pebs ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > \
+    sicm_hotset acc ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > \
       ${BASEDIR}/guidance.txt
   for i in {0..4}; do
     DIR="${BASEDIR}/i${i}"
@@ -75,7 +79,7 @@ function offline_pebs_guided {
     numastat_background "${DIR}"
     pcm_background "${DIR}"
     if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-      eval "env time -v numactl --cpunodebind=0 --membind=${NODE},${SLOWNODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
+      eval "env time -v numactl --cpunodebind=1 --membind=${NODE},${SLOWNODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
     else
       eval "env time -v " "${COMMAND}" &>> ${DIR}/stdout.txt
     fi
@@ -149,7 +153,7 @@ function offline_all_pebs_guided {
   
   # Generate the hotset/knapsack/thermos
   cat "${PEBS_FILE}" | \
-    sicm_hotset pebs ${PACK_ALGO} constant ${UPPER_SIZE} ${NODE} ${PEAK_RSS_BYTES} > \
+    sicm_hotset acc ${PACK_ALGO} constant ${UPPER_SIZE} ${NODE} ${PEAK_RSS_BYTES} > \
       ${BASEDIR}/guidance.txt
   for i in {0..4}; do
     DIR="${BASEDIR}/i${i}"
