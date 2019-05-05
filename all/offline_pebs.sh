@@ -129,7 +129,7 @@ function offline_all_pebs_guided {
   fi
 
   # This is in kilobytes
-  COLUMN_NUMBER=$(echo ${NODE} + 1 | bc)
+  COLUMN_NUMBER=$(echo ${NODE} + 2 | bc)
   UPPER_SIZE="$(numastat -m | awk -v column_number=${COLUMN_NUMBER} '/MemFree/ {printf "%d * 1024 * 1024\n", $column_number}' | bc)"
   PEAK_RSS=$(${SCRIPTS_DIR}/stat.sh ${CANARY_STDOUT} rss_kbytes)
   PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
@@ -140,7 +140,7 @@ function offline_all_pebs_guided {
   echo "  Profiling frequency: '${PEBS_FREQ}'"
   echo "  Profiling size: '${PEBS_SIZE}'"
   echo "  Packing algorithm: '${PACK_ALGO}'"
-  echo "  Packing into upper tier: '${UPPER_SIZE}'"
+  echo "  Packing into upper tier: '${UPPER_SIZE}', node '${NODE}'"
   echo "  Scaling down to peak RSS: '${PEAK_RSS}'"
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
@@ -172,4 +172,3 @@ function offline_all_pebs_guided {
     memreserve_kill
   done
 }
-
