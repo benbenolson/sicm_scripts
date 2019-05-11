@@ -282,6 +282,10 @@ sub parse_fom {
   my $results = shift;
   my $bench = shift;
 
+  my @qmcpack_numerator_terms;
+  my $qmcpack_denominator;
+  my $qmcpack_numerator = 1;
+
   open(my $file, '<', $filename)
     or print("WARNING: '$filename' does not exist.\n") and return;
 
@@ -296,7 +300,22 @@ sub parse_fom {
       if(/Figure of Merit \(FOM_2\):\s+(.*)/) {
         $results->{'fom'} = $1;
       }
+    } elsif($bench eq "qmcpack") {
+      if(/blocks\s+=\s+(\d+)/) {
+        push(@qmcpack_numerator_terms, $1);
+      } elsif(/steps\s+=\s+(\d+)/) {
+        push(@qmcpack_numerator_terms, $1);
+      } elsif(/walkers\/mpi\s+=\s+(\d+)/) {
+        push(@qmcpack_numerator_terms, $1);
+      } elsif(/QMC Execution time = ([\d\.e\+]+) secs/) {
+        $qmcpack_denominator = $1;
+      }
     }
+  }
+
+  if($bench eq "qmcpack") {
+    $qmcpack_numerator *= $_ foreach @qmcpack_numerator_terms;
+    $results->{'fom'} = $qmcpack_numerator / $qmcpack_denominator;
   }
 }
 
