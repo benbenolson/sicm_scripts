@@ -197,3 +197,45 @@ function firsttouch_exclusive_device {
     memreserve_kill
   done
 }
+
+################################################################################
+#                                     KNL Cache Mode                           #
+################################################################################
+# First argument is results directory
+# Second argument is the command to run
+function cache_mode {
+  BASEDIR="$1"
+  COMMAND="$2"
+  NODE="1"
+  SLOWNODE="1"
+
+  # User output
+  echo "Running experiment:"
+  echo "  Config: 'firsttouch_all_exclusive_device'"
+  echo "  Upper tier: '${NODE}'"
+  echo "  Lower tier: '${SLOWNODE}'"
+
+  export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
+  export SH_MAX_SITES_PER_ARENA="5000"
+  export SH_DEFAULT_NODE="${NODE}"
+  export JE_MALLOC_CONF="oversize_threshold:0"
+
+  eval "${PRERUN}"
+
+  # Run 5 iters
+  for i in {0..4}; do
+    DIR="${BASEDIR}/i${i}"
+    mkdir ${DIR}
+    drop_caches
+    numastat -m &>> ${DIR}/numastat_before.txt
+    numastat_background "${DIR}"
+    pcm_background "${DIR}"
+    if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+      eval "env time -v numactl --preferred=${NODE} numactl --cpunodebind=1 --membind=${NODE},${SLOWNODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
+    else
+      eval "env time -v numactl --preferred=${NODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
+    fi
+    numastat_kill
+    pcm_kill
+  done
+}
