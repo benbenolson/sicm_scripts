@@ -206,8 +206,8 @@ function firsttouch_exclusive_device {
 function cache_mode {
   BASEDIR="$1"
   COMMAND="$2"
-  NODE="1"
-  SLOWNODE="1"
+  NODE="0"
+  SLOWNODE="0"
 
   # User output
   echo "Running experiment:"
