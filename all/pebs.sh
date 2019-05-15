@@ -43,4 +43,8 @@ function pebs {
   else
     eval "env time -v numactl --preferred=1" "${COMMAND}" &>> ${DIR}/stdout.txt
   fi
+
+  # Just in case PEBS screwed up, aggregate the sites so that each site gets exactly one arena
+  cp ${DIR}/stdout.txt ${DIR}/unaggregated.txt
+  cat ${DIR}/unaggregated.txt | ${SCRIPTS_DIR}/all/aggregate_sites.pl > ${DIR}/stdout.txt
 }

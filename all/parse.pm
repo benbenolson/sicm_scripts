@@ -310,6 +310,10 @@ sub parse_fom {
       } elsif(/QMC Execution time = ([\d\.e\+]+) secs/) {
         $qmcpack_denominator = $1;
       }
+    } elsif($bench eq "snap") {
+      if(/Grind Time \(nanoseconds\)\s+([\d\.E\+]+)/) {
+        $results->{'fom'} = 1 / $1;
+      }
     }
   }
 

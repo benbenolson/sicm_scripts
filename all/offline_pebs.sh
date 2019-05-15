@@ -67,7 +67,7 @@ function offline_pebs_guided {
   eval "${PRERUN}"
   
   # Generate the hotset/knapsack/thermos
-  cat "${PEBS_FILE}" | \
+  cat "${PEBS_FILE}" |  \
     sicm_hotset acc ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > \
       ${BASEDIR}/guidance.txt
   for i in {0..4}; do
