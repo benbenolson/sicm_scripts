@@ -22,9 +22,14 @@ else
 fi
 
 if [[ $1 == "qmcpack" ]]; then
+  if [[ "$(hostname)" = "JF1121-080209T" ]]; then
     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-fedora27-x86_64/gcc-7.2.0/flang-20180921-lqmxifeyjbpzmay6qajf6e3s2zds44im/lib"
     export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-fedora27-x86_64/gcc-7.2.0/llvm-flang-20180921-drt5ldcolcud5ufd3ho5tplaliufhdlm/lib"
     export LD_PRELOAD="/home/macslayer/spack/opt/spack/linux-fedora27-x86_64/gcc-7.2.0/flang-20180921-lqmxifeyjbpzmay6qajf6e3s2zds44im/lib/libflang.so /home/macslayer/spack/opt/spack/linux-fedora27-x86_64/gcc-7.2.0/flang-20180921-lqmxifeyjbpzmay6qajf6e3s2zds44im/lib/libflangrti.so"
+  else
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-debian9-x86_64/gcc-7.2.0/flang-20180921-a2g3n2ugv7xdhzkntxfzxainujapch5v/lib"
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-debian9-x86_64/gcc-7.2.0/llvm-flang-20180921-f2bzfqn5xo223a3y3jputvl7wtx3g4bw/lib"
+  fi
 fi
 
 # Set $COMMAND to the command that runs the benchmark
