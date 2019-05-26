@@ -109,7 +109,7 @@ function offline_all_pebs_guided {
   SLOWNODE=${7}
 
   if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-    CANARY_CFG="firsttouch_all_exclusive_device_1_3"
+    CANARY_CFG="firsttouch_all_exclusive_device_1_1"
   else
     CANARY_CFG="firsttouch_all_exclusive_device_1_0"
   fi
