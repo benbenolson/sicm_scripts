@@ -81,6 +81,7 @@ sub parse_pcm_memory {
   $results->{'min_mcdram_bandwidth'} = 0.0;
   $results->{'median_mcdram_bandwidth'} = 0.0;
 
+  # AEP machine
   $results->{'avg_node0_bandwidth'} = 0.0;
   $results->{'max_node0_bandwidth'} = 0.0;
   $results->{'min_node0_bandwidth'} = 0.0;
@@ -109,8 +110,9 @@ sub parse_pcm_memory {
       # Convert to GB/s
       push(@ddr_bandwidth, $1 + ($2 / 100));
       push(@mcdram_bandwidth, $3 + ($4 / 100));
-      push(@node0_bandwidth, $1 + ($2 / 100));
-      push(@node1_bandwidth, $3 + ($4 / 100));
+    } elsif(/^\|\-\-\s+NODE 0 Memory \(MB\/s\)\:\s+([\d\.]+)\s+\-\-\|\|\-\-\s+NODE 1 Memory \(MB\/s\)\:\s+([\d\.]+)\s+\-\-\|$/) {
+      push(@node0_bandwidth, $1);
+      push(@node1_bandwidth, $2);
     } elsif(/^\|\-\-\s+System Memory Throughput\(MB\/s\)\:\s+(\d+)\.(\d\d)\s+\-\-\|$/) {
       push(@total_bandwidth, $1 + ($2 / 100));
     }
@@ -127,6 +129,20 @@ sub parse_pcm_memory {
     $results->{'max_mcdram_bandwidth'} = max(@mcdram_bandwidth) or die "Didn't get any PCM samples";
     $results->{'min_mcdram_bandwidth'} = min(@mcdram_bandwidth) or die "Didn't get any PCM samples";
     $results->{'median_mcdram_bandwidth'} = median(@mcdram_bandwidth);
+    $results->{'avg_total_bandwidth'} = round_two(sum(@total_bandwidth)/@total_bandwidth);
+    $results->{'max_total_bandwidth'} = max(@total_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'min_total_bandwidth'} = min(@total_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'median_total_bandwidth'} = median(@total_bandwidth);
+  }
+  if((scalar(@node0_bandwidth) > 0) and (scalar(@node1_bandwidth) > 0)) {
+    $results->{'avg_node0_bandwidth'} = round_two(sum(@node0_bandwidth)/@node0_bandwidth);
+    $results->{'max_node0_bandwidth'} = max(@node0_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'min_node0_bandwidth'} = min(@node0_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'median_node0_bandwidth'} = median(@node0_bandwidth);
+    $results->{'avg_node1_bandwidth'} = round_two(sum(@node1_bandwidth)/@node1_bandwidth);
+    $results->{'max_node1_bandwidth'} = max(@node1_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'min_node1_bandwidth'} = min(@node1_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'median_node1_bandwidth'} = median(@node1_bandwidth);
     $results->{'avg_total_bandwidth'} = round_two(sum(@total_bandwidth)/@total_bandwidth);
     $results->{'max_total_bandwidth'} = max(@total_bandwidth) or die "Didn't get any PCM samples";
     $results->{'min_total_bandwidth'} = min(@total_bandwidth) or die "Didn't get any PCM samples";
