@@ -90,8 +90,10 @@ foreach my $size(@sizes) {
       for($i = 0; $i < $iter; $i++) {
         @metrics = ();
         while(my($key, $val) = each %{$results{$cfg}{$bench}{$i}}) {
-          $results{$cfg}{$bench}{$key} += $val;
-          push(@metrics, $key);
+          if(defined($val)) {
+            $results{$cfg}{$bench}{$key} += $val;
+            push(@metrics, $key);
+          }
         }
       }
 

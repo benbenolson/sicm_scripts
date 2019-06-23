@@ -11,6 +11,7 @@ source $SCRIPTS_DIR/all/offline_pebs.sh
 source $SCRIPTS_DIR/all/offline_mbi.sh
 source $SCRIPTS_DIR/all/offline_manual.sh
 source $SCRIPTS_DIR/all/mbi.sh
+source $SCRIPTS_DIR/all/oneoffs.sh
 
 # For the PCM tools
 sudo modprobe msr

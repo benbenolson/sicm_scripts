@@ -25,3 +25,19 @@ function amg_medium_firsttouch_all_shared_site_0 {
 function amg_large_firsttouch_all_shared_site_0 {
   export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:2"
 }
+
+function amg_medium_cache_mode_pebs_128 {
+  export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:2"
+}
+
+function amg_large_cache_mode_pebs_128 {
+  export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:2"
+}
+
+function amg_medium_cache_mode_shared_site {
+  export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:2"
+}
+
+function amg_large_cache_mode_shared_site {
+  export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:2"
+}
