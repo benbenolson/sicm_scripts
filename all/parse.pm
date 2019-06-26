@@ -38,7 +38,7 @@ sub parse_gnu_time {
   $results->{'rss_kbytes'} = 0.0;
 
   open(my $file, '<', $filename)
-    or print("WARNING: '$filename' does not exist.\n") and return;
+    or return;
 
   while(<$file>) {
     chomp;
@@ -63,23 +63,15 @@ sub parse_gnu_time {
 sub parse_pcm_memory {
   my $filename = shift;
   my $results = shift; # This is a hash ref
-  my @ddr_bandwidth; # Used before aggregating
-  my @mcdram_bandwidth; # Used before aggregating
   my @node0_bandwidth;
   my @node1_bandwidth;
+  my @node0_read_bandwidth;
+  my @node1_read_bandwidth;
+  my @node0_write_bandwidth;
+  my @node1_write_bandwidth;
   my @total_bandwidth;
-
-  # DDR
-  $results->{'avg_ddr_bandwidth'} = 0.0;
-  $results->{'max_ddr_bandwidth'} = 0.0;
-  $results->{'min_ddr_bandwidth'} = 0.0;
-  $results->{'median_ddr_bandwidth'} = 0.0;
-
-  # MCDRAM
-  $results->{'avg_mcdram_bandwidth'} = 0.0;
-  $results->{'max_mcdram_bandwidth'} = 0.0;
-  $results->{'min_mcdram_bandwidth'} = 0.0;
-  $results->{'median_mcdram_bandwidth'} = 0.0;
+  my @total_read_bandwidth;
+  my @total_write_bandwidth;
 
   # AEP machine
   $results->{'avg_node0_bandwidth'} = 0.0;
@@ -98,8 +90,16 @@ sub parse_pcm_memory {
   $results->{'min_total_bandwidth'} = 0.0;
   $results->{'median_total_bandwidth'} = 0.0;
 
+  # Sum
+  $results->{'sum_node0_bandwidth'} = 0;
+  $results->{'sum_node1_bandwidth'} = 0;
+  $results->{'sum_node0_read_bandwidth'} = 0;
+  $results->{'sum_node1_read_bandwidth'} = 0;
+  $results->{'sum_node0_write_bandwidth'} = 0;
+  $results->{'sum_node1_write_bandwidth'} = 0;
+
   open(my $file, '<', $filename)
-    or print("WARNING: '$filename' does not exist.\n") and return;
+    or return;
 
   # Collect all samples into @*_bandwidth arrays
   while(<$file>) {
@@ -107,46 +107,78 @@ sub parse_pcm_memory {
     if(/^\|\-\-\s+DDR4 Memory \(MB\/s\)\s+\:\s+(\d+)\.(\d\d)\s+\-\-\|\|\-\-\s+MCDRAM \(MB\/s\)\s+\:\s+(\d+)\.(\d\d)\s+\-\-\|$/) {
       # First and second are DDR bandwidth (before and after decimal point)
       # Third and fourth are MCDRAM
-      # Convert to GB/s
-      push(@ddr_bandwidth, $1 + ($2 / 100));
-      push(@mcdram_bandwidth, $3 + ($4 / 100));
+      push(@node0_bandwidth, $1 + ($2 / 100));
+      push(@node1_bandwidth, $3 + ($4 / 100));
     } elsif(/^\|\-\-\s+NODE 0 Memory \(MB\/s\)\:\s+([\d\.]+)\s+\-\-\|\|\-\-\s+NODE 1 Memory \(MB\/s\)\:\s+([\d\.]+)\s+\-\-\|$/) {
       push(@node0_bandwidth, $1);
       push(@node1_bandwidth, $2);
+    } elsif(/^\|\-\-\s+NODE 0 Mem Read \(MB\/s\) \:\s+([\d\.]+)\s+\-\-\|\|\-\-\s+NODE 1 Mem Read \(MB\/s\) \:\s+([\d\.]+)\s+\-\-\|$/) {
+      push(@node0_read_bandwidth, $1);
+      push(@node1_read_bandwidth, $2);
+    } elsif(/^\|\-\-\s+NODE 0 Mem Write\(MB\/s\) \:\s+([\d\.]+)\s+\-\-\|\|\-\-\s+NODE 1 Mem Write\(MB\/s\) \:\s+([\d\.]+)\s+\-\-\|$/) {
+      push(@node0_write_bandwidth, $1);
+      push(@node1_write_bandwidth, $2);
     } elsif(/^\|\-\-\s+System Memory Throughput\(MB\/s\)\:\s+(\d+)\.(\d\d)\s+\-\-\|$/) {
       push(@total_bandwidth, $1 + ($2 / 100));
+    } elsif(/^\|\-\-\s+System Read Throughput\(MB\/s\)\:\s+(\d+)\.(\d\d)\s+\-\-\|$/) {
+      push(@total_read_bandwidth, $1 + ($2 / 100));
+    } elsif(/^\|\-\-\s+System Write Throughput\(MB\/s\)\:\s+(\d+)\.(\d\d)\s+\-\-\|$/) {
+      push(@total_write_bandwidth, $1 + ($2 / 100));
     }
   }
   close($file);
 
   # Now aggregate the results into single numbers
-  if((scalar(@ddr_bandwidth) > 0) and (scalar(@mcdram_bandwidth) > 0)) {
-    $results->{'avg_ddr_bandwidth'} = round_two(sum(@ddr_bandwidth)/@ddr_bandwidth);
-    $results->{'max_ddr_bandwidth'} = max(@ddr_bandwidth) or die "Didn't get any PCM samples";
-    $results->{'min_ddr_bandwidth'} = min(@ddr_bandwidth) or die "Didn't get any PCM samples";
-    $results->{'median_ddr_bandwidth'} = median(@ddr_bandwidth);
-    $results->{'avg_mcdram_bandwidth'} = round_two(sum(@mcdram_bandwidth)/@mcdram_bandwidth);
-    $results->{'max_mcdram_bandwidth'} = max(@mcdram_bandwidth) or die "Didn't get any PCM samples";
-    $results->{'min_mcdram_bandwidth'} = min(@mcdram_bandwidth) or die "Didn't get any PCM samples";
-    $results->{'median_mcdram_bandwidth'} = median(@mcdram_bandwidth);
-    $results->{'avg_total_bandwidth'} = round_two(sum(@total_bandwidth)/@total_bandwidth);
-    $results->{'max_total_bandwidth'} = max(@total_bandwidth) or die "Didn't get any PCM samples";
-    $results->{'min_total_bandwidth'} = min(@total_bandwidth) or die "Didn't get any PCM samples";
-    $results->{'median_total_bandwidth'} = median(@total_bandwidth);
-  }
   if((scalar(@node0_bandwidth) > 0) and (scalar(@node1_bandwidth) > 0)) {
     $results->{'avg_node0_bandwidth'} = round_two(sum(@node0_bandwidth)/@node0_bandwidth);
+    $results->{'sum_node0_bandwidth'} = sum(@node0_bandwidth);
     $results->{'max_node0_bandwidth'} = max(@node0_bandwidth) or die "Didn't get any PCM samples";
     $results->{'min_node0_bandwidth'} = min(@node0_bandwidth) or die "Didn't get any PCM samples";
     $results->{'median_node0_bandwidth'} = median(@node0_bandwidth);
     $results->{'avg_node1_bandwidth'} = round_two(sum(@node1_bandwidth)/@node1_bandwidth);
+    $results->{'sum_node1_bandwidth'} = sum(@node1_bandwidth);
     $results->{'max_node1_bandwidth'} = max(@node1_bandwidth) or die "Didn't get any PCM samples";
     $results->{'min_node1_bandwidth'} = min(@node1_bandwidth) or die "Didn't get any PCM samples";
     $results->{'median_node1_bandwidth'} = median(@node1_bandwidth);
     $results->{'avg_total_bandwidth'} = round_two(sum(@total_bandwidth)/@total_bandwidth);
+    $results->{'sum_total_bandwidth'} = sum(@total_bandwidth);
     $results->{'max_total_bandwidth'} = max(@total_bandwidth) or die "Didn't get any PCM samples";
     $results->{'min_total_bandwidth'} = min(@total_bandwidth) or die "Didn't get any PCM samples";
     $results->{'median_total_bandwidth'} = median(@total_bandwidth);
+  }
+  if((scalar(@node0_read_bandwidth) > 0) and (scalar(@node1_read_bandwidth) > 0)) {
+    $results->{'avg_node0_read_bandwidth'} = round_two(sum(@node0_read_bandwidth)/@node0_read_bandwidth);
+    $results->{'sum_node0_read_bandwidth'} = sum(@node0_read_bandwidth);
+    $results->{'max_node0_read_bandwidth'} = max(@node0_read_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'min_node0_read_bandwidth'} = min(@node0_read_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'median_node0_read_bandwidth'} = median(@node0_read_bandwidth);
+    $results->{'avg_node1_read_bandwidth'} = round_two(sum(@node1_read_bandwidth)/@node1_read_bandwidth);
+    $results->{'sum_node1_read_bandwidth'} = sum(@node1_read_bandwidth);
+    $results->{'max_node1_read_bandwidth'} = max(@node1_read_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'min_node1_read_bandwidth'} = min(@node1_read_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'median_node1_read_bandwidth'} = median(@node1_read_bandwidth);
+    $results->{'avg_total_read_bandwidth'} = round_two(sum(@total_read_bandwidth)/@total_read_bandwidth);
+    $results->{'sum_total_read_bandwidth'} = sum(@total_read_bandwidth);
+    $results->{'max_total_read_bandwidth'} = max(@total_read_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'min_total_read_bandwidth'} = min(@total_read_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'median_total_read_bandwidth'} = median(@total_read_bandwidth);
+  }
+  if((scalar(@node0_write_bandwidth) > 0) and (scalar(@node1_write_bandwidth) > 0)) {
+    $results->{'avg_node0_write_bandwidth'} = round_two(sum(@node0_write_bandwidth)/@node0_write_bandwidth);
+    $results->{'sum_node0_write_bandwidth'} = sum(@node0_write_bandwidth);
+    $results->{'max_node0_write_bandwidth'} = max(@node0_write_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'min_node0_write_bandwidth'} = min(@node0_write_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'median_node0_write_bandwidth'} = median(@node0_write_bandwidth);
+    $results->{'avg_node1_write_bandwidth'} = round_two(sum(@node1_write_bandwidth)/@node1_write_bandwidth);
+    $results->{'sum_node1_write_bandwidth'} = sum(@node1_write_bandwidth);
+    $results->{'max_node1_write_bandwidth'} = max(@node1_write_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'min_node1_write_bandwidth'} = min(@node1_write_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'median_node1_write_bandwidth'} = median(@node1_write_bandwidth);
+    $results->{'avg_total_write_bandwidth'} = round_two(sum(@total_write_bandwidth)/@total_write_bandwidth);
+    $results->{'sum_total_write_bandwidth'} = sum(@total_write_bandwidth);
+    $results->{'max_total_write_bandwidth'} = max(@total_write_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'min_total_write_bandwidth'} = min(@total_write_bandwidth) or die "Didn't get any PCM samples";
+    $results->{'median_total_write_bandwidth'} = median(@total_write_bandwidth);
   }
 }
 
@@ -167,7 +199,7 @@ sub parse_one_numastat {
   $results->{'total_free'} = 0.0;
 
   open(my $file, '<', $filename)
-    or print("WARNING: '$filename' does not exist.\n") and return;
+    or return;
 
   while(<$file>) {
     chomp;
@@ -215,7 +247,7 @@ sub parse_numastat {
   $results->{'min_total_free'} = -1;
 
   open(my $file, '<', $filename)
-    or print("WARNING: '$filename' does not exist.\n") and return;
+    or return;
 
   while(<$file>) {
     chomp;
@@ -268,7 +300,7 @@ sub parse_pebs {
   $results->{'sites'} = ();
 
   open(my $file, '<', $filename)
-    or print("WARNING: '$filename' does not exist.\n") and return;
+    or return;
 
   my $in_pebs_results = 0;
   while(<$file>) {
@@ -303,7 +335,7 @@ sub parse_fom {
   my $qmcpack_numerator = 1;
 
   open(my $file, '<', $filename)
-    or print("WARNING: '$filename' does not exist.\n") and return;
+    or return;
 
   $results->{'fom'} = 0.0;
 

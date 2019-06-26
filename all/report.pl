@@ -84,25 +84,48 @@ foreach my $size(@sizes) {
         $iter += 1;
       }
 
-      # Add up each iteration's values into a total for each metric
+      # Construct a list of the metrics
       my $i;
       my @metrics;
       for($i = 0; $i < $iter; $i++) {
         @metrics = ();
         while(my($key, $val) = each %{$results{$cfg}{$bench}{$i}}) {
           if(defined($val)) {
-            $results{$cfg}{$bench}{$key} += $val;
+            $results{$cfg}{$bench}{$key} = 0;
+            $results{$cfg}{$bench}{$key . "_max"} = 0;
+            $results{$cfg}{$bench}{$key . "_min"} = 999999999999;
             push(@metrics, $key);
+          }
+        }
+      }
+
+      # Iterate over each metric and get a total, maximum, and minimum for each.
+      my $val;
+      foreach my $metric(@metrics) {
+        for($i = 0; $i < $iter; $i++) {
+          $val = $results{$cfg}{$bench}{$i}{$metric};
+          if(defined($val)) {
+            $results{$cfg}{$bench}{$metric} += $val;
+            if($val gt ($results{$cfg}{$bench}{$metric . "_max"})) {
+              $results{$cfg}{$bench}{$metric . "_max"} = $val;
+            }
+            if($val lt ($results{$cfg}{$bench}{$metric . "_min"})) {
+              $results{$cfg}{$bench}{$metric . "_min"} = $val;
+            }
           }
         }
       }
 
       # Divide by the number of iterations
       foreach my $tmp_metric(@metrics) {
-        $results{$cfg}{$bench}{$tmp_metric} /= ($iter);
+        if($results{$cfg}{$bench}{$tmp_metric} gt 0) {
+          $results{$cfg}{$bench}{$tmp_metric} /= ($iter);
+          $results{$cfg}{$bench}{$tmp_metric . "_max"} /= $results{$cfg}{$bench}{$tmp_metric};
+          $results{$cfg}{$bench}{$tmp_metric . "_min"} /= $results{$cfg}{$bench}{$tmp_metric};
+        }
       }
 
-      my $val = $results{$cfg}{$bench}{$metric};
+      $val = $results{$cfg}{$bench}{$metric};
       if(not defined $val) {
         $val = -1;
         $results{$cfg}{$bench}{$metric} = -1;
