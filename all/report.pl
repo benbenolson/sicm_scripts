@@ -63,6 +63,7 @@ foreach my $size(@sizes) {
   my %results;
   foreach my $cfg(@cfgs) {
     foreach my $bench(@benches) {
+      print("$bench, $cfg\n");
       my $dir = "$basedir/$bench/$size/$cfg";
       my $iter = 0;
       while(1) {
@@ -70,8 +71,10 @@ foreach my $size(@sizes) {
         # Break if this directory doesn't exist
         my $idir = "$dir/i${iter}";
         if((not -e $idir) or (not -d $idir)) {
+          print("$dir/i${iter} doesn't exist.\n");
           last;
         }
+        print("Iteration i${iter}\n");
 
         # Parse the results into the hash
         $results{$cfg}{$bench}{${iter}} = {};

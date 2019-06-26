@@ -306,6 +306,7 @@ sub parse_fom {
     or print("WARNING: '$filename' does not exist.\n") and return;
 
   $results->{'fom'} = 0.0;
+  print("Reading $filename\n");
 
   while(<$file>) {
     if($bench eq "lulesh") {
@@ -313,8 +314,12 @@ sub parse_fom {
         $results->{'fom'} = $1;
       }
     } elsif($bench eq "amg") {
-      if(/Figure of Merit \(FOM_2\):\s+(.*)/) {
+      if(/Figure of Merit \(FOM_2\):\s+(\S*)/) {
         $results->{'fom'} = $1;
+      }
+      if(/^Figure.*/) {
+        print("MATCHED:\n");
+        print("$_\n");
       }
     } elsif($bench eq "qmcpack") {
       if(/blocks\s+=\s+(\d+)/) {
@@ -331,6 +336,9 @@ sub parse_fom {
         $results->{'fom'} = 1 / $1;
       }
     }
+  }
+  if($results->{'fom'} == 0.0) {
+    print("WARNING: Didn't find a FOM\n");
   }
 
   if($bench eq "qmcpack") {
