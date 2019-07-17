@@ -104,11 +104,17 @@ sub parse_pcm_memory {
   # Collect all samples into @*_bandwidth arrays
   while(<$file>) {
     chomp;
-    if(/^\|\-\-\s+DDR4 Memory \(MB\/s\)\s+\:\s+(\d+)\.(\d\d)\s+\-\-\|\|\-\-\s+MCDRAM \(MB\/s\)\s+\:\s+(\d+)\.(\d\d)\s+\-\-\|$/) {
+    if(/^\|\-\-\s+DDR4 Memory \(MB\/s\)\s+\:\s+([\d\.]+)\s+\-\-\|\|\-\-\s+MCDRAM \(MB\/s\)\s+\:\s+([\d\.]+)\s+\-\-\|$/) {
       # First and second are DDR bandwidth (before and after decimal point)
       # Third and fourth are MCDRAM
-      push(@node0_bandwidth, $1 + ($2 / 100));
-      push(@node1_bandwidth, $3 + ($4 / 100));
+      push(@node0_bandwidth, $1);
+      push(@node1_bandwidth, $2);
+    } elsif(/^\|\-\-\s+DDR4 Mem Read\s+\(MB\/s\)\:\s+([\d\.]+)\s+\-\-\|\|\-\-\s+MCDRAM Read\s+\(MB\/s\)\:\s+([\d\.]+)\s+\-\-\|$/) {
+      push(@node0_read_bandwidth, $1);
+      push(@node1_read_bandwidth, $2);
+    } elsif(/^\|\-\-\s+DDR4 Mem Write \(MB\/s\)\:\s+([\d\.]+)\s+\-\-\|\|\-\-\s+MCDRAM Write\(MB\/s\)\:\s+([\d\.]+)\s+\-\-\|$/) {
+      push(@node0_write_bandwidth, $1);
+      push(@node1_write_bandwidth, $2);
     } elsif(/^\|\-\-\s+NODE 0 Memory \(MB\/s\)\:\s+([\d\.]+)\s+\-\-\|\|\-\-\s+NODE 1 Memory \(MB\/s\)\:\s+([\d\.]+)\s+\-\-\|$/) {
       push(@node0_bandwidth, $1);
       push(@node1_bandwidth, $2);
@@ -345,7 +351,7 @@ sub parse_fom {
         $results->{'fom'} = $1;
       }
     } elsif($bench eq "amg") {
-      if(/Figure of Merit \(FOM_2\):\s+(.*)/) {
+      if(/Figure of Merit \(FOM_2\):\s+(\S*)/) {
         $results->{'fom'} = $1;
       }
     } elsif($bench eq "qmcpack") {
@@ -363,6 +369,9 @@ sub parse_fom {
         $results->{'fom'} = 1 / $1;
       }
     }
+  }
+  if($results->{'fom'} == 0.0) {
+    print("WARNING: Didn't find a FOM\n");
   }
 
   if($bench eq "qmcpack") {

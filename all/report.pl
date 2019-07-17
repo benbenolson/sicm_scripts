@@ -72,7 +72,6 @@ foreach my $size(@sizes) {
         if((not -e $idir) or (not -d $idir)) {
           last;
         }
-
         # Parse the results into the hash
         $results{$cfg}{$bench}{${iter}} = {};
         parse_gnu_time("$idir/stdout.txt", $results{$cfg}{$bench}{$iter});
