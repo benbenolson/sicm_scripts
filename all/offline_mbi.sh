@@ -18,9 +18,14 @@ function offline_mbi_guided {
   RATIO=$(echo "${5}/100" | bc -l)
   NODE=${6}
   SLOWNODE=${7}
-  CANARY_CFG="reference_bandwidth"
+  if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+    CANARY_CFG="firsttouch_all_exclusive_device_1_3"
+  else
+    CANARY_CFG="firsttouch_all_exclusive_device_1_0"
+  fi
   CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
-  CANARY_MEMORY="${BASEDIR}/../${CANARY_CFG}/i0/pcm-memory.txt"
+  MEMORY_CFG="reference_bandwidth"
+  MEMORY_FILE="${BASEDIR}/../../${MBI_SIZE}/${MEMORY_CFG}/i0/pcm-memory.txt"
   MBI_DIR="${BASEDIR}/../../${MBI_SIZE}/mbi"
   PEBS_STDOUT="${BASEDIR}/../pebs_128/i0/stdout.txt"
 
@@ -46,7 +51,7 @@ function offline_mbi_guided {
   NUM_BYTES=${NUM_BYTES_FLOAT%.*}
 
   # Also get the background bandwidth on the NUMA node that we're not binding to
-  BACKGROUND_BANDWIDTH=$(${SCRIPTS_DIR}/stat.sh ${CANARY_MEMORY} avg_ddr_bandwidth)
+  BACKGROUND_BANDWIDTH=$(${SCRIPTS_DIR}/stat.sh ${MEMORY_FILE} avg_ddr_bandwidth)
 
   # User output
   echo "Running experiment:"
@@ -61,7 +66,6 @@ function offline_mbi_guided {
   export SH_MAX_SITES_PER_ARENA="4096"
   export SH_DEFAULT_NODE="${SLOWNODE}"
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
-  export OMP_NUM_THREADS="272"
   export JE_MALLOC_CONF="oversize_threshold:0"
 
   eval "${PRERUN}"
@@ -105,9 +109,13 @@ function offline_all_mbi_guided {
   PACK_ALGO="$4"
   NODE="${5}"
   SLOWNODE="${6}"
-  CANARY_CFG="firsttouch_all_exclusive_device_0_0"
+  if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+    CANARY_CFG="firsttouch_all_exclusive_device_1_1"
+  else
+    CANARY_CFG="firsttouch_all_exclusive_device_1_0"
+  fi
   CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
-  MEMORY_CFG="firsttouch_all_exclusive_device_1_0"
+  MEMORY_CFG="reference_bandwidth"
   MEMORY_FILE="${BASEDIR}/../../${MBI_SIZE}/${MEMORY_CFG}/i0/pcm-memory.txt"
   MBI_DIR="${BASEDIR}/../../${MBI_SIZE}/mbi"
   PEBS_STDOUT="${BASEDIR}/../pebs_128/i0/stdout.txt"
@@ -152,7 +160,6 @@ function offline_all_mbi_guided {
   export SH_MAX_SITES_PER_ARENA="4096"
   export SH_DEFAULT_NODE="${SLOWNODE}"
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
-  export OMP_NUM_THREADS="272"
   export JE_MALLOC_CONF="oversize_threshold:0"
 
   eval "${PRERUN}"

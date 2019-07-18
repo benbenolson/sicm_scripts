@@ -21,3 +21,17 @@ function lulesh_medium_aep_pebs_128 {
     export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:2"
   fi
 }
+
+function lulesh_medium_aep_cache_mode_pebs_128 {
+  if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+    echo "Setting special parameters for this size and config."
+    export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:2"
+  fi
+}
+
+function lulesh_medium_aep_cache_mode_shared_site {
+  if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+    echo "Setting special parameters for this size and config."
+    export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:2"
+  fi
+}

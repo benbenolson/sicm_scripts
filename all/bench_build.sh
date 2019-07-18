@@ -13,7 +13,7 @@ function bench_build {
     fi
   elif [ "$1" = "c" ]; then
     if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-      export LD_LINKER="clang++ $2 -g -Wno-unused-command-line-argument -Wl,-rpath,$(spack location -i llvm@flang-20180921)/lib -Wl,-rpath,$(spack location -i flang@20180921 /lqmxife)/lib -Wl,-rpath,$(spack location -i pgmath)/lib"
+      export LD_LINKER="clang++ $2 -g -Wno-unused-command-line-argument -L$(spack location -i flang@20180921 /lqmxife)/lib -lflang -lflangrti -Wl,-rpath,$(spack location -i llvm@flang-20180921)/lib -Wl,-rpath,$(spack location -i flang@20180921 /lqmxife)/lib -Wl,-rpath,$(spack location -i pgmath)/lib"
     else
       export LD_LINKER="clang++ $2 -g -Wno-unused-command-line-argument -Wl,-rpath,$(spack location -i llvm@flang-20180921)/lib -Wl,-rpath,$(spack location -i flang@20180921 /a2g3n2ugv7xdhzkntxfzxainujapch5v)/lib -Wl,-rpath,$(spack location -i pgmath)/lib"
     fi
@@ -23,40 +23,22 @@ function bench_build {
   fi
 
   # Define the variables for the compiler wrappers
-  export LD_COMPILER="clang++ -Wno-unused-command-line-argument -Ofast -march=native" # Compiles from .bc -> .o
-  export CXX_COMPILER="clang++ $3 -g -Wno-unused-command-line-argument -Ofast -march=native"
+  export LD_COMPILER="clang++ -Wno-unused-command-line-argument -march=native" # Compiles from .bc -> .o
+  export CXX_COMPILER="clang++ $3 -g -Wno-unused-command-line-argument -march=native"
   if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-    export FORT_COMPILER="flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -Ofast -march=native -I$(spack location -i flang@20180921 /lqmxife)/include"
+    export FORT_COMPILER="flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -march=native -I$(spack location -i flang@20180921 /lqmxife)/include"
   else
-    export FORT_COMPILER="flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -Ofast -march=native -I$(spack location -i flang@20180921 /a2g3n2ugv7xdhzkntxfzxainujapch5v)/include"
+    export FORT_COMPILER="flang $3 -g -Mpreprocess -Wno-unused-command-line-argument -march=native -I$(spack location -i flang@20180921 /a2g3n2ugv7xdhzkntxfzxainujapch5v)/include"
   fi
-  export C_COMPILER="clang -g $3 -Wno-unused-command-line-argument -Ofast -march=native"
+  export C_COMPILER="clang -g $3 -Wno-unused-command-line-argument -march=native"
   export LLVMLINK="llvm-link"
   export OPT="opt"
 
   # Make sure the Makefiles find our wrappers
   export COMPILER_WRAPPER="compiler_wrapper.sh -g"
   export LD_WRAPPER="ld_wrapper.sh -g"
-  export PREPROCESS_WRAPPER="clang -E -x c -w -P"
+  #export PREPROCESS_WRAPPER="clang -E -x c -P"
+  export PREPROCESS_WRAPPER="${BENCH_DIR}/cpu2017/bin/specperl -I ${BENCH_DIR}/cpu2017/bin/modules.specpp ${BENCH_DIR}/cpu2017/bin/harness/specpp"
   export AR_WRAPPER="ar_wrapper.sh"
   export RANLIB_WRAPPER="ranlib_wrapper.sh"
-}
-
-# First argument is "fort" or "c", which linker we should use.
-# For the default build, this will also be the compiler that we use. This should be fixed later to allow
-# for multiple compilers.
-# Second argument is a list of linker flags to add, which are just appended
-function def_bench_build {
-  if [ "$1" = "fort" ]; then
-    export LD_WRAPPER="$SICM_DIR/deps/bin/flang $2 -g -Wno-unused-command-line-argument -L$SICM_DIR/deps/lib -Wl,-rpath,$SICM_DIR/deps/lib "
-    export COMPILER_WRAPPER="$SICM_DIR/deps/bin/flang $3 -g -Wno-unused-command-line-argument -I$SICM_DIR/deps/include"
-  elif [ "$1" = "c" ]; then
-    export LD_WRAPPER="$SICM_DIR/deps/bin/clang++ $2 -g -Wno-unused-command-line-argument -L$SICM_DIR/deps/lib -Wl,-rpath,$SICM_DIR/deps/lib"
-    export COMPILER_WRAPPER="$SICM_DIR/deps/bin/clang $3 -g -Wno-unused-command-line-argument -I$SICM_DIR/deps/include"
-  else
-    echo "No linker specified. Aborting."
-    exit
-  fi
-
-  export PREPROCESS_WRAPPER="$SICM_DIR/bin/clang -E -x c -w -P"
 }
