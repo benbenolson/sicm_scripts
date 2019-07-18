@@ -20,7 +20,7 @@ sub uniq {
 # Takes an input file and an output file
 # Reads in a `contexts.txt`, demangles it, and caches the result in the output file.
 sub get_context {
-  my ($context_filename, $cache_filename, $reverse) = @_;
+  my ($context_filename, $cache_filename, $reverse, $use_cache) = @_;
   my %demangled_context;
   my %mangled_context;
   my $cur_context;
@@ -31,7 +31,7 @@ sub get_context {
   my $retref = \%rethash;
 
   # If we find the cache file already exists
-  if(-e $cache_filename) {
+  if((-e $cache_filename) and ($use_cache)) {
     print("Reading $context_filename from the cache file...\n");
     $retref = retrieve($cache_filename);
   } else {
@@ -52,11 +52,14 @@ sub get_context {
       } elsif($cur_site ne -1) {
         # Add the site to the context if it's:
         # 1. Not a blank line
-        if((not /^\s*$/)) {
+        if((not /^\s*$/)) {#and (not /^.*!dbg.*$/) and (not /^\s*%\d+\s+.*$/)) {
           $cur_context .= $_;
 
           # Remove any platform-specific stuff from the strings
           # Also remove any debugging label numbers (an integer starting with an exclamation point)
+          $cur_context =~ s/\.omp_outlined\.\.(\d+)\.\d+/\.omp_outlined\.\.$1/g;
+          $cur_context =~ s/i32 \d+,/ /g;
+          $cur_context =~ s/%\d+/ /g;
           $cur_context =~ s/\s+!\d+\s+/ /g;
           $cur_context =~ s/\s+\S+x86_64-linux-gnu\S+\s+/ /g;
           $cur_context =~ s/\s+\S+x86_64-redhat-linux\S+\s+/ /g;
@@ -66,7 +69,8 @@ sub get_context {
     push(@{$mangled_context{$cur_context}}, $cur_site);
 
     # Demangling time, print out a progress bar
-    print("Demangling ${context_filename}...\n");
+    my $num_sites = %mangled_context;
+    print("Demangling ${context_filename} (${num_sites} sites)...\n");
     my $progress = 0;
     my $raw_progress = 0;
     my $prev_progress = 0;
@@ -82,11 +86,13 @@ sub get_context {
         print("]\n");
       }
       (my $tmp_context = $cur_context) =~ s/__compass\d+//g;
-      my $tmp_demangled_context = `echo '$tmp_context' | c++filt -n`;
+      #my $tmp_demangled_context = `echo '$tmp_context' | c++filt -n`;
+      my $tmp_demangled_context = $tmp_context;
       @unique_sites = uniq(@{$mangled_context{$cur_context}});
       push(@{$demangled_context{$tmp_demangled_context}}, @unique_sites);
       $raw_progress += 1;
     }
+    print("Finished demangling.\n");
 
     # If the user chose to invert it, do that
     if($reverse) {

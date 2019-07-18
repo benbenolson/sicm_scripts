@@ -33,7 +33,7 @@ function cache_mode_pebs {
 
   eval "${PRERUN}"
 
-  for i in {0..4}; do
+  for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     echo 1 | sudo tee /proc/sys/kernel/perf_event_paranoid
@@ -75,7 +75,7 @@ function cache_mode_shared_site {
   eval "${PRERUN}"
 
   # Run 5 iters
-  for i in {0..4}; do
+  for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches

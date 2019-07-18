@@ -20,6 +20,7 @@ function pebs {
   export SH_MAX_SITES_PER_ARENA="4"
   export SH_PROFILE_ALL="1"
   export SH_PROFILE_ALL_RATE="0"
+  export SH_PROFILE_ALL_EVENTS="MEM_LOAD_UOPS_RETIRED:L3_MISS"
   export SH_MAX_SAMPLE_PAGES="512"
   export SH_PROFILE_RSS="1"
   export SH_PROFILE_RSS_RATE="0"
@@ -45,6 +46,6 @@ function pebs {
   fi
 
   # Just in case PEBS screwed up, aggregate the sites so that each site gets exactly one arena
-  cp ${DIR}/stdout.txt ${DIR}/unaggregated.txt
-  cat ${DIR}/unaggregated.txt | ${SCRIPTS_DIR}/all/aggregate_sites.pl > ${DIR}/stdout.txt
+  #cp ${DIR}/stdout.txt ${DIR}/unaggregated.txt
+  #cat ${DIR}/unaggregated.txt | ${SCRIPTS_DIR}/all/aggregate_sites.pl > ${DIR}/stdout.txt
 }

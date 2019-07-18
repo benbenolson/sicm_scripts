@@ -1,0 +1,20 @@
+Loading Spack module of SICM...
+rm: cannot remove '*.o': No such file or directory
+rm: cannot remove '*.bc': No such file or directory
+rm: cannot remove '*.args': No such file or directory
+rm: cannot remove '*.mod': No such file or directory
+rm: cannot remove 'contexts.txt': No such file or directory
+rm: cannot remove 'nclones.txt': No such file or directory
+rm: cannot remove 'nsites.txt': No such file or directory
+rm: cannot remove 'buCG.txt': No such file or directory
+rm: cannot remove '.sicm_ir.bc': No such file or directory
+rm -rf *.o  lbm.out
+find . \( -name \*.o -o -name '*.fppized.f*' -o -name '*.i' -o -name '*.mod' \) -print | xargs rm -rf
+rm -rf lbm_r
+rm -rf lbm_r.exe
+rm -rf core
+rm -rf options.err compiler-version.err options.out make.out compiler-version.out
+compiler_wrapper.sh -g -m64 -fopenmp -c -o lbm.o -DSPEC -DNDEBUG -DSPEC_AUTO_SUPPRESS_OPENMP   -Ofast -mavx -fopenmp              -DSPEC_LP64  lbm.c
+compiler_wrapper.sh -g -m64 -fopenmp -c -o main.o -DSPEC -DNDEBUG -DSPEC_AUTO_SUPPRESS_OPENMP   -Ofast -mavx -fopenmp              -DSPEC_LP64  main.c
+ld_wrapper.sh -g -m64       -Ofast -mavx -fopenmp         lbm.o main.o             -lm         -o lbm_r  
+cp: cannot stat 'lbm_s': No such file or directory
