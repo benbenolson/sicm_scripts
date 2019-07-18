@@ -370,14 +370,14 @@ sub parse_fom {
       }
     }
   }
-  if($results->{'fom'} == 0.0) {
-    print("WARNING: Didn't find a FOM\n");
-  }
-
   if($bench eq "qmcpack") {
     $qmcpack_numerator *= $_ foreach @qmcpack_numerator_terms;
     $results->{'fom'} = $qmcpack_numerator / $qmcpack_denominator;
   }
+  if($results->{'fom'} == 0.0) {
+    print("WARNING: Didn't find a FOM in file $filename\n");
+  }
+
 }
 
 1; # Truthiest module there is
