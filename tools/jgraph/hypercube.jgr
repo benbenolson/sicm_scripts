@@ -1,0 +1,70 @@
+(* 
+ * $Source: /n/fs/vd/jsp/papers/dckp/RCS/hypercube.jgr,v $
+ * $Revision: 4.4 $
+ * $Date: 91/10/03 13:56:21 $
+ * $Author: jsp $
+ * 
+ * Jgraph file containing a picture of a 3-D hypercube.
+ *)
+
+Y 2.3
+newgraph
+xaxis size 2.5 min 0 max 2.5 nodraw
+yaxis size 2 min 0 max 2 nodraw
+legend x 2.8 y 1.25
+   linelength 0.5
+
+(* The links are drawn first, so that the nodes will be drawn over them. *)
+
+newline linethickness 2 pts 0 0 1.5 0
+copycurve pts 0 1.5 1.5 1.5
+copycurve pts .5 .5 2.0 .5
+copycurve pts 2 2 .5 2
+  label fontsize 12 : Dimension 0 links
+
+newline linethickness 2 linetype dotted pts 0 0 0 1.5
+copycurve pts 1.5 0 1.5 1.5
+copycurve pts .5 .5 .5 2.0
+copycurve pts 2 2 2 .5
+  label fontsize 12 : Dimension 1 links
+
+newline linethickness 2 linetype dashed pts 0 0 .5 .5
+copycurve pts 0 1.5 .5 2
+copycurve pts 1.5 0 2.0 .5
+copycurve pts 1.5 1.5 2 2
+  label fontsize 12 : Dimension 2 links
+
+
+(* Now draw the nodes with fill 0 so that they will draw white over the 
+ * link overlap *)
+
+newcurve pts 
+  0 0
+  0 1.5
+  1.5 0
+  1.5 1.5
+  marksize .35
+  marktype circle
+  fill 1
+newcurve pts
+  .5 .5
+  .5 2
+  2 .5
+  2 2
+  marksize .27
+  marktype circle
+  fill 1
+
+(* Now draw the node labels inside the nodes *)
+
+newstring   x 0   y 0   fontsize 12 hjc vjc : 000
+copystring  x 1.5 y 0   : 001
+copystring  x 0   y 1.5 : 010
+copystring  x 1.5 y 1.5 : 011
+
+copystring  x 0.5 y 0.5 fontsize 10 : 100
+copystring  x 2.0 y 0.5 : 101
+copystring  x 0.5 y 2.0 : 110
+copystring  x 2.0 y 2.0 : 111
+
+

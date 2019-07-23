@@ -1,0 +1,58 @@
+(* This is a graph for Figure 2 of the USENIX jgraph abstract.  It shows
+   how to extract points from a data file with awk, and how to use awk
+   to plot a function to match the data (the function that is plot here
+   is (n/k)log(n), where k is expermentally chosen to be 35000.
+
+   There are two graphs plotted -- the first is the actual jgraph.  The
+   second is a text string showing the input for the graph.  Print it 
+   out -- you'll see what I mean.
+
+   *)
+
+newgraph
+xaxis size 2.5 
+  hash_labels font Helvetica
+  label : Number of indexed Records (N)
+yaxis size 2.1 
+  label : Running time (seconds)
+  hash_labels font Helvetica
+
+newcurve 
+  marktype cross
+  label : Data
+  pts shell : awk '{print $5, $8}' data.txt
+
+newcurve
+  marktype none linetype solid
+  label : N log N / 35000
+   pts shell : nawk \
+     ' $5 != 0 { \
+       print $5,  $5 * log($5) / 35000}' \
+     data.txt
+
+copygraph
+x_translate -3.1
+border
+xaxis nodraw min 0 max 1 size 2.3
+yaxis nodraw min 0 max 1
+
+newstring hjl vjc x .03 y .5 font Courier fontsize 6 :
+xaxis size 2.5 \
+  hash_labels font Helvetica\
+  label : Number of indexed Records (N)\
+yaxis size 2.1 \
+  label : Running time (seconds)\
+  hash_labels font Helvetica\
+\
+newcurve \
+  marktype cross\
+  label : Data\
+  pts shell : awk '{print $5, $8}' data.txt\
+\
+newcurve\
+  marktype none linetype solid\
+  label : N log N / 35000\
+   pts shell : nawk \\
+     ' $5 != 0 { \\
+       print $5,  $5 * log($5) / 35000}' \\
+     data.txt\

@@ -1,0 +1,47 @@
+$Revision: 8.3 $
+
+------------------------------------------------------------
+Comments in October, 2012:
+
+Jgraph is a Unix graphing package that produces postscript.  I was pretty proud that 
+jgraph was unmodified for over 19 years (November, 1992 to October, 2012), but
+C compilers finally "progressed" to the point where my old-style C finally choked.
+So I fixed it in October of 2012, and it's back humming along, although that was
+some pretty disgusting code that I wrote as a graduate student in 1989.
+
+In the new revision, besides getting jgraph to compile and not seg fault, I've
+put it under the New BSD License. 
+
+If you use jgraph, please drop me a quick email at plank@cs.utk.edu.  Documentation
+of usage of my open-source code is always a good thing for department heads, 
+deans and funding agencies.  Thanks -- Jim
+
+------------------------------------------------------------
+
+Jgraph takes the description of a graph or graphs in the standard
+input, and produces a postscript file on the standard output.  Jgraph
+is ideal for plotting any mixture of scatter point graphs, line
+graphs, and/or bar graphs, and embedding the output into LaTeX, or
+any other text processing system which can read postscript.
+
+The graph description language is simple enough to get nice looking
+graphs with a minimum of effort, yet powerful enough to give the user
+the flexibility to tailor the appearance of the graph to his or her
+individual preferences.  This includes plotting multiple graphs and
+laying them out separately on the page (or pages). 
+
+The program is written in C, and shouldn't take anything too fancy
+or machine-dependent.  It has been tested on DECstations, 
+sun3's, and sparc's (and is being used on many other types
+of machines, including those running VMS and DOS).
+
+There is a makefile, a man page (in jgraph.1), source code, and 
+example graphs.
+
+Jgraph is available at http://web.eecs.utk.edu/~plank/plank/jgraph/jgraph.html
+
+Please send me comments and/or bug reports.
+
+Author: James S. Plank
+Email:  plank@cs.utk.edu
+Web:    http://web.eecs.utk.edu/~plank

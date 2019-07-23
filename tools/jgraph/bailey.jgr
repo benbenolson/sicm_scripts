@@ -1,0 +1,30 @@
+
+(* Example of Unix spline(1) to smooth a curve.
+This is a file to draw sin(i) for i going from -pi to pi *)
+
+newgraph
+
+yaxis min -1 max 1 label : sin(i)
+xaxis label : i
+grid_lines
+border
+title : Example Unix spline(1) to interpolate points
+
+(* Plot the sin curve *)
+newline
+  label : data
+  pts include bailey.pts
+copycurve
+  label : splined
+  linetype dotted
+  pts shell : spline < bailey.pts
+
+(* 
+bailey.pts file:
+-3.1416 0.0
+-1.81 -0.9715
+-0.55 -0.5226
+ 0.71  0.6518
+ 1.97  0.9213
+ 3.1416 0.0
+*)

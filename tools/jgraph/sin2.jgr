@@ -1,0 +1,28 @@
+(* Now this is a sin wave from 0.1 to 100 with logarithmic axes *)
+
+newgraph 
+
+yaxis min -1 max 1 
+  label : sin(i)
+xaxis log 
+  label : i
+
+title : I vs sin(i);
+
+(* Plot the sin curve *)
+curve 1 
+  marktype none
+  linetype solid
+  pts include sin2.pts
+   (* sin2.pts was created by the following c program:
+
+     #include <math.h>
+     main();
+     {
+       double x;
+       for (x = 0.1; x < 100.0; x += .03)
+         printf("%f %f\n", x, sin(x));
+     }
+     
+   *)
+

@@ -1,0 +1,152 @@
+(* This file plots two graphs side by side with a tricky legend format:
+ * There are 5 legend entries, one of which is of a curve containing a
+ * line.  The desire is to make the legend have two columns, the first
+ * with the first three legend entries, and the second with the last
+ * two.
+ * 
+ * The way that this is done is to actually plot four graphs -- two sets
+ * of two graphs superimposed on each other.  The first of the two
+ * graphs has the first three curves, and the second has the last two. 
+ * Thus, the first can set its legend to be the first column, and the
+ * second can set its legend to be the second column.
+ * 
+ * To get the two columns is pretty simple.  In each graph, the 
+ * x and y coordinates of the legends are explicitly set.  For the
+ * first column, the x coordinate is 0, and for the second column,
+ * the x coordinate is 5.5.
+ *
+ * A potential problem with this graph is that in the first set of
+ * legends, there is a line (the "Merge Sort" curve), while in the
+ * second set there is not.  Thus, if nothing is done with the midspace
+ * and linelength paramters, the second columns marks will appear closer
+ * to the text than in the first column.  The solution to this was to 
+ * explicitly set the linelength and midspace in the first legend to
+ * be .80 and .25 respectively.  This means that in the first legend, the
+ * marks are 0.65 units away from the text (in the presence of a line,
+ * the marks are (midspace + linelength/2) away from the text.  In 
+ * the absence of a line, the marks are simply (midspace) away from the
+ * text.  Thus, midspace is set to be 0.65 in the second legend column.
+ *)
+
+(* Set up the axes of the first graph.  Translate it to the left of the 
+ * page *)
+
+newgraph
+x_translate -1.37
+yaxis size 1.9 min 0 max 40 precision 0 hash 10 mhash 1
+  label : Time (sec)
+    fontsize 8
+xaxis size 2.14 min 0 max 10 hash 2 mhash 1
+  label : Heap Size (MBytes)
+    fontsize 8
+title : Graph 9: Checkpoint Time of Other Benchmarks.
+  fontsize 10
+
+(* Draw the first three curves *)
+newcurve
+  label : Merge Sort
+  marktype circle fill 0.0 
+  linetype solid
+  pts 
+    .789 5.5414
+   2.985 13.9958
+   3.962 17.2362
+   4.938 21.0804
+   7.868 32.4082
+   9.821 39.8312
+newcurve
+  label : Travelling Salesman
+  marktype triangle fill 0 
+  linetype none
+  pts 
+.064 2.359
+newcurve
+  label : Pattern Match
+  marktype diamond fill 1.0 
+  linetype none
+  pts 
+1.233 6.374
+
+(* set the legend *)
+legend linelength .8 midspace .25 x 0 y 47.5 defaults fontsize 7
+
+(* Now make a second graph for the second curve with the same axes *)
+copygraph
+xaxis nodraw
+yaxis nodraw
+
+(* Draw the last two curves *)
+newcurve
+  label : Bubble Sort
+  marktype cross fill 1.0 
+  linetype none
+  pts 
+.513 3.91
+newcurve
+  label : Matrix Multiplication
+  marktype box fill 1 
+  linetype none
+  pts 
+3 14.71
+
+(* set the second legend to be a second column from the first  *)
+legend x 5.5 midspace .65
+
+(* The second of these graphs is just like the first only it is translated
+to the right *)
+
+copygraph
+x_translate 1.7
+xaxis draw
+yaxis draw
+yaxis min 0 max 5 hash 1 mhash 1
+title : Graph 10: Checkpoint Overhead of Other Benchmarks.
+  fontsize 10
+
+newcurve
+  label : Merge Sort
+  marktype circle fill 0.0 
+  linetype solid
+  pts 
+    .789 0.5954
+   2.985 3.8368
+   3.962 3.3598
+   4.938 3.6288
+   7.868 4.3096
+   9.821 4.377
+
+newcurve
+  label : Travelling Salesman
+  marktype triangle fill 0 
+  linetype none
+  pts 
+.064 0.17
+
+newcurve
+  label : Pattern Match
+  marktype diamond fill 1.0 
+  linetype none
+  pts 
+1.233 0.07
+
+legend linelength .8 midspace .25 x 0 y 5.9 defaults fontsize 7
+
+copygraph
+xaxis nodraw
+yaxis nodraw
+
+newcurve
+  label : Bubble Sort
+  marktype cross fill 1.0 
+  linetype none
+  pts 
+.513 0.07
+
+newcurve
+  label : Matrix Multiplication
+  marktype box fill 1 
+  linetype none
+  pts 
+3 0.75
+
+legend x 5.5 midspace .65

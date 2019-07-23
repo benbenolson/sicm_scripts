@@ -1,0 +1,67 @@
+(* $Log:	g8.jgr,v $
+ * Revision 1.1  90/10/12  17:33:33  jsp
+ * Initial revision
+ * 
+ *)
+
+Y 3
+
+(* Graph #8: Frequency of Traps.   This graph shows examples of plotting
+ * character strings. *) 
+
+newgraph
+
+yaxis size 1.9 min 0 max 10 hash 1 mhash 0
+  hash_labels fontsize 7
+  label fontsize 8 : Traps per 0.1 second Interval
+
+xaxis size 2.14 min 0 max 2.6001 hash .5 mhash 4 precision 1
+  hash_labels fontsize 7
+  label fontsize 8 : Starting Time of 0.1 second interval (sec)
+
+title fontsize 10 : Graph 8: Frequency of Traps.
+
+newcurve
+  marktype circle fill 0
+  linetype none
+  pts 
+    0.0 9
+    0.1 3
+    0.2 5
+    0.3 6
+    0.4 6
+    0.5 5
+    0.6 6
+    0.7 6
+    0.8 6 
+    0.9 6
+    1.0 6
+    1.1 4 
+    1.2 5
+    1.3 3
+    1.4 4
+    1.5 5
+    1.6 3
+    1.7 5
+    1.8 5
+    1.9 4
+    2.0 3
+    2.1 4
+    2.2 5
+    2.3 5
+    2.4 4
+    2.5 0
+    2.6 0
+
+newstring 
+  : Average Trap Time = 0.015 seconds
+  x 2.6 y 10
+  hjr vjc
+  fontsize 7
+
+newstring
+  : ...
+  x 2.7 y 0
+  hjl vjb
+  fontsize 7
+

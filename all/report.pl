@@ -3,21 +3,24 @@ use strict; use warnings;
 use Getopt::Long qw(GetOptions);
 use Data::Dumper qw(Dumper);
 use parse; # Does most of the nitty-gritty parsing
+use graph;
 
 my $basedir =  "$ENV{'RESULTS_DIR'}"; 
-my $metric = 'runtime';
-my @benches = ('lulesh,imagick,fotonik3d,roms,qmcpack,snap,pennant');
+my $metric = '';
+my @benches = ();
 my @benches_arg;
-my @sizes = ('small');
+my @sizes = ();
 my @sizes_arg;
-my @cfgs = ('firsttouch_all_exclusive_device_0,firsttouch_all_exclusive_device_1');
+my @cfgs = ();
 my @cfgs_arg;
+my $graph = '';
 
 GetOptions('metric:s' => \$metric,
            'benches:s' => \@benches_arg,
            'sizes:s' => \@sizes_arg,
            'cfgs:s' => \@cfgs_arg,
-          ) or die "Usage: $0 --metric=[perf,rss] --benches=[list of benches] --size=[list of sizes] --cfgs=[list of cfgs]\n";
+           'graph:s' => \$graph,
+          ) or die "Usage: $0 --metric=[perf,rss] --benches=[list of benches] --size=[list of sizes] --cfgs=[list of cfgs] --graph=[graph type]\n";
 
 # If any of these arrays are defined as arguments, overwrite the defaults
 if(scalar @benches_arg > 0) {
@@ -78,7 +81,7 @@ foreach my $size(@sizes) {
         parse_pcm_memory("$idir/pcm-memory.txt", $results{$cfg}{$bench}{$iter});
         parse_numastat("$idir/numastat.txt", $results{$cfg}{$bench}{$iter});
         parse_fom("$idir/stdout.txt", $results{$cfg}{$bench}{$iter}, $bench);
-        parse_pebs("$idir/stdout.txt", $results{$cfg}{$bench}{$iter});
+        parse_pebs("$idir/stdout.txt", $results{$cfg}{$bench});
 
         $iter += 1;
       }
@@ -136,17 +139,21 @@ foreach my $size(@sizes) {
   }
 
   # Print out the top row, the benchmark names
-  printf("%-${max_cfg_length}s", "Config");
-  foreach my $bench(@benches) {
-    printf("%${max_col_length}s", $bench);
-  }
-  print("\n");
-
-  foreach my $cfg(@cfgs) {
-    printf("%-${max_cfg_length}s", $cfg);
+  if($graph ne '') {
+    graph(\%results, $graph);
+  } else {
+    printf("%-${max_cfg_length}s", "Config");
     foreach my $bench(@benches) {
-      printf("%${max_col_length}s", "$results{$cfg}{$bench}{$metric}");
+      printf("%${max_col_length}s", $bench);
     }
     print("\n");
+
+    foreach my $cfg(@cfgs) {
+      printf("%-${max_cfg_length}s", $cfg);
+      foreach my $bench(@benches) {
+        printf("%${max_col_length}s", "$results{$cfg}{$bench}{$metric}");
+      }
+      print("\n");
+    }
   }
 }

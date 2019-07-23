@@ -1,0 +1,46 @@
+(* This is an extension of sin.jgr only this time, the axes are at
+x = 0 and y = 0.  The hash labels are printed at the left and bottom. *)
+
+newgraph 
+
+yaxis min -1 max 1 label : sin(i) 
+  no_draw_hash_marks no_draw_axis_line
+
+xaxis min -10 max 10 label : i
+  no_draw_hash_marks no_draw_axis_line
+
+(* Plot the sin curve *)
+curve 1 
+  marktype none
+  linetype solid
+  pts include sin.pts
+   (* sin.pts was created by the following c program:
+
+     #include <math.h>
+     main();
+     {
+       double x;
+       for (x = -10.0; x < 10.0; x += .03)
+         printf("%f %f\n", x, sin(x));
+     }
+     
+   *)
+
+(* Now, create a new graph with the same dimensions, but with the
+ * x & y axes in a different place, and with no axis or hash labels.
+ * Also, make the hash marks smaller. *)
+
+newgraph
+inherit_axes
+xaxis draw draw_at 0 hash_scale -.5 no_draw_hash_labels no_draw_axis_label
+yaxis draw draw_at 0 hash_scale -.5 no_draw_hash_labels no_draw_axis_label
+
+(* Finally, we want the hash marks to be centered around the axes,
+ * so draw them again with a scaling of +5.
+ *)
+
+newgraph
+inherit_axes
+xaxis hash_scale .5
+yaxis hash_scale .5
+

@@ -1,0 +1,10 @@
+This from Alan S. Raskin:
+
+You may be interested in knowing what it takes to get jgraph to compile
+MS-DOS/MS-QuickC:
+
+1) Ignore all of the "function should return a value" warnings.  :-)
+2) Use the blank VMS templates for popen and pclose in token.c
+3) Define float=double to avoid math-overflow run-time errors.
+
+-Alan

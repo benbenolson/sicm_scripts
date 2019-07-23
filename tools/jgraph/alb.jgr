@@ -1,0 +1,443 @@
+newgraph
+xaxis min 1 max 25 size 6.000 nodraw
+yaxis min .25 max 5 size 1.14 nodraw
+
+newstring x 12.5 y .25 vjc hjc : (a)
+
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	1 5 1 4 1 3 1 2 1 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	2 5 3 4 3 3 3 2 3 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	2 4 3 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	2 3 3 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	2 2 3 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	2 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	3 5 3 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	4 5 3 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	4 4 3 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	4 3 3 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	4 2 3 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	4 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	5 5 7 4 7 3 7 2 7 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	5 4 7 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	5 3 7 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	5 2 7 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	5 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	6 5 7 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	6 4 7 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	6 3 7 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	6 2 7 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	6 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	7 5 7 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	8 5 7 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	8 4 7 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	8 3 7 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	8 2 7 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	8 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	9 5 7 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	9 4 7 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	9 3 7 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	9 2 7 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	9 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	10 5 13 4 13 3 13 2 13 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	10 4 13 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	10 3 13 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	10 2 13 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	10 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	11 5 13 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	11 4 13 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	11 3 13 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	11 2 13 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	11 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	12 5 13 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	12 4 13 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	12 3 13 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	12 2 13 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	12 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	13 5 13 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	14 5 13 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	14 4 13 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	14 3 13 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	14 2 13 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	14 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	15 5 13 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	15 4 13 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	15 3 13 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	15 2 13 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	15 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	16 5 13 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	16 4 13 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	16 3 13 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	16 2 13 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	16 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	17 5 21 4 21 3 21 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	17 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	17 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	17 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	17 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	18 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	18 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	18 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	18 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	18 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	19 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	19 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	19 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	19 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	19 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	20 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	20 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	20 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	20 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	20 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	21 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	22 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	22 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	22 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	22 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	22 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	23 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	23 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	23 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	23 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	23 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	24 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	24 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	24 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	24 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	24 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	25 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	25 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	25 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	25 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	25 1 
+
+newgraph
+xaxis min 1 max 25 size 6.000 nodraw
+yaxis min .25 max 5 size 1.14 nodraw
+y_translate -1.5
+
+newstring x 12.5 y .25 vjc hjc : (b)
+
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	1 5 21 4 21 3 21 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	1 4 3 3 7 2 13 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	1 3 3 2 7 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	1 2 3 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	1 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	2 5 3 4 7 3 13 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	2 4 3 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	2 3 3 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	2 2 3 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	2 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	3 5 3 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	4 5 3 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	4 4 3 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	4 3 3 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	4 2 3 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	4 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	5 5 7 4 13 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	5 4 7 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	5 3 7 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	5 2 7 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	5 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	6 5 7 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	6 4 7 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	6 3 7 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	6 2 7 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	6 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	7 5 7 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	8 5 7 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	8 4 7 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	8 3 7 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	8 2 7 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	8 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	9 5 7 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	9 4 7 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	9 3 7 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	9 2 7 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	9 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	10 5 13 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	10 4 13 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	10 3 13 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	10 2 13 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	10 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	11 5 13 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	11 4 13 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	11 3 13 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	11 2 13 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	11 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	12 5 13 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	12 4 13 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	12 3 13 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	12 2 13 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	12 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	13 5 13 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	14 5 13 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	14 4 13 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	14 3 13 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	14 2 13 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	14 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	15 5 13 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	15 4 13 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	15 3 13 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	15 2 13 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	15 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	16 5 13 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	16 4 13 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	16 3 13 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	16 2 13 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	16 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	17 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	17 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	17 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	17 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	17 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	18 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	18 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	18 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	18 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	18 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	19 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	19 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	19 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	19 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	19 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	20 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	20 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	20 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	20 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	20 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	21 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	22 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	22 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	22 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	22 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	22 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	23 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	23 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	23 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	23 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	23 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	24 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	24 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	24 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	24 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	24 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	25 5 21 4 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	25 4 21 3 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	25 3 21 2 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	25 2 21 1 
+newcurve linetype solid marktype circle marksize 0.200 0.200 pts
+	25 1 
+

@@ -295,36 +295,6 @@ sub parse_numastat {
   close($file);
 }
 
-# Accepts a filename of a file that contains PEBS output. Second
-# argument is a reference to a hash with which to fill with results.
-# This expects one PEBS output.
-sub parse_pebs {
-  my $filename = shift;
-  my $results = shift; # This is a hash ref
-
-  $results->{'num_sites'} = 0;
-  $results->{'sites'} = ();
-
-  open(my $file, '<', $filename)
-    or return;
-
-  my $in_pebs_results = 0;
-  while(<$file>) {
-    chomp;
-    if(/===== PEBS RESULTS =====/) {
-      $in_pebs_results = 1;
-    } elsif(/(\d+) sites: ([\d\s]+)/) {
-      # Stored in $1 is the number of sites in this arena
-      # Stored in $2 is the list of site IDs, delimited by spaces
-      $results->{'num_sites'}++;
-      foreach(split(/ /, $2)) {
-        push(@{$results->{'sites'}}, $_);
-      }
-    }
-  }
-
-  close($file);
-}
 
 # First argument is the filename
 # Second argument is the reference to a hash
@@ -375,9 +345,88 @@ sub parse_fom {
     $results->{'fom'} = $qmcpack_numerator / $qmcpack_denominator;
   }
   if($results->{'fom'} == 0.0) {
-    print("WARNING: Didn't find a FOM in file $filename\n");
+    print(STDERR "WARNING: Didn't find a FOM in file $filename\n");
   }
 
+}
+
+# Accepts a filename of a file that contains PEBS output. Second
+# argument is a reference to a hash with which to fill with results.
+# This expects one PEBS output.
+sub parse_pebs {
+  my $filename = shift;
+  my $results = shift; # This is a hash ref
+
+  $results->{'num_sites'} = 0;
+
+  open(my $file, '<', $filename)
+    or return;
+
+  my $in_pebs_results = 0;
+  my $in_arena = 0;
+  my $in_event = 0;
+  my @tmp_sites;
+  my $tmp_event = "";
+  while(<$file>) {
+    chomp;
+    if(/===== PEBS RESULTS =====/) {
+      $in_pebs_results = 1;
+    } elsif($in_pebs_results and /(\d+) sites: ([\d\s]+)/) {
+      # Stored in $1 is the number of sites in this arena
+      # Stored in $2 is the list of site IDs, delimited by spaces
+      $results->{'num_sites'}++;
+      @tmp_sites = ();
+      foreach(split(/ /, $2)) {
+        push(@tmp_sites, $_);
+        $results->{'sites'}{$_} = {};
+        $results->{'sites'}{$_}{'num_events'} = 0;
+      }
+      $in_arena = 1;
+      $in_event = 0;
+    } elsif($in_arena and /Peak RSS: ([\d]+)/) {
+      foreach(@tmp_sites) {
+        $results->{'sites'}{$_}{'peak_rss'} = $1;
+      }
+      $in_event = 0;
+    } elsif($in_arena and /Number of intervals: ([\d]+)/) {
+      foreach(@tmp_sites) {
+        $results->{'sites'}{$_}{'num_intervals'} = $1;
+      }
+      $in_event = 0;
+    } elsif($in_arena and /First interval: ([\d]+)/) {
+      foreach(@tmp_sites) {
+        $results->{'sites'}{$_}{'first_interval'} = $1;
+      }
+      $in_event = 0;
+    } elsif($in_arena and /Event: (.+)/) {
+      foreach(@tmp_sites) {
+        $results->{'sites'}{$_}{'num_events'}++;
+        if(not defined($results->{'sites'}{$_}{'events'})) {
+          $results->{'sites'}{$_}{'events'} = {};
+        }
+        $results->{'sites'}{$_}{'events'}{$1} = {};
+      }
+      $in_event = 1;
+      $tmp_event = $1;
+    } elsif($in_arena and $in_event and /Total: ([\d]+)/) {
+      foreach(@tmp_sites) {
+        $results->{'sites'}{$_}{'events'}{$tmp_event}{'total'} = $1;
+      }
+    } elsif($in_arena and $in_event and /^[\s]*([\d]+)/) {
+      foreach(@tmp_sites) {
+        if(not defined($results->{'sites'}{$_}{'events'}{$tmp_event}{'intervals'})) {
+          $results->{'sites'}{$_}{'events'}{$tmp_event}{'intervals'} = ();
+          # Backfill 0-access intervals if it didn't start at the beginning
+          foreach my $interval(0..$results->{'sites'}{$_}{'first_interval'}) {
+            push(@{$results->{'sites'}{$_}{'events'}{$tmp_event}{'intervals'}}, 0);
+          }
+        }
+        push(@{$results->{'sites'}{$_}{'events'}{$tmp_event}{'intervals'}}, $1);
+      }
+    }
+  }
+
+  close($file);
 }
 
 1; # Truthiest module there is

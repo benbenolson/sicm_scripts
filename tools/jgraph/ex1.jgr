@@ -1,0 +1,36 @@
+(* This is a graph for Figure 1 of the USENIX jgraph abstract.  It shows
+   three simple curves plotted with jgraph.
+
+   There are two graphs plotted -- the first is the actual jgraph.  The
+   second is a text string showing the input for the graph.  Print it 
+   out -- you'll see what I mean.
+   *)
+
+newgraph
+xaxis size 2 
+yaxis size 1.5 
+
+newcurve pts 0 6  1 9  2 11  3 14  4 18 5 20
+newcurve marktype triangle linetype solid
+         pts 0 3  1 4  2 7  3 9  4 10 5 13
+newcurve marktype none linetype dashed
+         pts 0 0  1 2  2 3  3 5  4 6  5 9
+
+copygraph
+x_translate -3.5
+border
+xaxis nodraw min 0 max 1 size 2.8
+yaxis nodraw min 0 max 1
+
+newstring hjl vjc x .05 y .5 font Courier fontsize 7 :
+newgraph\
+  newcurve \
+    pts 0 6  1 9  2 11  3 14  4 18 5 20\
+  newcurve \
+    marktype triangle \
+    linetype solid\
+    pts 0 3  1 4  2 7  3 9  4 10 5 13\
+  newcurve \
+    marktype none \
+    linetype dashed\
+    pts 0 0  1 2  2 3  3 5  4 6  5 9

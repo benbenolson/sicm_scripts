@@ -1,0 +1,24 @@
+(* This is a file to draw sin(i) for i going from -10 to 10.  The actual
+ * points were created by a c program which is included below. *) 
+
+newgraph 
+
+yaxis min -1 max 1 label : sin(i)
+xaxis min -10 max 10 label : i
+
+(* Plot the sin curve *)
+curve 1 
+  marktype none
+  linetype solid
+  pts shell : ./sin
+   (* sin is the executable of the following c program:
+
+     #include <math.h>
+     main();
+     {
+       double x;
+       for (x = -10.0; x < 10.0; x += .03)
+         printf("%f %f\n", x, sin(x));
+     }
+     
+   *)

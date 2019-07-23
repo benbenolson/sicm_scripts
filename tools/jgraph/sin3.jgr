@@ -1,0 +1,25 @@
+(* This is the same as sin.jgr only a different include file of points is
+used:  This one orders the points by ascending y value instead of ascending
+x value.  The graph looks quite different *)
+
+newgraph 
+
+yaxis min -1 max 1 label : sin(i)
+xaxis min -10 max 10 label : i
+
+(* Plot the sin curve *)
+curve 1 
+  marktype none
+  linetype solid
+  pts include sin3.pts
+   (* sin.pts was created by the following c program:
+
+     #include <math.h>
+     main();
+     {
+       double x;
+       for (x = -10.0; x < 10.0; x += .03)
+         printf("%f %f\n", x, sin(x));
+     }
+     
+   * and then the output was piped through sort -n +1 *)

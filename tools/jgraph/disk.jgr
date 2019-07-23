@@ -1,0 +1,13 @@
+newgraph
+xaxis min 0 max 0.4 nodraw
+yaxis min 0 max 0.4 nodraw
+
+(* Picture of a disk:
+   0 0 to 0.4 0.4 *)
+
+newcurve marktype ellipse fill .5 marksize 0.4 0.2 pts 0.2 0.1
+newcurve marktype box fill .5 gray .5 marksize 0.4 0.2 pts 0.2 0.2
+newline pts 0.0 0.1   0.0 0.3
+newline pts 0.4 0.1   0.4 0.3
+newcurve marktype ellipse fill 1 marksize 0.4 0.2 pts 0.2 0.3
+

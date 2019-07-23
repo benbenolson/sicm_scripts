@@ -1,0 +1,9 @@
+newgraph
+
+xaxis size 7 min 0 max 7 hash 1 mhash 9
+yaxis size 9 min 0 max 9 hash 1 mhash 9
+
+copygraph
+
+xaxis hash_scale 1 grid_lines mgrid_lines mgrid_gray .5
+yaxis hash_scale 1 grid_lines mgrid_lines mgrid_gray .5

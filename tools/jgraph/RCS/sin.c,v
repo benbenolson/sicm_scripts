@@ -1,0 +1,31 @@
+head	8.4;
+access;
+symbols;
+locks
+	plank:8.4; strict;
+comment	@ * @;
+
+
+8.4
+date	2012.10.15.15.54.18;	author plank;	state Exp;
+branches;
+next	;
+
+
+desc
+@@
+
+
+8.4
+log
+@Fixing the seg fault and all of those warnings.
+@
+text
+@#include <math.h>
+     main()
+     {
+       double x;
+       for (x = -10.0; x < 10.0; x += .03)
+         printf("%f %f\n", x, sin(x));
+     }
+@

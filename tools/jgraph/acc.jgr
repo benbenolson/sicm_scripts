@@ -1,0 +1,38 @@
+(* Graph #6: Kbytes processed each second
+ *)
+
+newgraph
+
+yaxis size 2.5 min 0 max 100
+  label fontsize 8 : Percentage of bus utilization
+
+xaxis size 1.8 min 0 max 5
+  no_draw_hash_marks no_draw_axis_label no_draw_hash_labels
+
+(* 100% of utilization == 6510.4166 Kb/sec *)
+
+newcurve
+  label : DB
+  marktype xbar fill .9 marksize .4
+  pts 
+    1   3.3573  (* 218.5792 Kb/sec *)
+
+newcurve
+  label : QS
+  marktype xbar fill .6 marksize .4
+  pts
+    2   8.0665  (* 525.1688 Kb/sec *)
+
+newcurve
+  label : GE
+  marktype xbar fill .3 pattern stripe 40 marksize .4
+  pts
+    3   27.9602  (* 518.2473 Kb/sec *)
+
+newcurve
+  label : RNG
+  marktype xbar fill 0 pattern stripe marksize .4
+  pts
+    4   8.2876  (* 539.5619 Kb/sec *)
+
+

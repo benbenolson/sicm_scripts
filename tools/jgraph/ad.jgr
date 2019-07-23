@@ -1,0 +1,19 @@
+newgraph 
+xaxis min 0 max 5.5 size 5.5 nodraw
+yaxis min 0 max 2.8 size 2.8 nodraw
+(*
+newcurve eps cube.eps marksize 1.25 2.8 pts .6 1.4
+newcurve eps disk.eps marksize .8 .8 pts 
+*)
+newcurve eps cube.eps marksize 0 0 pts .6 1.4
+newcurve eps disk.eps marksize 0 0 pts 
+   4.7 1.6
+   4.5 1.3
+   4.3 1
+   4.1 0.7
+
+newline asize .2 .1 linethickness 3 rarrow 
+          pts 1.4 1.5 4.0 1.6
+copycurve pts 1.4 1.4 3.8 1.3
+copycurve pts 1.4 1.3 3.6 1.0
+copycurve pts 1.4 1.2 3.4 0.7

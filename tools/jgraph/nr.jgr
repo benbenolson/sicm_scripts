@@ -1,0 +1,93 @@
+(* Bar graph from Norman Ramsey's PhD dissertation *)
+
+newgraph
+  xaxis size 6.0 min 0 hash 100 label : Number of lines
+  yaxis min -4.625 max -0.375 size 2.5
+  yaxis no_auto_hash_labels no_draw_hash_marks no_draw_axis_label
+
+	(* MIPS *)
+  yaxis hash_label at -1 : MIPS
+    newcurve pts 545 -1 marktype ybar fill 0.3
+      marksize 75 0.75 pattern stripe -45
+    newcurve pts 458 -1 marktype ybar fill 0.75
+      marksize 75 0.75 pattern stripe -45
+    newcurve pts 411 -1 marktype ybar fill 0.1
+      marksize 75 0.75 pattern stripe -45
+    newcurve pts 338 -1 marktype ybar fill 1.0
+      marksize 75 0.75 pattern solid
+    newcurve pts 303 -1 marktype ybar fill 0.2
+      marksize 75 0.75 pattern solid
+    newcurve pts 246 -1 marktype ybar fill 0.85
+      marksize 75 0.75 pattern stripe 45
+    newcurve pts 171 -1 marktype ybar fill 0.5
+      marksize 75 0.75 pattern stripe 45
+    newcurve pts 66 -1 marktype ybar fill 0
+      marksize 75 0.75 pattern stripe 45
+
+	(* SPARC *)
+  yaxis hash_label at -2 : SPARC
+    newcurve pts 535 -2 marktype ybar fill 0.3
+      marksize 75 0.75 pattern stripe -45
+    newcurve pts 386 -2 marktype ybar fill 0.75
+      marksize 75 0.75 pattern stripe -45
+    newcurve pts 330 -2 marktype ybar fill 0.1
+      marksize 75 0.75 pattern stripe -45
+    newcurve pts 208 -2 marktype ybar fill 1.0
+      marksize 75 0.75 pattern solid
+    newcurve pts 190 -2 marktype ybar fill 0.2
+      marksize 75 0.75 pattern solid
+    newcurve pts 174 -2 marktype ybar fill 0.5
+      marksize 75 0.75 pattern stripe 45
+    newcurve pts 74 -2 marktype ybar fill 0
+      marksize 75 0.75 pattern stripe 45
+
+	(* VAX *)
+  yaxis hash_label at -3 : VAX
+    newcurve pts 213 -3 marktype ybar fill 1.0
+      marksize 75 0.75 pattern solid
+    newcurve pts 200 -3 marktype ybar fill 0.2
+      marksize 75 0.75 pattern solid
+    newcurve pts 135 -3 marktype ybar fill 0.5
+      marksize 75 0.75 pattern stripe 45
+    newcurve pts 52 -3 marktype ybar fill 0
+      marksize 75 0.75 pattern stripe 45
+
+	(* 68020 *)
+  yaxis hash_label at -4 : 68020
+    newcurve pts 185 -4 marktype ybar fill 1.0
+      marksize 75 0.75 pattern solid
+    newcurve pts 169 -4 marktype ybar fill 0.2
+      marksize 75 0.75 pattern solid
+    newcurve pts 98 -4 marktype ybar fill 0.5
+      marksize 75 0.75 pattern stripe 45
+    newcurve pts 53 -4 marktype ybar fill 0
+      marksize 75 0.75 pattern stripe 45
+  xaxis max 600
+
+  (* first column of legend *)
+  newcurve marktype ybar fill 0 marksize 50 0.75 pattern stripe 45
+    label : configuration
+  newcurve marktype ybar fill 0.5 marksize 50 0.75 pattern stripe 45
+    label : stack walking
+  newcurve marktype ybar fill 0.85 marksize 50 0.75 pattern stripe 45
+    label : runtime procedure table
+  newcurve marktype ybar fill 0.2 marksize 50 0.75 pattern solid
+    label : nub code
+  legend bottom defaults hjl linelength 75 x 50 y -6.0
+
+copygraph xaxis nodraw yaxis nodraw (* for second legend *)
+  (* second column of legend *)
+  legend bottom defaults hjl x 250.0 y -6.0
+  newcurve marktype ybar fill 1.0 marksize 50 0.75 pattern solid
+    label : PostScript
+  newcurve marktype ybar fill 0.1 marksize 50 0.75 pattern stripe -45
+    label : instruction-set specification
+  newcurve marktype ybar fill 0.75 marksize 50 0.75 pattern stripe -45
+    label : follow sets
+  newcurve marktype ybar fill 0.3 marksize 50 0.75 pattern stripe -45
+    label : disassembler
+
+(* top X axis *)
+copygraph xaxis draw hash -1 hash_scale +1.0 min 0 max 4.457652303
+ label : percentage of total size
+
