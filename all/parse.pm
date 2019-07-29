@@ -365,6 +365,7 @@ sub parse_pebs {
   my $in_pebs_results = 0;
   my $in_arena = 0;
   my $in_event = 0;
+  my $in_rss = 0;
   my @tmp_sites;
   my $tmp_event = "";
   while(<$file>) {
@@ -383,21 +384,24 @@ sub parse_pebs {
       }
       $in_arena = 1;
       $in_event = 0;
-    } elsif($in_arena and /Peak RSS: ([\d]+)/) {
-      foreach(@tmp_sites) {
-        $results->{'sites'}{$_}{'peak_rss'} = $1;
-      }
-      $in_event = 0;
+      $in_rss = 0;
     } elsif($in_arena and /Number of intervals: ([\d]+)/) {
       foreach(@tmp_sites) {
         $results->{'sites'}{$_}{'num_intervals'} = $1;
       }
       $in_event = 0;
+      $in_rss = 0;
     } elsif($in_arena and /First interval: ([\d]+)/) {
       foreach(@tmp_sites) {
         $results->{'sites'}{$_}{'first_interval'} = $1;
       }
       $in_event = 0;
+      $in_rss = 0;
+    } elsif($in_arena and /^RSS:/) {
+      foreach(@tmp_sites) {
+        $results->{'sites'}{$_}{'rss'} = {};
+      }
+      $in_rss = 1;
     } elsif($in_arena and /Event: (.+)/) {
       foreach(@tmp_sites) {
         $results->{'sites'}{$_}{'num_events'}++;
@@ -407,10 +411,19 @@ sub parse_pebs {
         $results->{'sites'}{$_}{'events'}{$1} = {};
       }
       $in_event = 1;
+      $in_rss = 0;
       $tmp_event = $1;
     } elsif($in_arena and $in_event and /Total: ([\d]+)/) {
       foreach(@tmp_sites) {
         $results->{'sites'}{$_}{'events'}{$tmp_event}{'total'} = $1;
+      }
+    } elsif($in_arena and $in_event and /Peak: ([\d]+)/) {
+      foreach(@tmp_sites) {
+        $results->{'sites'}{$_}{'events'}{$tmp_event}{'peak'} = $1;
+      }
+    } elsif($in_arena and $in_rss and /Peak: ([\d]+)/) {
+      foreach(@tmp_sites) {
+        $results->{'sites'}{$_}{'rss'}{'peak'} = $1;
       }
     } elsif($in_arena and $in_event and /^[\s]*([\d]+)/) {
       foreach(@tmp_sites) {
@@ -422,6 +435,17 @@ sub parse_pebs {
           }
         }
         push(@{$results->{'sites'}{$_}{'events'}{$tmp_event}{'intervals'}}, $1);
+      }
+    } elsif($in_arena and $in_rss and /^[\s]*([\d]+)/) {
+      foreach(@tmp_sites) {
+        if(not defined($results->{'sites'}{$_}{'rss'}{'intervals'})) {
+          $results->{'sites'}{$_}{'rss'}{'intervals'} = ();
+          # Backfill 0 values
+          foreach my $interval(0..$results->{'sites'}{$_}{'first_interval'}) {
+            push(@{$results->{'sites'}{$_}{'rss'}{'intervals'}}, 0);
+          }
+        }
+        push(@{$results->{'sites'}{$_}{'rss'}{'intervals'}}, $1);
       }
     }
   }
