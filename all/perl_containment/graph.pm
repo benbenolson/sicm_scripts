@@ -2,7 +2,7 @@
 package graph;
 # This module generates jgraph code, then uses jgraph
 # to generate a postscript file of a graph.
-my $jgraph = "$ENV{'SCRIPTS_DIR'}/tools/jgraph/jgraph -P ";
+my $jgraph = "$ENV{'SCRIPTS_DIR'}/tools/jgraph/jgraph ";
 
 # Export functions in this module
 require Exporter;
@@ -13,16 +13,16 @@ use Data::Dumper qw(Dumper);
 use File::Temp qw/ tempfile /;
 
 my @colors = (
-  "1.00000000000000000000 .70196078431372549019 0",
+  ".75686274509803921568 0 .12549019607843137254",
+  "0 .32549019607843137254 .54117647058823529411",
   ".50196078431372549019 .24313725490196078431 .45882352941176470588",
+  "1.00000000000000000000 .70196078431372549019 0",
+  ".80784313725490196078 .63529411764705882352 .38431372549019607843",
   "1.00000000000000000000 .40784313725490196078 0",
   ".65098039215686274509 .74117647058823529411 .84313725490196078431",
-  ".75686274509803921568 0 .12549019607843137254",
-  ".80784313725490196078 .63529411764705882352 .38431372549019607843",
   ".50588235294117647058 .43921568627450980392 .40000000000000000000",
   "0 .49019607843137254901 .20392156862745098039",
   ".96470588235294117647 .46274509803921568627 .55686274509803921568",
-  "0 .32549019607843137254 .54117647058823529411",
   "1.00000000000000000000 .47843137254901960784 .36078431372549019607",
   ".32549019607843137254 .21568627450980392156 .47843137254901960784",
   "1.00000000000000000000 .55686274509803921568 0",
@@ -34,6 +34,136 @@ my @colors = (
   ".94509803921568627450 .22745098039215686274 .07450980392156862745",
   ".13725490196078431372 .17254901960784313725 .08627450980392156862",
 );
+
+# This function generates a line graph of PEBS event totals and RSS over time.
+# It selects the first event (essentially random), so only use one event.
+# It only plots the top sites.
+# It expects PEBS data as input.
+sub per_interval_one_site_event_graph {
+  my $results_ref = shift;
+  my %results = %$results_ref;
+  my $jgraph_code = "";
+  my $site;
+  my $event;
+  my $max_event;
+  my $max_rss;
+  my $i;
+  my $num_intervals;
+  my $color_index;
+  my $color;
+  my @mb_rss;
+
+  # Positions the graphs
+  my $xsize = 5.666;
+  my $ysize = 2;
+  my $xtranslate = 0;
+  my $ytranslate = 0;
+  my $flipper = 0;
+
+  # We need the sites to be sorted by their number of accesses
+  $event = (keys %{$results{(keys %results)[0]}{'events'}})[0];
+  print(STDERR "Chose event $event\n");
+  my @sorted_sites = sort { $results{$b}{'events'}{$event}{'total'} <=> $results{$a}{'events'}{$event}{'total'} } keys %results;
+  my @top_sites = @sorted_sites[0..10];
+  foreach my $site(@top_sites) {
+    print(STDERR "$site $results{$site}{'events'}{$event}{'total'}\n");
+  }
+
+  # Iterate over the top sites
+  foreach(@top_sites) {
+    $site = $_;
+    $num_intervals = $results{$site}{'num_intervals'} + 
+                     $results{$site}{'first_interval'} + 1;
+    $color_index = 0;
+
+    # Make all RSS values in MBs
+    @mb_rss = ();
+    foreach(@{$results{$site}{'rss'}{'intervals'}}) {
+      push(@mb_rss, $_ / 1024 / 1024);
+    }
+
+    # Determine the maximum values
+    $max_event = 0;
+    $max_rss = 0;
+    $i = 0;
+    foreach(@{$results{$site}{'events'}{$event}{'intervals'}}) {
+      if($_ > $max_event) {
+        $max_event = $_;
+      }
+      $i++;
+    }
+    $i = 0;
+    foreach(@mb_rss) {
+      if($_ > $max_rss) {
+        $max_rss = $_;
+      }
+      $i++;
+    }
+
+    # First graph is the RSS
+    $jgraph_code .= "newgraph
+    title : $site
+    clip
+    x_translate $xtranslate y_translate $ytranslate
+    xaxis size $xsize min 0 max $num_intervals
+    hash_labels fontsize 7 nodraw
+    label fontsize 8 : Intervals
+    yaxis size $ysize min 0 max $max_rss
+    hash_labels fontsize 7 hash_scale 1.0
+    label fontsize 8 : RSS (MB)\n";
+    if(not defined($colors[$color_index])) {
+      print(STDERR "Ran out of colors!\n");
+      last;
+    }
+    $color = $colors[$color_index];
+    $jgraph_code .= "newcurve marktype xbar cfill $color marksize 0.1 4 color $color\n";
+    $jgraph_code .= "color $color\n";
+    $jgraph_code .= "pts\n";
+    $i = 0;
+    foreach(@mb_rss) {
+      $jgraph_code .= "$i $_\n";
+      $i++;
+    }
+    $color_index++;
+
+    # Second graph is the event
+    $jgraph_code .= "newgraph
+    x_translate $xtranslate y_translate $ytranslate
+    xaxis size $xsize min 0 max $num_intervals
+    hash_labels fontsize 7 draw
+    label fontsize 8 : Intervals
+    yaxis size $ysize min 0 max $max_event
+    hash_labels fontsize 7 draw
+    label fontsize 8 : Accesses\n";
+    if(not defined($colors[$color_index])) {
+      print(STDERR "Ran out of colors!\n");
+      last;
+    }
+    $color = $colors[$color_index];
+    $jgraph_code .= "newcurve marktype xbar cfill $color marksize 0.1 4 color $color\n";
+    $jgraph_code .= "pts\n";
+    $i = 0;
+    foreach(@{$results{$site}{'events'}{$event}{'intervals'}}) {
+      $jgraph_code .= "$i $_\n";
+      $i++;
+    }
+    $color_index++;
+
+    # Move the next graph over
+    #if($flipper) {
+    #  $xtranslate += $xsize + 0.5;
+    #  $flipper = 0;
+    #} else {
+      $ytranslate += $ysize + 0.75;
+      $flipper = 1;
+      #}
+  }
+
+  my ($fh, $filename) = tempfile();
+  print(STDERR "$filename\n");
+  print($fh $jgraph_code);
+  system("$jgraph $filename");
+}
 
 # This function generates a line graph of PEBS event totals over time, per arena.
 # It selects the first event (essentially random), so only use one event.
@@ -271,6 +401,13 @@ sub graph {
     foreach my $cfg(keys(%results)) {
       foreach my $bench(keys(%{$results{$cfg}})) {
         per_interval_total_event_graph($results{$cfg}{$bench}{'sites'});
+      }
+    }
+  } elsif($graph eq 'per_interval_one_site_event') {
+    # Generates one plot per config/bench combination
+    foreach my $cfg(keys(%results)) {
+      foreach my $bench(keys(%{$results{$cfg}})) {
+        per_interval_one_site_event_graph($results{$cfg}{$bench}{'sites'});
       }
     }
   } elsif($graph eq 'per_interval_per_site_event') {

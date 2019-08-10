@@ -138,10 +138,11 @@ foreach my $size(@sizes) {
     }
   }
 
-  # Print out the top row, the benchmark names
   if($graph ne '') {
+    # Print out a postscript graph
     graph(\%results, $graph);
   } else {
+    # Print out a table
     printf("%-${max_cfg_length}s", "Config");
     foreach my $bench(@benches) {
       printf("%${max_col_length}s", $bench);

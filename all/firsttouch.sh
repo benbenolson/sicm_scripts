@@ -27,7 +27,7 @@ function firsttouch_all_exclusive_device {
   eval "${PRERUN}"
 
   # Run 5 iters
-  for i in {0..4}; do
+  for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches

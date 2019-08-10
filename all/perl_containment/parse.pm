@@ -397,11 +397,12 @@ sub parse_pebs {
       }
       $in_event = 0;
       $in_rss = 0;
-    } elsif($in_arena and /^RSS:/) {
+    } elsif($in_arena and /RSS:/) {
       foreach(@tmp_sites) {
         $results->{'sites'}{$_}{'rss'} = {};
       }
       $in_rss = 1;
+      $in_event = 0;
     } elsif($in_arena and /Event: (.+)/) {
       foreach(@tmp_sites) {
         $results->{'sites'}{$_}{'num_events'}++;

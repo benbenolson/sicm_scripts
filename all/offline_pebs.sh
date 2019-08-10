@@ -60,7 +60,11 @@ function offline_pebs_guided {
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="4096"
-  export SH_DEFAULT_NODE="0"
+  if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+    export SH_DEFAULT_NODE=1
+  else
+    export SH_DEFAULT_NODE="0"
+  fi
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
   export JE_MALLOC_CONF="oversize_threshold:0"
 
@@ -68,8 +72,7 @@ function offline_pebs_guided {
   
   # Generate the hotset/knapsack/thermos
   cat "${PEBS_FILE}" |  \
-    sicm_hotset acc ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > \
-      ${BASEDIR}/guidance.txt
+    sicm_hotset MEM_LOAD_UOPS_RETIRED:L3_MISS alloc_size ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > ${BASEDIR}/guidance.txt
   for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
