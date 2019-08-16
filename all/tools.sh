@@ -58,8 +58,8 @@ function memreserve {
 
   # Get the amount of free memory on the node, in pages
   numastat -m &> $1/numastat_noreserve.txt
-  NODE_FREE_MBYTES=$(${SCRIPTS_DIR}/stat.sh \
-    $1/numastat_noreserve.txt node${3}_free)
+  NODE_FREE_MBYTES=$(${SCRIPTS_DIR}/all/stat \
+    --metric=memfree --node=${3} $1/numastat_noreserve.txt)
   NODE_FREE_PAGES=$(echo "$NODE_FREE_MBYTES * 1024 / 4" | bc)
 
   if [[ ${NODE_FREE_PAGES} -gt ${2} ]]; then

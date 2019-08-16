@@ -6,21 +6,26 @@
 
 source $SCRIPTS_DIR/all/args.sh
 source $SCRIPTS_DIR/all/tools.sh
-source $SCRIPTS_DIR/all/firsttouch.sh
-source $SCRIPTS_DIR/all/pebs.sh
-source $SCRIPTS_DIR/all/offline_pebs.sh
-source $SCRIPTS_DIR/all/offline_mbi.sh
-source $SCRIPTS_DIR/all/offline_manual.sh
-source $SCRIPTS_DIR/all/mbi.sh
-source $SCRIPTS_DIR/all/oneoffs.sh
+source $SCRIPTS_DIR/all/cfgs/firsttouch.sh
+source $SCRIPTS_DIR/all/cfgs/pebs.sh
+source $SCRIPTS_DIR/all/cfgs/offline_pebs.sh
+source $SCRIPTS_DIR/all/cfgs/offline_mbi.sh
+source $SCRIPTS_DIR/all/cfgs/offline_manual.sh
+source $SCRIPTS_DIR/all/cfgs/mbi.sh
+source $SCRIPTS_DIR/all/cfgs/oneoffs.sh
 
 if [[ ! $BENCH ]]; then
   echo "You didn't specify a benchmark name. Aborting."
   exit 1
 fi
 
-if [[ ! $CONFIGSTR ]]; then
+if [[ ! $CONFIG ]]; then
   echo "You didn't specify a configuration name. Aborting."
+  exit 1
+fi
+
+if [[ ! $CONFIG_ARGS ]]; then
+  echo "You didn't specify configuration arguments. Aborting."
   exit 1
 fi
 
@@ -48,13 +53,16 @@ spack load $SICM@develop%gcc@7.2.0
 
 # Set a function to do arbitrary commands depending on the benchmark
 # and benchmark size.
-export PRERUN="${BENCH}_${SIZE}_${CONFIGSTR}"
+export PRERUN="${BENCH}_${SIZE}_${FULLCONFIG}"
 
 # Create the results directory for this experiment,
 # and pass that to the BASH function
-DIRECTORY="${RESULTS_DIR}/${BENCH}/${SIZE}/${CONFIGSTR}"
-rm -rf ${DIRECTORY}
-mkdir -p ${DIRECTORY}
+DIRECTORY="${RESULTS_DIR}/${BENCH}/${SIZE}/${FULLCONFIG}"
+if [[ ! ${CONFIG} == *"manual"* ]]; then
+  echo "Removing directory"
+  rm -rf ${DIRECTORY}
+  mkdir -p ${DIRECTORY}
+fi
 
 # Print out information about this run
 echo "Running experiment:"
@@ -63,5 +71,7 @@ echo "  Configuration: '${CONFIG}'"
 echo "  Configuration arguments: '${CONFIG_ARGS_SPACES}'"
 
 # Execute the BASH function with arguments
+export BASEDIR="${DIRECTORY}"
+export COMMAND="${BENCH_COMMAND}"
 cd $BENCH_DIR/${BENCH}/run
-eval "$CONFIG '${DIRECTORY}' '${BENCH_COMMAND}' ${CONFIG_ARGS_SPACES}"
+eval "$CONFIG ${CONFIG_ARGS_SPACES}"

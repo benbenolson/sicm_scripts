@@ -9,19 +9,8 @@
 # Fourth argument is the NUMA node to use as a lower tier
 # This config expects you to install `guidance.txt` in the right place manually.
 function offline_all_manual {
-  BASEDIR="$1"
-  COMMAND="$2"
-  NODE=${3}
-  SLOWNODE=${4}
-
-  # User output
-  echo "Running experiment:"
-  echo "  Config: 'offline_all_manual'"
-  echo "  Profiling frequency: '${PEBS_FREQ}'"
-  echo "  Profiling size: '${PEBS_SIZE}'"
-  echo "  Packing algorithm: '${PACK_ALGO}'"
-  echo "  Packing into upper tier: '${UPPER_SIZE}'"
-  echo "  Scaling down to peak RSS: '${PEAK_RSS}'"
+  NODE=${1}
+  SLOWNODE=${2}
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="4096"
@@ -39,7 +28,7 @@ function offline_all_manual {
     numastat_background "${DIR}"
     pcm_background "${DIR}"
     if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-      eval "env time -v numactl --cpunodebind=${NODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
+      eval "env time -v numactl --cpunodebind=${NODE} " "${COMMAND}" #&>> ${DIR}/stdout.txt
     else
       eval "env time -v " "${COMMAND}" &>> ${DIR}/stdout.txt
     fi

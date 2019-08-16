@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Arguments
-GETOPT_OUTPUT=`getopt -o mbcs --long memsys,bench:,config:,size: -n 'build.sh' -- "$@"`
+GETOPT_OUTPUT=`getopt -o mbcsa --long memsys,bench:,config:,size:,args: -n 'build.sh' -- "$@"`
 if [ $? != 0 ] ; then echo "'getopt' failed. Aborting." >&2 ; exit 1 ; fi
 eval set -- "$GETOPT_OUTPUT"
 
@@ -10,11 +10,13 @@ MEMSYS=false
 BENCH=""
 CONFIGSTR=""
 SIZE=""
+CONFIGARGSSTR=""
 while true; do
   case "$1" in
     -m | --memsys ) MEMSYS=true; shift;;
     -b | --bench ) BENCH="$2"; shift 2;;
     -c | --config ) CONFIGSTR="$2"; shift 2;;
+    -a | --args ) CONFIGARGSSTR="$2"; shift 2;;
     -s | --size ) SIZE="$2"; shift 2;;
     -- ) shift; break;;
     * ) break;;
@@ -27,20 +29,21 @@ if $MEMSYS; then
 fi
 
 # The ${CONFIG} variable contains a configuration name,
-# followed by a comma and an underscore-delimited list of arguments
-# to that configuration. Split these up in order to call it properly.
-CONFIG_ARRAY=(${CONFIGSTR//,/ })
-CONFIG=${CONFIG_ARRAY[0]}
-CONFIG_ARGS=${CONFIG_ARRAY[1]}
-CONFIG_ARGS_ARRAY=(${CONFIG_ARGS//_/ })
+# The ${CONFIG_ARGS} variable contains an array of config arguments.
+CONFIG_ARGS=(${CONFIGARGSSTR//,/ })
+CONFIG=${CONFIGSTR}
 
-# Construct a space-delimited list of configuration arguments.
-# Last line in this block removes leading whitespace.
 CONFIG_ARGS_SPACES=""
-for arg in "${CONFIG_ARGS_ARRAY[@]}"; do
+CONFIG_ARGS_UNDERSCORES=""
+for arg in "${CONFIG_ARGS[@]}"; do
   CONFIG_ARGS_SPACES="$CONFIG_ARGS_SPACES $arg"
+  CONFIG_ARGS_UNDERSCORES="${CONFIG_ARGS_UNDERSCORES}_$arg"
 done
 CONFIG_ARGS_SPACES="$(echo -e "${CONFIG_ARGS_SPACES}" | sed -e 's/^[[:space:]]*//')"
+CONFIG_ARGS_UNDERSCORES="$(echo -e "${CONFIG_ARGS_UNDERSCORES}" | sed -e 's/^[[_]]*//')"
+
+# Config name, colon, underscore-delimited list of arguments
+FULLCONFIG=${CONFIG}:${CONFIG_ARGS_UNDERSCORES}
 
 BENCH_COMMAND=""
 if [ $BENCH ] && [ $SIZE ]; then

@@ -3,30 +3,26 @@
 ################################################################################
 #                        offline_pebs_guided_percent                           #
 ################################################################################
-# First argument is results directory
-# Second argument is the command to run
-# Third argument is the frequency of PEBS sampling to use
-# Fourth argument is the size of the PEBS sampling to use
-# Fifth argument is the packing strategy
-# Sixth argument is the percentage of the peak RSS that should be available on the node
-# Seventh argument is the NUMA node to pack onto
-# Eighth argument is the NUMA node to use as a lower tier
+# First argument is the frequency of PEBS sampling to use
+# Second argument is the size of the PEBS sampling to use
+# Third argument is the packing strategy
+# Fourth argument is the percentage of the peak RSS that should be available on the node
+# Fifth argument is the NUMA node to pack onto
+# Sixth argument is the NUMA node to use as a lower tier
 function offline_pebs_guided {
-  BASEDIR="$1"
-  COMMAND="$2"
-  PEBS_FREQ="$3"
-  PEBS_SIZE="$4"
-  PACK_ALGO="$5"
-  RATIO=$(echo "${6}/100" | bc -l)
-  NODE=${7}
-  SLOWNODE=${8}
+  PEBS_FREQ="$1"
+  PEBS_SIZE="$2"
+  PACK_ALGO="$3"
+  RATIO=$(echo "${4}/100" | bc -l)
+  NODE=${5}
+  SLOWNODE=${6}
   if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-    CANARY_CFG="firsttouch_all_exclusive_device_1_3"
+    CANARY_CFG="firsttouch_all_exclusive_device:1_3"
   else
-    CANARY_CFG="firsttouch_all_exclusive_device_1_0"
+    CANARY_CFG="firsttouch_all_exclusive_device:1_0"
   fi
   CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
-  PEBS_FILE="${BASEDIR}/../../${PEBS_SIZE}/pebs_${PEBS_FREQ}/i0/stdout.txt"
+  PEBS_FILE="${BASEDIR}/../../${PEBS_SIZE}/pebs:${PEBS_FREQ}/i0/stdout.txt"
 
   # This file is used for the profiling information
   if [ ! -r "${PEBS_FILE}" ]; then
@@ -41,38 +37,33 @@ function offline_pebs_guided {
   fi
 
   # This is in kilobytes
-  PEAK_RSS=$(${SCRIPTS_DIR}/stat.sh ${CANARY_STDOUT} rss_kbytes)
+  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --metric=peak_rss_kbytes ${CANARY_STDOUT}`
+  echo "Got a peak RSS: ${PEAK_RSS}"
   PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
   # How many pages we need to be free on MCDRAM
   NUM_PAGES=$(echo "${PEAK_RSS} * ${RATIO} / 4" | bc)
   NUM_BYTES_FLOAT=$(echo "${PEAK_RSS} * ${RATIO} * 1024" | bc)
   NUM_BYTES=${NUM_BYTES_FLOAT%.*}
 
-  # User output
-  echo "Running experiment:"
-  echo "  Config: 'offline_pebs_guided'"
-  echo "  Profiling frequency: '${PEBS_FREQ}'"
-  echo "  Profiling size: '${PEBS_SIZE}'"
-  echo "  Packing algorithm: '${PACK_ALGO}'"
-  echo "  Percentage: '${6}%'"
-  echo "  Packing into bytes: '${NUM_BYTES}'"
-  echo "  Scaling down to peak RSS: '${PEAK_RSS}'"
-
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="4096"
-  if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-    export SH_DEFAULT_NODE=1
-  else
-    export SH_DEFAULT_NODE="0"
-  fi
+  export SH_DEFAULT_NODE=${SLOWNODE}
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
   export JE_MALLOC_CONF="oversize_threshold:0"
 
   eval "${PRERUN}"
   
   # Generate the hotset/knapsack/thermos
-  cat "${PEBS_FILE}" |  \
-    sicm_hotset MEM_LOAD_UOPS_RETIRED:L3_MISS alloc_size ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > ${BASEDIR}/guidance.txt
+  #cat "${PEBS_FILE}" |  \
+  #  sicm_hotset MEM_LOAD_UOPS_RETIRED:L3_MISS alloc_size ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > ${BASEDIR}/guidance.txt
+  if $MEMSYS; then
+    cat "${PEBS_FILE}" |  \
+      sicm_hotset pebs ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > \
+      ${BASEDIR}/guidance.txt
+  else
+    cat "${PEBS_FILE}" |  \
+      sicm_hotset MEM_LOAD_UOPS_RETIRED:L3_MISS rss ${PACK_ALGO} constant ${NUM_BYTES} 1 ${PEAK_RSS_BYTES} > ${BASEDIR}/guidance.txt
+  fi
   for i in {0..0}; do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}

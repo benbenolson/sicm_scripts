@@ -8,16 +8,8 @@
 # Third argument is node to firsttouch onto
 # Fourth argument is the node to use as a lower tier
 function firsttouch_all_exclusive_device {
-  BASEDIR="$1"
-  COMMAND="$2"
-  NODE="$3"
-  SLOWNODE="$4"
-
-  # User output
-  echo "Running experiment:"
-  echo "  Config: 'firsttouch_all_exclusive_device'"
-  echo "  Upper tier: '${NODE}'"
-  echo "  Lower tier: '${SLOWNODE}'"
+  NODE="$1"
+  SLOWNODE="$2"
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
