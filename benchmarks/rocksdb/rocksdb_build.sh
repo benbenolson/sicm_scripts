@@ -3,9 +3,10 @@
 source $SCRIPTS_DIR/all/bench_build.sh
 bench_build c
 
-# Compile Lulesh
+export CC="${COMPILER_WRAPPER}"
+export CXX="${COMPILER_WRAPPER}"
+export AR="${AR_WRAPPER}"
+
 cd $BENCH_DIR/rocksdb/src
-#make clean
-make -j 1 static_lib
-#mkdir -p ../run
-#cp lulesh2.0 ../run/lulesh2.0
+make clean
+make -j 80 static_lib
