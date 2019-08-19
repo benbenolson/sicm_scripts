@@ -32,13 +32,12 @@ function bench_build {
   fi
   export C_COMPILER="clang -g $3 -Wno-unused-command-line-argument -march=native"
   export LLVMLINK="llvm-link"
-  export OPT="opt"
+  export LLVMOPT="opt"
 
   # Make sure the Makefiles find our wrappers
   export COMPILER_WRAPPER="compiler_wrapper.sh -g"
   export LD_WRAPPER="ld_wrapper.sh -g"
-  #export PREPROCESS_WRAPPER="clang -E -x c -P"
-  export PREPROCESS_WRAPPER="${BENCH_DIR}/cpu2017/bin/specperl -I ${BENCH_DIR}/cpu2017/bin/modules.specpp ${BENCH_DIR}/cpu2017/bin/harness/specpp"
+  export PREPROCESS_WRAPPER="clang -E -x c -P"
   export AR_WRAPPER="ar_wrapper.sh"
   export RANLIB_WRAPPER="ranlib_wrapper.sh"
 }
