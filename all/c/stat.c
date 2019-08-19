@@ -1,6 +1,7 @@
 #include <sicm_parsing.h>
 #include <getopt.h>
 #include <string.h>
+#include <ctype.h>
 
 static struct option long_options[] = {
     {"metric", required_argument, 0, 'm'},
@@ -56,9 +57,11 @@ metrics *sh_init_metrics() {
 char parse_fom(char *line, metrics *info) {
   unsigned unsigned_tmp;
   double double_tmp;
-  char retval;
+  char retval, *ptr;
 
   retval = 0;
+
+  /* First QMCPACK */
 	if(sscanf(line, "  blocks         = %u", &unsigned_tmp) == 1) {
     info->qmcpack_blocks = unsigned_tmp;
     retval = 1;
@@ -70,6 +73,23 @@ char parse_fom(char *line, metrics *info) {
     retval = 1;
   } else if(sscanf(line, "  QMC Execution time = %lf secs", &double_tmp) == 1) {
     info->qmcpack_exectime = double_tmp;
+    retval = 1;
+  /* AMG */
+  } else if(sscanf(line, "Figure of Merit (FOM_2): %lf", &double_tmp) == 1) {
+    info->fom = double_tmp;
+    retval = 1;
+  /* SNAP */
+  } else if(strncmp(line, "  Grind Time (nanoseconds)", 26) == 0) {
+    /* Seek to the numerical value on the line */
+    ptr = line;
+    while(!isdigit(*ptr) && (*ptr)) {
+      ptr++;
+    }
+    if(sscanf(ptr, "%lf\n", &double_tmp) != 1) {
+      fprintf(stderr, "Error getting SNAP FOM. Aborting.\n");
+      exit(1);
+    }
+    info->fom = 1.0 / double_tmp;
     retval = 1;
   }
 
