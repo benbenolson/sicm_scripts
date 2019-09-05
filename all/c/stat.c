@@ -25,6 +25,7 @@ typedef struct metrics {
 
   /* All benchmarks */
   double fom;
+  size_t runtime_seconds;
 } metrics;
 
 metrics *sh_init_metrics() {
@@ -49,6 +50,7 @@ metrics *sh_init_metrics() {
 
   /* All benchmarks */
   info->fom = 0.0;
+  info->runtime_seconds = 0;
 
   return info;
 }
@@ -84,11 +86,21 @@ char parse_fom(char *line, metrics *info) {
 }
 
 char parse_gnu_time(char *line, metrics *info) {
-  size_t tmp;
+  size_t tmp, tmp2;
+  float tmp_f;
 
   if(sscanf(line, "  Maximum resident set size (kbytes): %zu", &tmp) == 1) {
     info->peak_rss_kbytes = tmp;
     return 1;
+  } else if(sscanf(line, "   Elapsed (wall clock) time (h:mm:ss or m:ss): %zu:%f", &tmp, &tmp_f) == 2) {
+    if(tmp_f < 0) {
+      /* Just to make sure the below explicit cast from float->size_t is valid */
+      fprintf(stderr, "Number of seconds from GNU time was negative. Aborting.\n");
+      exit(1);
+    }
+    info->runtime_seconds = (tmp * 60) + ((size_t) tmp_f);
+  } else if(sscanf(line, "   Elapsed (wall clock) time (h:mm:ss or m:ss): %zu:%zu:%f", &tmp, &tmp2, &tmp_f) == 3) {
+    info->runtime_seconds = (tmp * 60 * 60) + (tmp2 * 60) + ((size_t) tmp_f);
   }
 
   return 0;
@@ -226,6 +238,8 @@ int main(int argc, char **argv) {
     printf("%zu\n", info->memfree[node]);
   } else if(strncmp(metric, "fom", 3) == 0) {
     printf("%f\n", info->fom);
+  } else if(strncmp(metric, "runtime", 7) == 0) {
+    printf("%zu\n", info->runtime_seconds);
   } else {
     fprintf(stderr, "Metric not yet implemented. Aborting.\n");
     goto cleanup;
