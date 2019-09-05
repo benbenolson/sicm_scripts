@@ -91,6 +91,19 @@ char parse_fom(char *line, metrics *info) {
     }
     info->fom = 1.0 / double_tmp;
     retval = 1;
+  /* LULESH */
+  } else if(strncmp(line, "FOM        ", 11) == 0) {
+    /* Seek to the numerical value on the line */
+    ptr = line;
+    while(!isdigit(*ptr) && (*ptr)) {
+      ptr++;
+    }
+    if(sscanf(ptr, "%lf\n", &double_tmp) != 1) {
+      fprintf(stderr, "Error getting LULESH FOM. Aborting.\n");
+      exit(1);
+    }
+    info->fom = double_tmp;
+    retval = 1;
   }
 
   if(retval) {
