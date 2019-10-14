@@ -4,7 +4,7 @@ source $SCRIPTS_DIR/all/bench_build.sh
 bench_build c "" ""
 
 # Get Spack into the environment and load Clang 6.0.1.
-#spack load llvm@flang-20180921
+spack load llvm@flang-20180921
 
 # Also install an unpatched Flang. We need this because the SICM-patched
 # Flang will try to look for "sh_" symbols, which we don't have.
@@ -17,12 +17,15 @@ bench_build c "" ""
 #spack config edit compilers
 
 # QMCPACK deps
-spack install -j80 qmcpack@3.6.0 -phdf5 -mpi -qe +soa %clang@6.0.1 ^cmake@3.6.0 ^hdf5~hl~fortran~mpi ^fftw~mpi ^netlib-lapack@3.8.0
+#spack install -j80 qmcpack@3.6.0 -phdf5 -mpi -qe +soa %clang@6.0.1 ^cmake@3.6.0 ^hdf5~hl~fortran~mpi ^fftw~mpi ^netlib-lapack@3.8.0
 
 # The above QMCPACK compilation may fail, but we don't care, as long as the dependencies are installed.
 # Now let's load them into the environment. This is the easiest way to do so without
 # requiring the above QMCPACK installation to have succeeded.
 for module in `module avail 2>&1 | grep "clang-6.0.1"`; do
+  if [[ $module == sicm* ]]; then
+      continue;
+  fi
   module load $module
 done
 module list

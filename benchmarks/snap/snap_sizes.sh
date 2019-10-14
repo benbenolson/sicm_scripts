@@ -9,14 +9,13 @@ export MEDIUM_AEP="./snap medium_aep.txt test.txt"
 export LARGE_AEP="./snap large_aep.txt test.txt"
 export HUGE_AEP="./snap huge_aep.txt test.txt"
 
-function snap_large_pebs_128 {
-  export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:2"
-}
-
-function snap_large_cache_mode_pebs_128 {
-  export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:2"
-}
-
-function snap_large_cache_mode_shared_site {
-  export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:2"
+function snap_prerun {
+  if [[ $SH_ARENA_LAYOUT = "SHARED_SITE_ARENAS" ]]; then
+    export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:1"
+  elif [[ $SH_ARENA_LAYOUT = "BIG_SMALL_ARENAS" ]]; then
+    export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:1"
+  else
+    export JE_MALLOC_CONF="oversize_threshold:0"
+  fi
+  echo "Using JE_MALLOC_CONF='$JE_MALLOC_CONF'."
 }

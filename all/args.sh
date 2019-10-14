@@ -1,60 +1,86 @@
 #!/bin/bash
+# Sets environment variables based on the arguments that you specify, using getopt.
 
 # Arguments
-GETOPT_OUTPUT=`getopt -o mbcsa --long memsys,bench:,config:,size:,args: -n 'build.sh' -- "$@"`
+GETOPT_OUTPUT=`getopt -o obcsagmi --long memsys,bench:,config:,size:,args:,graph,metric:,iters: -n 'build.sh' -- "$@"`
 if [ $? != 0 ] ; then echo "'getopt' failed. Aborting." >&2 ; exit 1 ; fi
 eval set -- "$GETOPT_OUTPUT"
 
 # Handle arguments
 MEMSYS=false
-BENCH=""
-CONFIGSTR=""
+BENCHES=()
+CONFIGS=()
 SIZE=""
-CONFIGARGSSTR=""
+CONFIG_ARGS_STRS=()
+ITERS="3"
+METRIC=""
+GRAPH=false
 while true; do
   case "$1" in
-    -m | --memsys ) MEMSYS=true; shift;;
-    -b | --bench ) BENCH="$2"; shift 2;;
-    -c | --config ) CONFIGSTR="$2"; shift 2;;
-    -a | --args ) CONFIGARGSSTR="$2"; shift 2;;
+    -o | --memsys ) MEMSYS=true; shift;;
+    -b | --bench ) BENCHES+=("$2"); shift 2;;
+    -c | --config ) CONFIGS+=("$2"); shift 2;;
+    -a | --args ) CONFIG_ARGS_STRS+=("$2"); shift 2;;
     -s | --size ) SIZE="$2"; shift 2;;
+    -g | --graph ) GRAPH=true; shift;;
+    -m | --metric ) METRIC="$2"; shift 2;;
+    -i | --iters ) ITERS="$2"; shift 2;;
     -- ) shift; break;;
     * ) break;;
   esac
 done
+
+MAX_ITER=$(echo "$ITERS - 1" | bc)
 
 SICM="sicm-high"
 if $MEMSYS; then
   SICM="sicm-high-memsys"
 fi
 
-# The ${CONFIG} variable contains a configuration name,
-# The ${CONFIG_ARGS} variable contains an array of config arguments.
-CONFIG_ARGS=(${CONFIGARGSSTR//,/ })
-CONFIG=${CONFIGSTR}
-
-CONFIG_ARGS_SPACES=""
-CONFIG_ARGS_UNDERSCORES=""
-for arg in "${CONFIG_ARGS[@]}"; do
-  CONFIG_ARGS_SPACES="$CONFIG_ARGS_SPACES $arg"
-  CONFIG_ARGS_UNDERSCORES="${CONFIG_ARGS_UNDERSCORES}_$arg"
+# CONFIG_ARGS is an array of strings.
+# Each string contains a space-delimited list of arguments.
+CONFIG_ARGS=()
+CONFIG_ARGS_UNDERSCORES=()
+for args in ${CONFIG_ARGS_STRS[@]}; do
+  if [[ ${args} = "-" ]]; then
+    CONFIG_ARGS+=(" ")
+    CONFIG_ARGS_UNDERSCORES+=(" ")
+    continue
+  fi
+  CONFIG_ARGS+=("${args//,/ }")
+  CONFIG_ARGS_UNDERSCORES+=(${args//,/_})
 done
-CONFIG_ARGS_SPACES="$(echo -e "${CONFIG_ARGS_SPACES}" | sed -e 's/^[[:space:]]*//')"
-CONFIG_ARGS_UNDERSCORES="$(echo -e "${CONFIG_ARGS_UNDERSCORES}" | sed -e 's/^[[_]]*//')"
 
 # Config name, colon, underscore-delimited list of arguments
-FULLCONFIG=${CONFIG}:${CONFIG_ARGS_UNDERSCORES}
+CTR=0
+while true; do
+  if [[ ! ${CONFIG_ARGS_UNDERSCORES[${CTR}]} ]]; then
+    break
+  fi
+  if [[ ! ${CONFIGS[${CTR}]} ]]; then
+    break
+  fi
 
-BENCH_COMMAND=""
-if [ $BENCH ] && [ $SIZE ]; then
-  source $SCRIPTS_DIR/benchmarks/${BENCH}/${BENCH}_sizes.sh
-  case "$SIZE" in
-    "small" ) BENCH_COMMAND="$SMALL";;
-    "medium" ) BENCH_COMMAND="$MEDIUM";;
-    "large" ) BENCH_COMMAND="$LARGE";;
-    "small_aep" ) BENCH_COMMAND="$SMALL_AEP";;
-    "medium_aep" ) BENCH_COMMAND="$MEDIUM_AEP";;
-    "large_aep" ) BENCH_COMMAND="$LARGE_AEP";;
-    * ) echo "Unknown size: '$SIZE'. Aborting."; exit 1;;
-  esac
-fi
+  FULL_CONFIGS+=(${CONFIGS[${CTR}]}:${CONFIG_ARGS_UNDERSCORES[${CTR}]})
+
+  CTR=$(echo "$CTR + 1" | bc)
+done
+
+BENCH_COMMANDS=()
+for BENCH in ${BENCHES[@]}; do
+  BENCH_COMMAND=""
+  if [ $BENCH ] && [ $SIZE ]; then
+    source $SCRIPTS_DIR/benchmarks/${BENCH}/${BENCH}_sizes.sh
+    case "$SIZE" in
+      "small" ) BENCH_COMMAND="$SMALL";;
+      "medium" ) BENCH_COMMAND="$MEDIUM";;
+      "large" ) BENCH_COMMAND="$LARGE";;
+      "small_aep" ) BENCH_COMMAND="$SMALL_AEP";;
+      "medium_aep" ) BENCH_COMMAND="$MEDIUM_AEP";;
+      "large_aep" ) BENCH_COMMAND="$LARGE_AEP";;
+      "small_aep_load" ) BENCH_COMMAND="$SMALL_AEP_LOAD";;
+      * ) echo "Unknown size: '$SIZE'. Aborting."; exit 1;;
+    esac
+    BENCH_COMMANDS+=("${BENCH_COMMAND}")
+  fi
+done

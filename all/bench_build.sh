@@ -41,3 +41,8 @@ function bench_build {
   export AR_WRAPPER="ar_wrapper.sh"
   export RANLIB_WRAPPER="ranlib_wrapper.sh"
 }
+
+function bench_build_no_transform {
+  bench_build
+  export NO_TRANSFORM="yes"
+}

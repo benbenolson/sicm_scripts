@@ -71,7 +71,6 @@ function cache_mode_shared_site {
   fi
   export JE_MALLOC_CONF="oversize_threshold:0"
   export SH_MAX_SITES_PER_ARENA="4"
-  echo "$OMP_NUM_THREADS"
 
   eval "${PRERUN}"
 

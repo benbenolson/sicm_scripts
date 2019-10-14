@@ -19,3 +19,8 @@ The fourth is where Spack is installed.
 These four paths are necessary to link SICM and the scripts
 together, especially when using a queueing system that requires absolute directories.
 They are also necessary due to the decoupling of SICM from these high-level scripts.
+
+https://github.com/lanl/SICM.git (high_dev branch)
+https://github.com/benbenolson/sicm_scripts.git
+https://gitlab.com/molson5/sicm-benchmarks.git
+https://github.com/benbenolson/spack.git

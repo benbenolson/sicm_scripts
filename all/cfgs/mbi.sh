@@ -25,7 +25,6 @@ function mbi {
   #export SH_PROFILE_ONE_EVENT="UNC_E_RPQ_INSERTS"
   export SH_PROFILE_ONE_EVENT="UNC_M_CAS_COUNT:RD"
   export JE_MALLOC_CONF="oversize_threshold:0"
-  export OMP_NUM_THREADS="272"
 
   eval "${PRERUN}"
 

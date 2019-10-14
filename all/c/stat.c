@@ -6,6 +6,7 @@
 static struct option long_options[] = {
     {"metric", required_argument, 0, 'm'},
     {"node", required_argument, 0, 'n'},
+    {"filename", optional_argument, 0, 'f'},
     {0,        0,                 0, 0}
 };
 
@@ -15,10 +16,17 @@ typedef struct metrics {
          sites_peak_rss,
          sites_peak_extent_size,
          sites_peak_alloc_size;
+  double peak_rss; /* In GB */
 
   /* Numastat */
-  size_t num_nodes;
+  size_t num_mem_nodes;
   unsigned long *memfree;
+
+  /* PCM Memory */
+  size_t num_cpu_nodes; /* PCM Memory only shows sockets */
+  double **bandwidth; /* 2d: node and intervals */
+  double *avg_bandwidth; /* 1d: node */
+  double *peak_bandwidth; /* 1d: node */
 
   /* Benchmark-specific */
   unsigned qmcpack_blocks, qmcpack_steps, qmcpack_walkers;
@@ -38,10 +46,17 @@ metrics *sh_init_metrics() {
   info->sites_peak_rss = 0;
   info->sites_peak_extent_size = 0;
   info->sites_peak_alloc_size = 0;
+  info->peak_rss = 0.0;
 
   /* Numastat */
-  info->num_nodes = 0;
+  info->num_mem_nodes = 0;
   info->memfree = NULL;
+
+  /* PCM Memory */
+  info->num_cpu_nodes = 0;
+  info->bandwidth = NULL;
+  info->avg_bandwidth = NULL;
+  info->peak_bandwidth = NULL;
 
   /* Benchmark-specific  */
   info->qmcpack_blocks = 0;
@@ -54,6 +69,10 @@ metrics *sh_init_metrics() {
   info->runtime_seconds = 0;
 
   return info;
+}
+
+char parse_sicm(char *line, metrics *info) {
+
 }
 
 char parse_fom(char *line, metrics *info) {
@@ -76,12 +95,12 @@ char parse_fom(char *line, metrics *info) {
   } else if(sscanf(line, "  QMC Execution time = %lf secs", &double_tmp) == 1) {
     info->qmcpack_exectime = double_tmp;
     retval = 1;
-  /* AMG */
   } else if(sscanf(line, "Figure of Merit (FOM_2): %lf", &double_tmp) == 1) {
+    /* AMG */
     info->fom = double_tmp;
     retval = 1;
-  /* SNAP */
   } else if(strncmp(line, "  Grind Time (nanoseconds)", 26) == 0) {
+    /* SNAP */
     /* Seek to the numerical value on the line */
     ptr = line;
     while(!isdigit(*ptr) && (*ptr)) {
@@ -93,8 +112,8 @@ char parse_fom(char *line, metrics *info) {
     }
     info->fom = 1.0 / double_tmp;
     retval = 1;
-  /* LULESH */
   } else if(strncmp(line, "FOM        ", 11) == 0) {
+    /* LULESH */
     /* Seek to the numerical value on the line */
     ptr = line;
     while(!isdigit(*ptr) && (*ptr)) {
@@ -118,13 +137,26 @@ char parse_fom(char *line, metrics *info) {
   return retval;
 }
 
+char parse_pcm_memory(char *line, metrics *info) {
+  double tmp, tmp2;
+
+  if(sscanf(line, "|-- NODE 0 Memory (MB/s):%*[ ]%f --||-- NODE 1 Memory (MB/s):%*[ ]%f --|", &tmp, &tmp2) == 2) {
+    
+  }
+
+  return 0;
+}
+
 char parse_gnu_time(char *line, metrics *info) {
   size_t tmp, tmp2;
   float tmp_f;
 
   if(sscanf(line, "  Maximum resident set size (kbytes): %zu", &tmp) == 1) {
     info->peak_rss_kbytes = tmp;
+    info->peak_rss = ((double)tmp) / ((double)1024) / ((double)1024);
     return 1;
+  } else if(sscanf(line, "   Elapsed (wall clock) time (h:mm:ss or m:ss): %zu:%zu:%f", &tmp, &tmp2, &tmp_f) == 3) {
+    info->runtime_seconds = (tmp * 60 * 60) + (tmp2 * 60) + ((size_t) tmp_f);
   } else if(sscanf(line, "   Elapsed (wall clock) time (h:mm:ss or m:ss): %zu:%f", &tmp, &tmp_f) == 2) {
     if(tmp_f < 0) {
       /* Just to make sure the below explicit cast from float->size_t is valid */
@@ -132,8 +164,6 @@ char parse_gnu_time(char *line, metrics *info) {
       exit(1);
     }
     info->runtime_seconds = (tmp * 60) + ((size_t) tmp_f);
-  } else if(sscanf(line, "   Elapsed (wall clock) time (h:mm:ss or m:ss): %zu:%zu:%f", &tmp, &tmp2, &tmp_f) == 3) {
-    info->runtime_seconds = (tmp * 60 * 60) + (tmp2 * 60) + ((size_t) tmp_f);
   }
 
   return 0;
@@ -159,9 +189,9 @@ char parse_numastat(char *line, metrics *info) {
     tok = strtok(NULL, " ");
     while(tok) {
       val = strtoul(tok, NULL, 0);
-      info->num_nodes++;
-      info->memfree = realloc(info->memfree, sizeof(unsigned long) * info->num_nodes);
-      info->memfree[info->num_nodes - 1] = val;
+      info->num_mem_nodes++;
+      info->memfree = realloc(info->memfree, sizeof(unsigned long) * info->num_mem_nodes);
+      info->memfree[info->num_mem_nodes - 1] = val;
       tok = strtok(NULL, " ");
       retval = 1;
     }
@@ -186,26 +216,42 @@ metrics *sh_parse_info(FILE *file) {
     if(parse_gnu_time(line, info)) continue;
     if(parse_numastat(line, info)) continue;
     if(parse_fom(line, info)) continue;
+    if(parse_pcm_memory(line, info)) continue;
 	}
 
   free(line);
   return info;
 }
 
+/* Modifies the filename to be correct for the metric */
+void find_file(char **filename, char *metric) {
+
+  if(strncmp(metric, "memfree", 7) == 0) {
+    *filename = malloc(sizeof(char) * 13);
+    strcpy(*filename, "numastat.txt");
+  } else {
+    *filename = malloc(sizeof(char) * 11);
+    strcpy(*filename, "stdout.txt");
+  }
+
+  return;
+}
+
 int main(int argc, char **argv) {
   app_info *site_info;
   metrics *info;
 	int option_index;
-  char *metric, c;
+  char *metric, c, *filename, *path;
   FILE *file;
   unsigned long node;
 
   /* Handle options and arguments */
+  filename = NULL;
   node = -1;
   metric = NULL;
   while(1) {
     option_index = 0;
-    c = getopt_long(argc, argv, "m:n:",
+    c = getopt_long(argc, argv, "m:n:f:",
                     long_options, &option_index);
     if(c == -1) {
       break;
@@ -229,6 +275,10 @@ int main(int argc, char **argv) {
           exit(1);
         }
         break;
+      case 'f':
+        filename = malloc(sizeof(char) * (strlen(optarg) + 1));
+        strcpy(filename, optarg);
+        break;
       case '?':
         exit(1);
       default:
@@ -245,11 +295,20 @@ int main(int argc, char **argv) {
   }
 
   /* Open the file */
-  file = fopen(argv[optind], "r");
+  path = malloc(sizeof(char) * (strlen(argv[optind]) + 1));
+  strcpy(path, argv[optind]);
+  if(!filename) {
+    find_file(&filename, metric);
+  }
+  path = realloc(path, sizeof(char) * (strlen(path) + strlen(filename) + 1));
+  strcat(path, filename);
+  file = fopen(path, "r");
   if(!file) {
-    fprintf(stderr, "Unable to open the file '%s'. Aborting.\n", argv[optind]);
+    fprintf(stderr, "Unable to open the file '%s'. Aborting.\n", path);
     exit(1);
   }
+  free(path);
+  free(filename);
 
   /* Do our parsing */
   info = sh_parse_info(file);
@@ -259,12 +318,14 @@ int main(int argc, char **argv) {
   /* Print out the proper value */
   if(strncmp(metric, "peak_rss_kbytes", 15) == 0) {
     printf("%zu\n", info->peak_rss_kbytes);
+  } else if(strncmp(metric, "peak_rss", 8) == 0) {
+    printf("%f\n", info->peak_rss);
   } else if(strncmp(metric, "memfree", 7) == 0) {
     if(node == -1) {
       fprintf(stderr, "Metric requires a node argument. Aborting.\n");
       goto cleanup;
     }
-    if(node > (info->num_nodes - 1)) {
+    if(node > (info->num_mem_nodes - 1)) {
       fprintf(stderr, "Couldn't find specified node in output. Aborting.\n");
       goto cleanup;
     }

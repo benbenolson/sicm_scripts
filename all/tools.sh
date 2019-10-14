@@ -17,6 +17,7 @@ function drop_caches {
 #####################
 # First arg is directory to write to
 function numastat_loop {
+  echo "Numastat writing to $1/numastat.txt"
   rm -f $1/numastat.txt
   while true; do
     echo "=======================================" &>> $1/numastat.txt
@@ -59,13 +60,13 @@ function memreserve {
   # Get the amount of free memory on the node, in pages
   numastat -m &> $1/numastat_noreserve.txt
   NODE_FREE_MBYTES=$(${SCRIPTS_DIR}/all/stat \
-    --metric=memfree --node=${3} $1/numastat_noreserve.txt)
+    --metric=memfree --node=${3} --filename=numastat_noreserve.txt $1/)
   NODE_FREE_PAGES=$(echo "$NODE_FREE_MBYTES * 1024 / 4" | bc)
 
   if [[ ${NODE_FREE_PAGES} -gt ${2} ]]; then
     # Get how much to reserve to get the requested amount
     RESERVE=$(echo "$NODE_FREE_PAGES - $2" | bc)
-    echo "Reserving ${RESERVE} pages."
+    echo "Reserving ${RESERVE} pages on node ${3}."
     
     sicm_memreserve ${3} 64 ${RESERVE} hold bind \
       &>> $1/memreserve.txt &
