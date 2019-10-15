@@ -54,16 +54,10 @@ sudo modprobe msr
 . $SPACK_DIR/share/spack/setup-env.sh
 spack load $SICM@develop%gcc@7.2.0
 
-#if [[ $1 == "qmcpack" ]]; then
-#  if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-#    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-fedora27-x86_64/gcc-7.2.0/flang-20180921-lqmxifeyjbpzmay6qajf6e3s2zds44im/lib"
-#    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-fedora27-x86_64/gcc-7.2.0/llvm-flang-20180921-drt5ldcolcud5ufd3ho5tplaliufhdlm/lib"
-#    export LD_PRELOAD="/home/macslayer/spack/opt/spack/linux-fedora27-x86_64/gcc-7.2.0/flang-20180921-lqmxifeyjbpzmay6qajf6e3s2zds44im/lib/libflang.so /home/macslayer/spack/opt/spack/linux-fedora27-x86_64/gcc-7.2.0/flang-20180921-lqmxifeyjbpzmay6qajf6e3s2zds44im/lib/libflangrti.so"
-#  else
-#    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-debian9-x86_64/gcc-7.2.0/flang-20180921-a2g3n2ugv7xdhzkntxfzxainujapch5v/lib"
-#    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/macslayer/spack/opt/spack/linux-debian9-x86_64/gcc-7.2.0/llvm-flang-20180921-f2bzfqn5xo223a3y3jputvl7wtx3g4bw/lib"
-#  fi
-#fi
+# We need this for QMCPACK because otherwise it will link to an unpatched Flang, which will
+# cause subtle issues due to their inexplicably overriding lots of NUMA functions to do nothing.
+# It shouldn't adversely affect any other benchmarks.
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$(spack location -i flang-patched)/lib"
 
 for BENCH_INDEX in ${!BENCHES[*]}; do
   for CONFIG_INDEX in ${!CONFIGS[*]}; do 

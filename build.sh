@@ -12,7 +12,6 @@ cd $SICM_DIR
 # Clean up and compile SICM
 echo "Compiling and installing SICM."
 spack clean -sd spack.$SICM
-spack restage spack.$SICM
 spack install --keep-stage -j 1 spack.$SICM %gcc@7.2.0
 
 if ! $MEMSYS; then
