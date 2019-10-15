@@ -12,6 +12,7 @@ export SICM_DIR="foo"
 export SCRIPTS_DIR="foo"
 export BENCH_DIR="foo"
 export SPACK_DIR="foo"
+export RESULTS_DIR="foo"
 ```
 The first is the location where SICM is installed. The second is where this
 repository is installed. The third is where the benchmarks are installed.
