@@ -22,9 +22,6 @@ function profile_all_and_allocs {
   export SH_MAX_SAMPLE_PAGES="512"
   export SH_PROFILE_ALLOCS="1"
   export SH_PROFILE_ALLOCS_SKIP_INTERVALS="$SIZE_SKIP_INTERVALS"
-  export SH_TRACK_SITE="81"
-
-  # Bind to the fast node
   export SH_SAMPLE_FREQ="${FREQ}"
 
   # One for master profiling, one for PROFILE_ALL, one for capacity profiling

@@ -25,12 +25,8 @@ export SH_MAX_THREADS=`expr ${OMP_NUM_THREADS} + 1`
 source $SCRIPTS_DIR/all/args.sh
 source $SCRIPTS_DIR/all/tools.sh
 source $SCRIPTS_DIR/all/cfgs/firsttouch.sh
-source $SCRIPTS_DIR/all/cfgs/pebs.sh
-source $SCRIPTS_DIR/all/cfgs/offline_pebs.sh
-source $SCRIPTS_DIR/all/cfgs/offline_mbi.sh
-source $SCRIPTS_DIR/all/cfgs/offline_manual.sh
-source $SCRIPTS_DIR/all/cfgs/mbi.sh
-source $SCRIPTS_DIR/all/cfgs/oneoffs.sh
+source $SCRIPTS_DIR/all/cfgs/profile.sh
+source $SCRIPTS_DIR/all/cfgs/offline.sh
 source $SCRIPTS_DIR/all/cfgs/online.sh
 
 if [[ ${#BENCHES[@]} = 0 ]]; then

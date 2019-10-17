@@ -3,12 +3,13 @@
 function online_allocs {
   FREQ="$1"
   RATE="$2" 
-  SKIP_INTERVALS="$3"
+  CAP_SKIP_INTERVALS="$3"
+  ONLINE_SKIP_INTERVALS="$4"
 
   export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
   export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
-  export SH_PROFILE_RATE_NSECONDS=$(echo "${RATE} * 1000000" | bc)
+  export SH_PROFILE_RATE_NSECONDS=$(echo "${RATE} * 1000000" | bc) 
 
   # Value profiling
   export SH_PROFILE_ALL="1"
@@ -18,11 +19,12 @@ function online_allocs {
 
   # Weight profiling
   export SH_PROFILE_ALLOCS="1"
-  export SH_PROFILE_ALLOCS_SKIP_INTERVALS="$SKIP_INTERVALS"
+  export SH_PROFILE_ALLOCS_SKIP_INTERVALS="$CAP_SKIP_INTERVALS"
 
   # Turn on online
   export SH_PROFILE_ONLINE="1"
   export SH_PROFILE_ONLINE_EVENT="MEM_LOAD_UOPS_RETIRED:L3_MISS"
+  export SH_PROFILE_ONLINE_SKIP_INTERVALS="$ONLINE_SKIP_INTERVALS" 
 
   export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 4`
 
@@ -175,8 +177,7 @@ function online_memreserve {
   eval "${PRERUN}"
   
   for i in $(seq 0 $MAX_ITER); do
-    DIR="${BASEDIR}/i${i}"
-    mkdir ${DIR}
+    DIR="${BASEDIR}/i${i}" mkdir ${DIR}
     drop_caches
     memreserve ${DIR} ${NUM_PAGES} ${SH_UPPER_NODE}
     numastat_background "${DIR}"

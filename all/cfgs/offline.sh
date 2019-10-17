@@ -1,6 +1,64 @@
 #!/bin/bash
 
 ################################################################################
+#                            offline_all_pebs_guided                           #
+################################################################################
+function offline {
+  PEBS_FREQ="$1"
+  PEBS_SIZE="$2"
+  PACK_ALGO="$3"
+
+  CANARY_CFG="firsttouch_all_exclusive_device:"
+  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
+  PEBS_FILE="${BASEDIR}/../../${PEBS_SIZE}/pebs_${PEBS_FREQ}/i0/stdout.txt"
+
+  # This file is used for the profiling information
+  if [ ! -r "${PEBS_FILE}" ]; then
+    echo "ERROR: The file '${PEBS_FILE}' doesn't exist yet. Aborting."
+    exit
+  fi
+
+  # This file is used to get the peak RSS
+  if [ ! -r "${CANARY_DIR}" ]; then
+    echo "ERROR: The file '${CANARY_DIR}' doesn't exist yet. Aborting."
+    exit
+  fi
+
+  # Get the amount of free memory in the upper tier right now
+  COLUMN_NUMBER=$(echo ${SH_UPPER_NODE} + 2 | bc)
+  UPPER_SIZE="$(numastat -m | awk -v column_number=${COLUMN_NUMBER} '/MemFree/ {printf "%d * 1024 * 1024\n", $column_number}' | bc)"
+
+  # Get the peak RSS of the canary run
+  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --metric=peak_rss_kbytes ${CANARY_DIR}`
+  PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
+
+  export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
+  export SH_MAX_SITES_PER_ARENA="4096"
+  export SH_DEFAULT_NODE="${SH_LOWER_NODE}"
+  export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
+
+  eval "${PRERUN}"
+
+  # Generate the guidance file
+  cat "${PEBS_FILE}" | \
+    sicm_hotset acc ${PACK_ALGO} constant ${UPPER_SIZE} ${SH_UPPER_NODE} ${PEAK_RSS_BYTES} > \
+      ${BASEDIR}/guidance.txt
+
+  # Run the iterations
+  for i in $(seq 0 $MAX_ITER); do
+    DIR="${BASEDIR}/i${i}"
+    mkdir ${DIR}
+    drop_caches
+    numastat -m &>> ${DIR}/numastat_before.txt
+    numastat_background "${DIR}"
+    pcm_background "${DIR}"
+    eval "${COMMAND}" &>> ${DIR}/stdout.txt
+    numastat_kill
+    pcm_kill
+  done
+}
+
+################################################################################
 #                        offline_pebs_guided_percent                           #
 ################################################################################
 # First argument is the frequency of PEBS sampling to use
@@ -83,86 +141,3 @@ function offline_pebs_guided {
   done
 }
 
-################################################################################
-#                            offline_all_pebs_guided                           #
-################################################################################
-# First argument is results directory
-# Second argument is the command to run
-# Third argument is the frequency of PEBS sampling to use
-# Fourth argument is the size of the PEBS sampling to use
-# Fifth argument is the packing strategy
-# Sixth argument is the NUMA node to pack onto
-# Seventh argument is the NUMA node to use as a lower tier
-function offline_all_pebs_guided {
-  BASEDIR="$1"
-  COMMAND="$2"
-  PEBS_FREQ="$3"
-  PEBS_SIZE="$4"
-  PACK_ALGO="$5"
-  NODE=${6}
-  SLOWNODE=${7}
-
-  if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-    CANARY_CFG="firsttouch_all_exclusive_device_1_1"
-  else
-    CANARY_CFG="firsttouch_all_exclusive_device_1_0"
-  fi
-  CANARY_STDOUT="${BASEDIR}/../${CANARY_CFG}/i0/stdout.txt"
-  PEBS_FILE="${BASEDIR}/../../${PEBS_SIZE}/pebs_${PEBS_FREQ}/i0/stdout.txt"
-
-  # This file is used for the profiling information
-  if [ ! -r "${PEBS_FILE}" ]; then
-    echo "ERROR: The file '${PEBS_FILE}' doesn't exist yet. Aborting."
-    exit
-  fi
-
-  # This file is used to get the peak RSS
-  if [ ! -r "${CANARY_STDOUT}" ]; then
-    echo "ERROR: The file '${CANARY_STDOUT}' doesn't exist yet. Aborting."
-    exit
-  fi
-
-  # This is in kilobytes
-  COLUMN_NUMBER=$(echo ${NODE} + 2 | bc)
-  UPPER_SIZE="$(numastat -m | awk -v column_number=${COLUMN_NUMBER} '/MemFree/ {printf "%d * 1024 * 1024\n", $column_number}' | bc)"
-  PEAK_RSS=$(${SCRIPTS_DIR}/stat.sh ${CANARY_STDOUT} rss_kbytes)
-  PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
-
-  # User output
-  echo "Running experiment:"
-  echo "  Config: 'offline_pebs_guided'"
-  echo "  Profiling frequency: '${PEBS_FREQ}'"
-  echo "  Profiling size: '${PEBS_SIZE}'"
-  echo "  Packing algorithm: '${PACK_ALGO}'"
-  echo "  Packing into upper tier: '${UPPER_SIZE}', node '${NODE}'"
-  echo "  Scaling down to peak RSS: '${PEAK_RSS}'"
-
-  export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
-  export SH_MAX_SITES_PER_ARENA="4096"
-  export SH_DEFAULT_NODE="${SLOWNODE}"
-  export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
-  export JE_MALLOC_CONF="oversize_threshold:0"
-
-  eval "${PRERUN}"
-  
-  # Generate the hotset/knapsack/thermos
-  cat "${PEBS_FILE}" | \
-    sicm_hotset acc ${PACK_ALGO} constant ${UPPER_SIZE} ${NODE} ${PEAK_RSS_BYTES} > \
-      ${BASEDIR}/guidance.txt
-  for i in {0..0}; do
-    DIR="${BASEDIR}/i${i}"
-    mkdir ${DIR}
-    drop_caches
-    numastat -m &>> ${DIR}/numastat_before.txt
-    numastat_background "${DIR}"
-    pcm_background "${DIR}"
-    if [[ "$(hostname)" = "JF1121-080209T" ]]; then
-      eval "env time -v numactl --cpunodebind=${NODE} " "${COMMAND}" &>> ${DIR}/stdout.txt
-    else
-      eval "env time -v " "${COMMAND}" &>> ${DIR}/stdout.txt
-    fi
-    numastat_kill
-    pcm_kill
-    memreserve_kill
-  done
-}
