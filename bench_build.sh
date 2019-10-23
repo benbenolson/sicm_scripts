@@ -19,7 +19,15 @@ spack load llvm%gcc@7.2.0
 spack load $SICM%gcc@7.2.0
 
 # Clean up the source directory first
-cd $BENCH_DIR/${BENCH}/src
+if [ $CPU2017_BENCH ]; then
+  cd $BENCH_DIR/cpu2017/benchmarks/${BENCH}/src
+else
+  cd $BENCH_DIR/${BENCH}/src
+fi
 rm *.o *.bc *.args *.mod contexts.txt nclones.txt nsites.txt buCG.txt .sicm_ir.bc
 
-$SCRIPTS_DIR/benchmarks/${BENCH}/${BENCH}_build.sh
+if [ $CPU2017_BENCH ]; then
+  $SCRIPTS_DIR/benchmarks/cpu2017/${BENCH}/${BENCH}_build.sh
+else
+  $SCRIPTS_DIR/benchmarks/${BENCH}/${BENCH}_build.sh
+fi

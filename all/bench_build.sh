@@ -40,4 +40,5 @@ function bench_build {
   export PREPROCESS_WRAPPER="clang -E -x c -P"
   export AR_WRAPPER="ar_wrapper.sh"
   export RANLIB_WRAPPER="ranlib_wrapper.sh"
+  export SH_CONTEXT="3"
 }

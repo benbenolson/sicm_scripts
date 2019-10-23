@@ -73,5 +73,10 @@ echo "  Configuration arguments: '${CONFIG_ARGS_SPACES}'"
 # Execute the BASH function with arguments
 export BASEDIR="${DIRECTORY}"
 export COMMAND="${BENCH_COMMAND}"
-cd $BENCH_DIR/${BENCH}/run
+if [ $CPU2017_BENCH ]; then
+  cd $BENCH_DIR/cpu2017/benchmarks/${BENCH}/run_${SIZE}
+else
+  cd $BENCH_DIR/${BENCH}/run
+fi
 eval "$CONFIG ${CONFIG_ARGS_SPACES}"
+

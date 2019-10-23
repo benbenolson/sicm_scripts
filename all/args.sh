@@ -1,7 +1,21 @@
 #!/bin/bash
 
+declare -a cpu2017_benchmarks=(
+  "603.bwaves_s"
+  "607.cactuBSSN_s"
+  "619.lbm_s"
+  "621.wrf_s"
+  "627.cam4_s"
+  "628.pop2_s"
+  "638.imagick_s"
+  "644.nab_s"
+  "649.fotonik3d_s"
+  "654.roms_s"
+  "657.xz_s"
+)
+
 # Arguments
-GETOPT_OUTPUT=`getopt -o mbcsa --long memsys,bench:,config:,size:,args: -n 'build.sh' -- "$@"`
+GETOPT_OUTPUT=`getopt -o mb:c:s:a: --long memsys,bench:,config:,size:,args: -n 'args.sh' -- "$@"`
 if [ $? != 0 ] ; then echo "'getopt' failed. Aborting." >&2 ; exit 1 ; fi
 eval set -- "$GETOPT_OUTPUT"
 
@@ -21,6 +35,14 @@ while true; do
     -- ) shift; break;;
     * ) break;;
   esac
+done
+
+CPU2017_BENCH=false
+for x in "${cpu2017_benchmarks[@]}"; do
+  if [ "$x" == "$BENCH" ]; then
+    CPU2017_BENCH=true
+    break;
+  fi
 done
 
 SICM="sicm-high"
@@ -46,7 +68,9 @@ CONFIG_ARGS_UNDERSCORES="$(echo -e "${CONFIG_ARGS_UNDERSCORES}" | sed -e 's/^[[_
 FULLCONFIG=${CONFIG}:${CONFIG_ARGS_UNDERSCORES}
 
 BENCH_COMMAND=""
-if [ $BENCH ] && [ $SIZE ]; then
+if [ $CPU2017_BENCH ]; then
+  BENCH_COMMAND="./run.sh";
+elif [ $BENCH ] && [ $SIZE ]; then
   source $SCRIPTS_DIR/benchmarks/${BENCH}/${BENCH}_sizes.sh
   case "$SIZE" in
     "small" ) BENCH_COMMAND="$SMALL";;
