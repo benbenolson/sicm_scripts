@@ -1,4 +1,3 @@
 #!/bin/bash
 
-export SMALL="./fotonik3d small.dat"
-export LARGE="./fotonik3d large.dat"
+export SMALL_AEP="./fotonik3d small.dat"

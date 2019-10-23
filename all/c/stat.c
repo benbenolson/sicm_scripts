@@ -35,6 +35,9 @@ typedef struct metrics {
   /* All benchmarks */
   double fom;
   size_t runtime_seconds;
+
+  /* SICM output */
+  double interval_time_over;
 } metrics;
 
 metrics *sh_init_metrics() {
@@ -68,11 +71,22 @@ metrics *sh_init_metrics() {
   info->fom = 0.0;
   info->runtime_seconds = 0;
 
+  /* SICM output */
+  info->interval_time_over = 0.0;
+
   return info;
 }
 
 char parse_sicm(char *line, metrics *info) {
+  double time, interval_time;
+  char retval = 0;
 
+  if(sscanf(line, "WARNING: Interval (%lf) went over the time limit (%lf).", &time, &interval_time) == 2) {
+    info->interval_time_over += (time - interval_time);
+    retval = 1;
+  }
+
+  return retval;
 }
 
 char parse_fom(char *line, metrics *info) {
@@ -217,6 +231,7 @@ metrics *sh_parse_info(FILE *file) {
     if(parse_numastat(line, info)) continue;
     if(parse_fom(line, info)) continue;
     if(parse_pcm_memory(line, info)) continue;
+    if(parse_sicm(line, info)) continue;
 	}
 
   free(line);
@@ -334,6 +349,8 @@ int main(int argc, char **argv) {
     printf("%f\n", info->fom);
   } else if(strncmp(metric, "runtime", 7) == 0) {
     printf("%zu\n", info->runtime_seconds);
+  } else if(strncmp(metric, "interval_time_over", 18) == 0) {
+    printf("%lf\n", info->interval_time_over);
   } else {
     fprintf(stderr, "Metric not yet implemented. Aborting.\n");
     goto cleanup;
