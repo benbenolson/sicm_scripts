@@ -33,6 +33,23 @@ function firsttouch_all_exclusive_device {
     fi
     numastat_kill
     pcm_kill
+
+    if [ $CPU2017_BENCH ]; then
+      source $SCRIPTS_DIR/benchmarks/cpu2017/${BENCH}/${BENCH}_sizes.sh
+      if [ $SIZE == "ref" ]; then
+        for file in "${REF_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      elif [ $SIZE == "train" ]; then
+        for file in "${TRAIN_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      elif [ $SIZE == "test" ]; then
+        for file in "${TEST_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      fi
+    fi
   done
 }
 
@@ -75,6 +92,23 @@ function firsttouch_all_default {
     fi
     numastat_kill
     pcm_kill
+
+    if [ $CPU2017_BENCH ]; then
+      source $SCRIPTS_DIR/benchmarks/cpu2017/${BENCH}/${BENCH}_sizes.sh
+      if [ $SIZE == "ref" ]; then
+        for file in "${REF_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      elif [ $SIZE == "train" ]; then
+        for file in "${TRAIN_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      elif [ $SIZE == "test" ]; then
+        for file in "${TEST_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      fi
+    fi
   done
 }
 
@@ -119,6 +153,23 @@ function firsttouch_all_shared_site {
     fi
     numastat_kill
     pcm_kill
+
+    if [ $CPU2017_BENCH ]; then
+      source $SCRIPTS_DIR/benchmarks/cpu2017/${BENCH}/${BENCH}_sizes.sh
+      if [ $SIZE == "ref" ]; then
+        for file in "${REF_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      elif [ $SIZE == "train" ]; then
+        for file in "${TRAIN_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      elif [ $SIZE == "test" ]; then
+        for file in "${TEST_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      fi
+    fi
   done
 }
 
@@ -187,6 +238,23 @@ function firsttouch_exclusive_device {
     numastat_kill
     pcm_kill
     memreserve_kill
+
+    if [ $CPU2017_BENCH ]; then
+      source $SCRIPTS_DIR/benchmarks/cpu2017/${BENCH}/${BENCH}_sizes.sh
+      if [ $SIZE == "ref" ]; then
+        for file in "${REF_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      elif [ $SIZE == "train" ]; then
+        for file in "${TRAIN_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      elif [ $SIZE == "test" ]; then
+        for file in "${TEST_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      fi
+    fi
   done
 }
 
@@ -196,14 +264,14 @@ function firsttouch_exclusive_device {
 # First argument is results directory
 # Second argument is the command to run
 function cache_mode {
-  BASEDIR="$1"
-  COMMAND="$2"
-  NODE="0"
-  SLOWNODE="0"
+  #BASEDIR="$1"
+  #COMMAND="$2"
+  NODE="$1"
+  SLOWNODE="$2"
 
   # User output
   echo "Running experiment:"
-  echo "  Config: 'firsttouch_all_exclusive_device'"
+  echo "  Config: 'cache_mode'"
   echo "  Upper tier: '${NODE}'"
   echo "  Lower tier: '${SLOWNODE}'"
 
@@ -229,5 +297,23 @@ function cache_mode {
     fi
     numastat_kill
     pcm_kill
+
+    if [ $CPU2017_BENCH ]; then
+      source $SCRIPTS_DIR/benchmarks/cpu2017/${BENCH}/${BENCH}_sizes.sh
+      if [ $SIZE == "ref" ]; then
+        for file in "${REF_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      elif [ $SIZE == "train" ]; then
+        for file in "${TRAIN_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      elif [ $SIZE == "test" ]; then
+        for file in "${TEST_OUTPUT[@]}"; do
+          cp $file "${DIR}/"
+        done
+      fi
+    fi
+
   done
 }
