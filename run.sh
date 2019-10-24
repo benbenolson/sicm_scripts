@@ -66,6 +66,7 @@ for BENCH_INDEX in ${!BENCHES[*]}; do
     # Set a function to do arbitrary commands depending on the benchmark
     # and benchmark size.
     export PRERUN="${BENCH}_prerun"
+    export SETUP="${BENCH}_setup"
 
     # Create the results directory for this experiment,
     # and pass that to the BASH function
@@ -88,9 +89,10 @@ for BENCH_INDEX in ${!BENCHES[*]}; do
 
     # Execute the BASH function with arguments
     export BASEDIR="${DIRECTORY}"
-    export BENCH_COMMAND_ENV="LD_PRELOAD='$(spack location -i sicm-high)/lib/libsicm_overrides.so'"
-    export COMMAND="${PLATFORM_COMMAND} env ${BENCH_COMMAND_ENV} ${BENCH_COMMAND}"
+    export COMMAND="${PLATFORM_COMMAND} ${BENCH_COMMAND}"
 
+    cd $BENCH_DIR/${BENCH}
+    eval "${SETUP}"
     cd $BENCH_DIR/${BENCH}/run
     ( eval "$CONFIG ${ARGS_SPACES}" )
 

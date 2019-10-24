@@ -1,5 +1,6 @@
 #!/bin/bash
 # Sets environment variables based on the arguments that you specify, using getopt.
+. $SPACK_DIR/share/spack/setup-env.sh
 
 # Arguments
 GETOPT_OUTPUT=`getopt -o obcsagmi --long memsys,bench:,config:,size:,args:,graph,metric:,iters: -n 'build.sh' -- "$@"`
@@ -66,6 +67,7 @@ while true; do
   CTR=$(echo "$CTR + 1" | bc)
 done
 
+export SICM_ENV="env LD_PRELOAD='$(spack location -i sicm-high)/lib/libsicm_overrides.so'"
 BENCH_COMMANDS=()
 for BENCH in ${BENCHES[@]}; do
   BENCH_COMMAND=""
@@ -79,6 +81,9 @@ for BENCH in ${BENCHES[@]}; do
       "medium_aep" ) BENCH_COMMAND="$MEDIUM_AEP";;
       "large_aep" ) BENCH_COMMAND="$LARGE_AEP";;
       "small_aep_load" ) BENCH_COMMAND="$SMALL_AEP_LOAD";;
+      "ref" ) BENCH_COMMAND="$REF";;
+      "train" ) BENCH_COMMAND="$TRAIN";;
+      "test" ) BENCH_COMMAND="$TEST";;
       * ) echo "Unknown size: '$SIZE'. Aborting."; exit 1;;
     esac
     BENCH_COMMANDS+=("${BENCH_COMMAND}")

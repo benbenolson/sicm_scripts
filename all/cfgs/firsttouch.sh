@@ -38,7 +38,7 @@ function firsttouch_all_default {
     numastat_background "${DIR}"
     pcm_background "${DIR}"
     numastat -m &>> ${DIR}/numastat_before.txt
-    eval "valgrind ./cam4"  &>> ${DIR}/stdout.txt
+    eval "${COMMAND}"  &>> ${DIR}/stdout.txt
     numastat_kill
     pcm_kill
   done

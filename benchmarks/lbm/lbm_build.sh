@@ -9,4 +9,4 @@ cd $BENCH_DIR/lbm/src
 make clean
 make -j $(nproc --all)
 mkdir -p ../run
-cp lbm_r ../run/lbm
+cp lbm_r lbm.exe

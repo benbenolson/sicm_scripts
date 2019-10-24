@@ -17,7 +17,7 @@ for BENCH in ${BENCHES[@]}; do
 
   spack load pgmath%gcc@7.2.0
   spack load flang-patched%gcc@7.2.0
-  spack load llvm%gcc@7.2.0
+  spack load llvm@flang-20180921%gcc@7.2.0
   spack load $SICM%gcc@7.2.0
 
   # Clean up the source directory first
