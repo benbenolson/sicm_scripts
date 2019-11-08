@@ -9,4 +9,4 @@ cd $BENCH_DIR/xz/src
 make clean
 make -j $(nproc --all)
 mkdir -p ../run
-cp xz_s ../run/xz
+cp xz_s xz.exe

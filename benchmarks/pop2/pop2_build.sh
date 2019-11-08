@@ -10,4 +10,4 @@ cd $BENCH_DIR/pop2/src
 make clean
 make -j $(nproc --all)
 mkdir -p ../run
-cp speed_pop2 ../run/pop2
+cp speed_pop2 pop2.exe

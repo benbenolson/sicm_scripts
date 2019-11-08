@@ -4,7 +4,7 @@ source $SCRIPTS_DIR/all/bench_build.sh
 bench_build c "" ""
 
 # Get Spack into the environment and load Clang 6.0.1.
-#spack load llvm@flang-20180921
+spack load llvm@flang-20180921
 
 # Also install an unpatched Flang. We need this because the SICM-patched
 # Flang will try to look for "sh_" symbols, which we don't have.

@@ -17,7 +17,6 @@ function drop_caches {
 #####################
 # First arg is directory to write to
 function numastat_loop {
-  echo "Numastat writing to $1/numastat.txt"
   rm -f $1/numastat.txt
   while true; do
     echo "=======================================" &>> $1/numastat.txt

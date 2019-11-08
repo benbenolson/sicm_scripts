@@ -5,10 +5,10 @@ SMALL="./amg -problem 2 -n 120 120 120"
 MEDIUM="./amg -problem 2 -n 220 220 220"
 LARGE="./amg -problem 2 -n 270 270 270"
 
-SMALL_AEP="./amg -problem 2 -n 120 120 120"
-MEDIUM_AEP="./amg -problem 2 -n 340 340 340"
-LARGE_AEP="./amg -problem 2 -n 520 520 520"
-HUGE_AEP="./amg -problem 2 -n 600 600 600"
+SMALL_AEP="${SICM_ENV} ./amg -problem 2 -n 120 120 120"
+MEDIUM_AEP="${SICM_ENV} ./amg -problem 2 -n 340 340 340"
+LARGE_AEP="${SICM_ENV} ./amg -problem 2 -n 520 520 520"
+HUGE_AEP="${SICM_ENV} ./amg -problem 2 -n 600 600 600"
 
 function amg_prerun {
   if [[ $SH_ARENA_LAYOUT = "SHARED_SITE_ARENAS" ]]; then

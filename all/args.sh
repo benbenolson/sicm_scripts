@@ -38,6 +38,9 @@ if $MEMSYS; then
   SICM="sicm-high-memsys"
 fi
 
+# Get the number of NUMA nodes on the system
+export NUM_NUMA_NODES=$(lscpu | awk '/NUMA node\(s\).*/{print $3;}')
+
 # CONFIG_ARGS is an array of strings.
 # Each string contains a space-delimited list of arguments.
 CONFIG_ARGS=()
@@ -80,6 +83,7 @@ for BENCH in ${BENCHES[@]}; do
       "small_aep" ) BENCH_COMMAND="$SMALL_AEP";;
       "medium_aep" ) BENCH_COMMAND="$MEDIUM_AEP";;
       "large_aep" ) BENCH_COMMAND="$LARGE_AEP";;
+      "huge_aep" ) BENCH_COMMAND="$HUGE_AEP";;
       "small_aep_load" ) BENCH_COMMAND="$SMALL_AEP_LOAD";;
       "ref" ) BENCH_COMMAND="$REF";;
       "train" ) BENCH_COMMAND="$TRAIN";;

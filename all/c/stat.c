@@ -97,7 +97,7 @@ char parse_fom(char *line, metrics *info) {
   retval = 0;
 
   /* First QMCPACK */
-	if(sscanf(line, "  blocks         = %u", &unsigned_tmp) == 1) {
+  if(sscanf(line, "  blocks         = %u", &unsigned_tmp) == 1) {
     info->qmcpack_blocks = unsigned_tmp;
     retval = 1;
   } else if(sscanf(line, "  steps          = %u", &unsigned_tmp) == 1) {
@@ -155,7 +155,7 @@ char parse_pcm_memory(char *line, metrics *info) {
   double tmp, tmp2;
 
   if(sscanf(line, "|-- NODE 0 Memory (MB/s):%*[ ]%f --||-- NODE 1 Memory (MB/s):%*[ ]%f --|", &tmp, &tmp2) == 2) {
-    
+
   }
 
   return 0;
@@ -196,7 +196,7 @@ char parse_numastat(char *line, metrics *info) {
 
   if(strncmp(line, "MemFree ", 8) == 0) {
     /* Figure out how many nodes there are in the output.
-     * This is the number of space-delimited values on the line, 
+     * This is the number of space-delimited values on the line,
      * minus the "MemFree" token and the total.
      */
     tok = strtok(tmp_line, " ");
@@ -232,7 +232,7 @@ metrics *sh_parse_info(FILE *file) {
     if(parse_fom(line, info)) continue;
     if(parse_pcm_memory(line, info)) continue;
     if(parse_sicm(line, info)) continue;
-	}
+  }
 
   free(line);
   return info;
@@ -253,9 +253,9 @@ void find_file(char **filename, char *metric) {
 }
 
 int main(int argc, char **argv) {
-  app_info *site_info;
+  prev_app_info *app_info;
   metrics *info;
-	int option_index;
+  int option_index;
   char *metric, c, *filename, *path;
   FILE *file;
   unsigned long node;
@@ -328,7 +328,7 @@ int main(int argc, char **argv) {
   /* Do our parsing */
   info = sh_parse_info(file);
   fseek(file, 0, SEEK_SET);
-  site_info = sh_parse_site_info(file);
+  app_info = sh_parse_profiling(file);
 
   /* Print out the proper value */
   if(strncmp(metric, "peak_rss_kbytes", 15) == 0) {
@@ -359,7 +359,6 @@ int main(int argc, char **argv) {
 cleanup:
   /* Clean up */
   free(info);
-  free_info(site_info);
   fclose(file);
   if(metric) free(metric);
 }

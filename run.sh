@@ -3,21 +3,12 @@
 # Set all per-platform options, based on the hostname
 if [[ "$(hostname)" = "JF1121-080209T" ]]; then
   # Old CLX machine
-  export PLATFORM_COMMAND="env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1,3"
-  export SH_UPPER_NODE="1"
-  export SH_LOWER_NODE="3"
   export OMP_NUM_THREADS="48"
 elif [[ "$(hostname)" = "ben-clx0" ]]; then
   # New CLX machine
-  export PLATFORM_COMMAND="env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1,3"
-  export SH_UPPER_NODE="1"
-  export SH_LOWER_NODE="3"
   export OMP_NUM_THREADS="40"
 else
   # KNL
-  export PLATFORM_COMMAND="env time -v numactl --preferred=1"
-  export SH_UPPER_NODE="1"
-  export SH_LOWER_NODE="0"
   export OMP_NUM_THREADS="256"
 fi
 export SH_MAX_THREADS=`expr ${OMP_NUM_THREADS} + 1`
@@ -28,6 +19,57 @@ source $SCRIPTS_DIR/all/cfgs/firsttouch.sh
 source $SCRIPTS_DIR/all/cfgs/profile.sh
 source $SCRIPTS_DIR/all/cfgs/offline.sh
 source $SCRIPTS_DIR/all/cfgs/online.sh
+source $SCRIPTS_DIR/all/cfgs/multi_iter.sh
+
+if [[ "$(hostname)" = "JF1121-080209T" ]]; then
+
+  # Old CLX machine
+  if [[ $NUM_NUMA_NODES = 4 ]]; then
+    export PLATFORM_COMMAND="env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1,3"
+    export SH_UPPER_NODE="1"
+    export SH_LOWER_NODE="3"
+  elif [[ $NUM_NUMA_NODES = 2 ]]; then
+    export PLATFORM_COMMAND="env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1"
+    export SH_UPPER_NODE="1"
+    export SH_LOWER_NODE="1"
+  else
+    echo "COULDN'T DETECT HARDWARE CONFIGURATION. ABORTING."
+    exit
+  fi
+
+elif [[ "$(hostname)" = "ben-clx0" ]]; then
+
+  # New CLX machine
+  if [[ $NUM_NUMA_NODES = 4 ]]; then
+    export PLATFORM_COMMAND="env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1,3"
+    export SH_UPPER_NODE="1"
+    export SH_LOWER_NODE="3"
+  elif [[ $NUM_NUMA_NODES = 2 ]]; then
+    export PLATFORM_COMMAND="env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1"
+    export SH_UPPER_NODE="1"
+    export SH_LOWER_NODE="1"
+  else
+    echo "COULDN'T DETECT HARDWARE CONFIGURATION. ABORTING."
+    exit
+  fi
+
+else
+
+  # KNL
+  if [[ $NUM_NUMA_NODES = 2 ]]; then
+    export PLATFORM_COMMAND="env time -v numactl --preferred=1"
+    export SH_UPPER_NODE="1"
+    export SH_LOWER_NODE="0"
+  elif [[ $NUM_NUMA_NODES = 1 ]]; then
+    export PLATFORM_COMMAND="env time -v"
+    export SH_UPPER_NODE="0"
+    export SH_LOWER_NODE="0"
+  else
+    echo "COULDN'T DETECT HARDWARE CONFIGURATION. ABORTING."
+    exit
+  fi
+
+fi
 
 if [[ ${#BENCHES[@]} = 0 ]]; then
   echo "You didn't specify a benchmark name. Aborting."
@@ -56,7 +98,7 @@ spack load $SICM@develop%gcc@7.2.0
 export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$(spack location -i flang-patched)/lib"
 
 for BENCH_INDEX in ${!BENCHES[*]}; do
-  for CONFIG_INDEX in ${!CONFIGS[*]}; do 
+  for CONFIG_INDEX in ${!CONFIGS[*]}; do
     BENCH="${BENCHES[${BENCH_INDEX}]}"
     BENCH_COMMAND="${BENCH_COMMANDS[${BENCH_INDEX}]}"
     CONFIG="${CONFIGS[${CONFIG_INDEX}]}"
@@ -72,7 +114,6 @@ for BENCH_INDEX in ${!BENCHES[*]}; do
     # and pass that to the BASH function
     DIRECTORY="${RESULTS_DIR}/${BENCH}/${SIZE}/${FULL_CONFIG}"
     if [[ ! ${CONFIG} == *"manual"* ]]; then
-      echo "Removing directory"
       rm -rf ${DIRECTORY}
       mkdir -p ${DIRECTORY}
     fi

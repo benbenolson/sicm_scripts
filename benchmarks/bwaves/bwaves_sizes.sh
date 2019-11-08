@@ -1,8 +1,8 @@
 #!/bin/bash
 
-export REF="sh -c '${SICM_ENV} ./bwaves.exe bwaves_1 < bwaves_1.in; ${SICM_ENV} ./bwaves.exe bwaves_2 < bwaves_2.in;'"
-export TRAIN="sh -c '${SICM_ENV} ./bwaves.exe bwaves_1 < bwaves_1.in; ${SICM_ENV} ./bwaves.exe bwaves_2 < bwaves_2.in;'"
-export TEST="sh -c '${SICM_ENV} ./bwaves.exe bwaves_1 < bwaves_1.in; ${SICM_ENV} ./bwaves.exe bwaves_2 < bwaves_2.in;'"
+export REF="sh -c '${SICM_ENV} ./bwaves.exe bwaves_1 < bwaves_1.in; ${SICM_ENV} ./bwaves.exe bwaves_2 < bwaves_2.in'"
+export TEST="sh -c '${SICM_ENV} ./bwaves.exe bwaves_1 < bwaves_1.in; ${SICM_ENV} ./bwaves.exe bwaves_2 < bwaves_2.in'"
+export TRAIN="sh -c '${SICM_ENV} ./bwaves.exe bwaves_1 < bwaves_1.in; ${SICM_ENV} ./bwaves.exe bwaves_2 < bwaves_2.in'"
 
 function bwaves_prerun {
   if [[ $SH_ARENA_LAYOUT = "SHARED_SITE_ARENAS" ]]; then

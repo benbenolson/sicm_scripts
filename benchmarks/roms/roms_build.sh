@@ -10,4 +10,4 @@ cd $BENCH_DIR/roms/src
 make clean
 make -j $(nproc --all)
 mkdir -p $BENCH_DIR/roms/run
-cp sroms ../run/roms
+cp sroms roms.exe
