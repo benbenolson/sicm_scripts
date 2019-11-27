@@ -1,20 +1,17 @@
 #!/bin/bash
 
-function offline {
-  PEBS_SIZE="$1"
-  PEBS_FREQ="$2"
-  PEBS_RATE="$3"
-  CAP_INTERVAL="$4"
-  CAP_PROF_TYPE="$5"
-  PACK_ALGO="$6"
+DO_MEMRESERVE=false
 
-  CANARY_CFG="firsttouch_all_exclusive_device:"
+function offline {
+  PACK_ALGO="$1"
+
+  CANARY_CFG="firsttouch_exclusive_device:"
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
-  PEBS_DIR="${BASEDIR}/../../${PEBS_SIZE}/profile_all_and_${CAP_PROF_TYPE}:${PEBS_FREQ}_${PEBS_RATE}_${CAP_INTERVAL}/i0/"
+  PEBS_DIR="${PROFILE_DIR}/"
   PEBS_FILE="${PEBS_DIR}/profile.txt"
 
   # This file is used for the profiling information
-  if [ ! -r "${PEBS_FILE}" ]; then
+  if [ ! -f "${PEBS_FILE}" ]; then
     echo "ERROR: The file '${PEBS_FILE}' doesn't exist yet. Aborting."
     exit
   fi
@@ -49,7 +46,7 @@ function offline {
 
   # Generate the guidance file
   cat "${PEBS_FILE}" | \
-    sicm_hotset --capacity=${UPPER_SIZE} --scale=${SCALE} --weight=profile_${CAP_PROF_TYPE} --node=${SH_UPPER_NODE} --verbose \
+    sicm_hotset --capacity=${NUM_BYTES} --scale=${SCALE} --node=${SH_UPPER_NODE} --verbose \
     > ${BASEDIR}/guidance.txt
 
   # Run the iterations
@@ -57,11 +54,35 @@ function offline {
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     drop_caches
+    if [ "$DO_MEMRESERVE" = true ]; then
+      memreserve ${DIR} ${NUM_PAGES} ${SH_UPPER_NODE}
+    fi
     numastat -m &>> ${DIR}/numastat_before.txt
     numastat_background "${DIR}"
     pcm_background "${DIR}"
     eval "${COMMAND}" &>> ${DIR}/stdout.txt
     numastat_kill
     pcm_kill
+    if [ "$DO_MEMRESERVE" = true ]; then
+      memreserve_kill
+    fi
   done
+}
+
+function offline_memreserve {
+  RATIO=$(echo "${2}/100" | bc -l)
+  CANARY_CFG="firsttouch_exclusive_device:"
+  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
+
+  # This is in kilobytes
+  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --metric=peak_rss_kbytes ${CANARY_DIR}`
+  PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
+
+  # How many pages we need to be free on upper tier
+  NUM_PAGES=$(echo "${PEAK_RSS} * ${RATIO} / 4" | bc)
+  NUM_BYTES_FLOAT=$(echo "${PEAK_RSS} * ${RATIO} * 1024" | bc)
+  NUM_BYTES=${NUM_BYTES_FLOAT%.*}
+
+  DO_MEMRESERVE=true
+  offline "$@"
 }

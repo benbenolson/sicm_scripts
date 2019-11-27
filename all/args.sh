@@ -3,7 +3,7 @@
 . $SPACK_DIR/share/spack/setup-env.sh
 
 # Arguments
-GETOPT_OUTPUT=`getopt -o obcsagmi --long memsys,bench:,config:,size:,args:,graph,metric:,iters: -n 'build.sh' -- "$@"`
+GETOPT_OUTPUT=`getopt -o obcsagmip --long memsys,bench:,config:,size:,args:,graph,metric:,iters:,profile: -n 'args.sh' -- "$@"`
 if [ $? != 0 ] ; then echo "'getopt' failed. Aborting." >&2 ; exit 1 ; fi
 eval set -- "$GETOPT_OUTPUT"
 
@@ -15,6 +15,7 @@ SIZE=""
 CONFIG_ARGS_STRS=()
 ITERS="3"
 METRIC=""
+PROFILE_DIR=""
 GRAPH=false
 while true; do
   case "$1" in
@@ -26,6 +27,7 @@ while true; do
     -g | --graph ) GRAPH=true; shift;;
     -m | --metric ) METRIC="$2"; shift 2;;
     -i | --iters ) ITERS="$2"; shift 2;;
+    -p | --profile ) PROFILE_DIR="$2"; shift 2;;
     -- ) shift; break;;
     * ) break;;
   esac
