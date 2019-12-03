@@ -2,7 +2,7 @@
 
 DO_MEMRESERVE=false
 
-function offline {
+function offline_base {
   PACK_ALGO="$1"
 
   CANARY_CFG="firsttouch_exclusive_device:"
@@ -21,10 +21,6 @@ function offline {
     echo "ERROR: The file '${CANARY_DIR}' doesn't exist yet. Aborting."
     exit
   fi
-
-  # Get the amount of free memory in the upper tier right now
-  COLUMN_NUMBER=$(echo ${SH_UPPER_NODE} + 2 | bc)
-  UPPER_SIZE="$(numastat -m | awk -v column_number=${COLUMN_NUMBER} '/MemFree/ {printf "%d * 1024 * 1024\n", $column_number}' | bc)"
 
   # Get the peak RSS of the canary run
   PEAK_RSS_CANARY=`${SCRIPTS_DIR}/all/stat --metric=peak_rss_kbytes ${CANARY_DIR}`
@@ -69,6 +65,16 @@ function offline {
   done
 }
 
+function offline {
+  echo "Calling offline"
+  # Get the amount of free memory in the upper tier right now
+  COLUMN_NUMBER=$(echo ${SH_UPPER_NODE} + 2 | bc)
+  UPPER_SIZE="$(numastat -m | awk -v column_number=${COLUMN_NUMBER} '/MemFree/ {printf "%d * 1024 * 1024\n", $column_number}' | bc)"
+  NUM_BYTES=${UPPER_SIZE}
+
+  offline_base $@
+}
+
 function offline_memreserve {
   RATIO=$(echo "${2}/100" | bc -l)
   CANARY_CFG="firsttouch_exclusive_device:"
@@ -84,5 +90,5 @@ function offline_memreserve {
   NUM_BYTES=${NUM_BYTES_FLOAT%.*}
 
   DO_MEMRESERVE=true
-  offline "$@"
+  offline_base "$@"
 }

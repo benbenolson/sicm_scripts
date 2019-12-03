@@ -2,6 +2,7 @@
 
 export SMALL_AEP="${SICM_ENV} ./preqx < ./input.nl"
 export MEDIUM_AEP="${SICM_ENV} ./preqx < ./input.nl"
+export LARGE_AEP="${SICM_ENV} ./preqx < ./input.nl"
 
 function cam-se_prerun {
   if [[ $SH_ARENA_LAYOUT = "SHARED_SITE_ARENAS" ]]; then
@@ -24,8 +25,15 @@ function cam-se_prerun {
   # of the run. I know it's janky, but it works.
   if [[ $SIZE == "small_aep" ]]; then
     export CAM_SE_NE="16"
+    export CAM_SE_PARTMETHOD="4"
   elif [[ $SIZE == "medium_aep" ]]; then
     export CAM_SE_NE="32"
+    export CAM_SE_PARTMETHOD="4"
+  elif [[ $SIZE == "large_aep" ]]; then
+    export CAM_SE_NE="96"
+    export CAM_SE_PARTMETHOD="4"
+    export CAM_SE_MULTILEVEL="1"
+    export CAM_SE_QSIZE="16"
   fi
   ./generate_input.sh
 }

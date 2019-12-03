@@ -3,12 +3,11 @@
 . $SPACK_DIR/share/spack/setup-env.sh
 
 # Arguments
-GETOPT_OUTPUT=`getopt -o obcsagmip --long memsys,bench:,config:,size:,args:,graph,metric:,iters:,profile: -n 'args.sh' -- "$@"`
+GETOPT_OUTPUT=`getopt -o bcsagmip --long bench:,config:,size:,args:,graph,metric:,iters:,profile: -n 'args.sh' -- "$@"`
 if [ $? != 0 ] ; then echo "'getopt' failed. Aborting." >&2 ; exit 1 ; fi
 eval set -- "$GETOPT_OUTPUT"
 
 # Handle arguments
-MEMSYS=false
 BENCHES=()
 CONFIGS=()
 SIZE=""
@@ -19,7 +18,6 @@ PROFILE_DIR=""
 GRAPH=false
 while true; do
   case "$1" in
-    -o | --memsys ) MEMSYS=true; shift;;
     -b | --bench ) BENCHES+=("$2"); shift 2;;
     -c | --config ) CONFIGS+=("$2"); shift 2;;
     -a | --args ) CONFIG_ARGS_STRS+=("$2"); shift 2;;
@@ -36,9 +34,6 @@ done
 MAX_ITER=$(echo "$ITERS - 1" | bc)
 
 SICM="sicm-high"
-if $MEMSYS; then
-  SICM="sicm-high-memsys"
-fi
 
 # Get the number of NUMA nodes on the system
 export NUM_NUMA_NODES=$(lscpu | awk '/NUMA node\(s\).*/{print $3;}')

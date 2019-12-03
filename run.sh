@@ -25,11 +25,11 @@ if [[ "$(hostname)" = "JF1121-080209T" ]]; then
 
   # Old CLX machine
   if [[ $NUM_NUMA_NODES = 4 ]]; then
-    export PLATFORM_COMMAND="env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1,3"
+    export PLATFORM_COMMAND="sudo -E env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1,3"
     export SH_UPPER_NODE="1"
     export SH_LOWER_NODE="3"
   elif [[ $NUM_NUMA_NODES = 2 ]]; then
-    export PLATFORM_COMMAND="env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1"
+    export PLATFORM_COMMAND="sudo -E env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1"
     export SH_UPPER_NODE="1"
     export SH_LOWER_NODE="1"
   else
@@ -41,11 +41,11 @@ elif [[ "$(hostname)" = "ben-clx0" ]]; then
 
   # New CLX machine
   if [[ $NUM_NUMA_NODES = 4 ]]; then
-    export PLATFORM_COMMAND="env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1,3"
+    export PLATFORM_COMMAND="sudo -E env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1,3"
     export SH_UPPER_NODE="1"
     export SH_LOWER_NODE="3"
   elif [[ $NUM_NUMA_NODES = 2 ]]; then
-    export PLATFORM_COMMAND="env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1"
+    export PLATFORM_COMMAND="sudo -E env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1"
     export SH_UPPER_NODE="1"
     export SH_LOWER_NODE="1"
   else
@@ -57,11 +57,11 @@ else
 
   # KNL
   if [[ $NUM_NUMA_NODES = 2 ]]; then
-    export PLATFORM_COMMAND="env time -v numactl --preferred=1"
+    export PLATFORM_COMMAND="sudo -E env time -v numactl --preferred=1"
     export SH_UPPER_NODE="1"
     export SH_LOWER_NODE="0"
   elif [[ $NUM_NUMA_NODES = 1 ]]; then
-    export PLATFORM_COMMAND="env time -v"
+    export PLATFORM_COMMAND="sudo -E env time -v"
     export SH_UPPER_NODE="0"
     export SH_LOWER_NODE="0"
   else
