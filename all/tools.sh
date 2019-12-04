@@ -56,18 +56,7 @@ function pcm_kill {
 # Third arg is the NUMA node to reserve memory on
 function memreserve {
 
-  # Get the amount of free memory on the node, in pages
-  numastat -m &> $1/numastat_noreserve.txt
-  NODE_FREE_MBYTES=$(${SCRIPTS_DIR}/all/stat \
-    --metric=memfree_noreserve --node=${3} $1)
-  NODE_FREE_PAGES=$(echo "$NODE_FREE_MBYTES * 1024 / 4" | bc)
-
-  if [[ ${NODE_FREE_PAGES} -gt ${2} ]]; then
-    # Get how much to reserve to get the requested amount
-    RESERVE=$(echo "$NODE_FREE_PAGES - $2" | bc)
-    echo "Reserving ${RESERVE} pages on node ${3}."
-
-    sicm_memreserve ${3} 64 ${RESERVE} hold bind \
+    ${SCRIPTS_DIR}/all/memreserve ${3} ${2} \
       &>> $1/memreserve.txt &
     memreserve_pid="$!"
 

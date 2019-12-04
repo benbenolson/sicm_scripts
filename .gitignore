@@ -1,3 +1,4 @@
 *.ER
 *.OU
 all/stat
+all/memreserve

@@ -66,7 +66,6 @@ function offline_base {
 }
 
 function offline {
-  echo "Calling offline"
   # Get the amount of free memory in the upper tier right now
   COLUMN_NUMBER=$(echo ${SH_UPPER_NODE} + 2 | bc)
   UPPER_SIZE="$(numastat -m | awk -v column_number=${COLUMN_NUMBER} '/MemFree/ {printf "%d * 1024 * 1024\n", $column_number}' | bc)"

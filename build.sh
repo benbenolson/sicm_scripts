@@ -12,10 +12,9 @@ cd $SICM_DIR
 spack clean -sd spack.$SICM
 spack install --keep-stage -j 1 spack.$SICM %gcc@7.2.0
 
-if ! $MEMSYS; then
-  # Compile the "scripts"
-  INCLUDE="-I$(spack location -i $SICM%gcc@7.2.0)/include"
-  spack load $SICM%gcc@7.2.0
-  cd $SCRIPTS_DIR/all
-  gcc -g c/stat.c ${INCLUDE} -o stat
-fi
+# Compile the "scripts"
+INCLUDE="-I$(spack location -i $SICM%gcc@7.2.0)/include"
+spack load $SICM%gcc@7.2.0
+cd $SCRIPTS_DIR/all
+gcc -g c/stat.c ${INCLUDE} -o stat
+gcc -g c/memreserve.c ${INCLUDE} -lnuma -lpthread -o memreserve
