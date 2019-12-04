@@ -255,6 +255,7 @@ int main(int argc, char **argv)
   printf("Estimated allocatable pages: %zu\n", num_free_pages - num_reserved_pages);
   printf("===== END MEMRESERVE =====\n");
 
+  fflush(stdout);
   pause();
   return 0;
 }

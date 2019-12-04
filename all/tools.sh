@@ -55,13 +55,11 @@ function pcm_kill {
 # Second arg is the amount that should be left on the node
 # Third arg is the NUMA node to reserve memory on
 function memreserve {
-
     ${SCRIPTS_DIR}/all/memreserve ${3} ${2} \
       &>> $1/memreserve.txt &
     memreserve_pid="$!"
 
     sleep 60
-  fi
 }
 
 function memreserve_kill {
