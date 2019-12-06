@@ -7,6 +7,9 @@ if [[ "$(hostname)" = "JF1121-080209T" ]]; then
 elif [[ "$(hostname)" = "ben-clx0" ]]; then
   # New CLX machine
   export OMP_NUM_THREADS="40"
+elif [[ "$(hostname)" = "canata" ]]; then
+  # LANL's Canata machine
+  export OMP_NUM_THREADS="48"
 else
   # KNL
   export OMP_NUM_THREADS="256"
@@ -39,9 +42,23 @@ if [[ "$(hostname)" = "JF1121-080209T" ]]; then
 
 elif [[ "$(hostname)" = "cce-clx-9.jf.intel.com" ]]; then
 
-  echo "It's the new Intel machine"
-
   # New CLX machine
+  if [[ $NUM_NUMA_NODES = 4 ]]; then
+    export PLATFORM_COMMAND="sudo -E env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1,3"
+    export SH_UPPER_NODE="1"
+    export SH_LOWER_NODE="3"
+  elif [[ $NUM_NUMA_NODES = 2 ]]; then
+    export PLATFORM_COMMAND="sudo -E env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1"
+    export SH_UPPER_NODE="1"
+    export SH_LOWER_NODE="1"
+  else
+    echo "COULDN'T DETECT HARDWARE CONFIGURATION. ABORTING."
+    exit
+  fi
+
+elif [[ "$(hostname)" = "canata" ]]; then
+
+  # LANL's Canata
   if [[ $NUM_NUMA_NODES = 4 ]]; then
     export PLATFORM_COMMAND="sudo -E env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1,3"
     export SH_UPPER_NODE="1"
