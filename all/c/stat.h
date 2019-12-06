@@ -3,10 +3,12 @@
 #include <ctype.h>
 #include "parse_gnu_time.h"
 #include "parse_numastat.h"
+#include "parse_sicm.h"
 
 typedef struct metrics {
   gnu_time_metrics *gnu_time;
   numastat_metrics *numastat;
+  sicm_metrics *sicm;
 } metrics;
 
 metrics *init_metrics() {
@@ -15,6 +17,7 @@ metrics *init_metrics() {
 
   info->gnu_time = init_gnu_time_metrics();
   info->numastat = init_numastat_metrics();
+  info->sicm = init_sicm_metrics();
 
   return info;
 }
@@ -22,6 +25,7 @@ metrics *init_metrics() {
 void free_metrics(metrics *info) {
   free(info->gnu_time);
   free(info->numastat);
+  free(info->sicm);
   free(info);
 }
 
@@ -54,6 +58,10 @@ void parse_metrics(metrics *info, char *path, char *metric, unsigned long node) 
   if((filename = is_gnu_time_metric(metric)) != NULL) {
     fullpath = construct_path(path, filename);
     file = fopen(fullpath, "r");
+    if(!file) {
+      fprintf(stderr, "Failed to open file '%s'. Aborting.\n", fullpath);
+      exit(1);
+    }
     parse_gnu_time(file, info->gnu_time);
     print_gnu_time_metric(metric, info->gnu_time);
   } else if((filename = is_numastat_metric(metric)) != NULL) {
@@ -65,6 +73,15 @@ void parse_metrics(metrics *info, char *path, char *metric, unsigned long node) 
     }
     parse_numastat(file, info->numastat);
     print_numastat_metric(metric, info->numastat, node);
+  } else if((filename = is_sicm_metric(metric)) != NULL) {
+    fullpath = construct_path(path, filename);
+    file = fopen(fullpath, "r");
+    if(!file) {
+      fprintf(stderr, "Failed to open file '%s'. Aborting.\n", fullpath);
+      exit(1);
+    }
+    parse_sicm(file, info->sicm);
+    print_sicm_metric(metric, info->sicm);
   } else {
     fprintf(stderr, "Metric not yet implemented.\n");
     return;
