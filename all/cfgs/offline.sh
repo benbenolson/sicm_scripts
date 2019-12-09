@@ -1,6 +1,7 @@
 #!/bin/bash
 
 DO_MEMRESERVE=false
+CAPACITY_PROF_TYPE=""
 
 function offline_base {
   PACK_ALGO="$1"
@@ -41,8 +42,12 @@ function offline_base {
   eval "${PRERUN}"
 
   # Generate the guidance file
+  HOTSET_ARGS="--capacity=${NUM_BYTES} --scale=${SCALE} --node=${SH_UPPER_NODE} --verbose"
+  if [[ ! -z ${CAPACITY_PROF_TYPE} ]]; then
+    HOTSET_ARGS="${HOTSET_ARGS} --weight=${CAPACITY_PROF_TYPE}"
+  fi
   cat "${PEBS_FILE}" | \
-    sicm_hotset --capacity=${NUM_BYTES} --scale=${SCALE} --node=${SH_UPPER_NODE} --verbose \
+    sicm_hotset ${HOTSET_ARGS} \
     > ${BASEDIR}/guidance.txt
 
   # Run the iterations
@@ -90,4 +95,19 @@ function offline_memreserve {
 
   DO_MEMRESERVE=true
   offline_base "$@"
+}
+
+function offline_memreserve_extent_size {
+  CAPACITY_PROF_TYPE="profile_extent_size"
+  offline_memreserve $@
+}
+
+function offline_memreserve_rss {
+  CAPACITY_PROF_TYPE="profile_rss"
+  offline_memreserve $@
+}
+
+function offline_memreserve_allocs {
+  CAPACITY_PROF_TYPE="profile_allocs"
+  offline_memreserve $@
 }

@@ -3,7 +3,7 @@
 . $SPACK_DIR/share/spack/setup-env.sh
 
 # Arguments
-GETOPT_OUTPUT=`getopt -o bcsagmipn --long bench:,config:,size:,args:,graph,metric:,iters:,profile:,node: -n 'args.sh' -- "$@"`
+GETOPT_OUTPUT=`getopt -o bcsagmipnrt --long bench:,config:,size:,args:,graph,metric:,iters:,profile:,node:,baseconfig:,base_args: -n 'args.sh' -- "$@"`
 if [ $? != 0 ] ; then echo "'getopt' failed. Aborting." >&2 ; exit 1 ; fi
 eval set -- "$GETOPT_OUTPUT"
 
@@ -11,6 +11,8 @@ eval set -- "$GETOPT_OUTPUT"
 NODE=""
 BENCHES=()
 CONFIGS=()
+BASECONFIG=""
+BASECONFIG_ARGS_STR=""
 SIZE=""
 CONFIG_ARGS_STRS=()
 ITERS="3"
@@ -22,6 +24,8 @@ while true; do
     -b | --bench ) BENCHES+=("$2"); shift 2;;
     -c | --config ) CONFIGS+=("$2"); shift 2;;
     -a | --args ) CONFIG_ARGS_STRS+=("$2"); shift 2;;
+    -r | --baseconfig ) BASECONFIG="$2"; shift 2;;
+    -t | --base_args ) BASECONFIG_ARGS_STR="$2"; shift 2;;
     -s | --size ) SIZE="$2"; shift 2;;
     -g | --graph ) GRAPH=true; shift;;
     -m | --metric ) METRIC="$2"; shift 2;;
@@ -54,7 +58,18 @@ for args in ${CONFIG_ARGS_STRS[@]}; do
   CONFIG_ARGS_UNDERSCORES+=(${args//,/_})
 done
 
-# Config name, colon, underscore-delimited list of arguments
+# BASECONFIG ARGS
+BASECONFIG_ARGS=""
+BASECONFIG_ARGS_UNDERSCORES=""
+if [[ ${BASECONFIG_ARGS_STR} = "-" ]]; then
+  BASECONFIG_ARGS=" "
+  BASECONFIG_ARGS_UNDERSCORES=" "
+fi
+BASECONFIG_ARGS+=("${BASECONFIG_ARGS_STR//,/ }")
+BASECONFIG_ARGS_UNDERSCORES+=(${BASECONFIG_ARGS_STR//,/_})
+
+# Each member of the FULL_CONFIGS array is a full configuration string:
+# the config name, a colon, and an underscore-delimited list of arguments to that config.
 CTR=0
 while true; do
   if [[ ! ${CONFIG_ARGS_UNDERSCORES[${CTR}]} ]]; then
@@ -68,6 +83,11 @@ while true; do
 
   CTR=$(echo "$CTR + 1" | bc)
 done
+
+FULL_BASECONFIG=""
+if [[ ! -z "${BASECONFIG}" ]]; then
+  FULL_BASECONFIG="${BASECONFIG}:${BASECONFIG_ARGS_UNDERSCORES}"
+fi
 
 export SICM_ENV="env LD_PRELOAD='$(spack location -i sicm-high)/lib/libsicm_overrides.so'"
 BENCH_COMMANDS=()

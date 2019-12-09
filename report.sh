@@ -2,6 +2,34 @@
 # By default, averages across iterations.
 source $SCRIPTS_DIR/all/args.sh
 
+function get_avg_val {
+  local FULL_CONFIG="$1"
+  local BENCH="$2"
+  local STAT_ARGS="$3"
+  DIR="${RESULTS_DIR}/${BENCH}/${SIZE}/${FULL_CONFIG}"
+
+  # Iterate over the iterations
+  local CTR=0
+  local VALS=()
+  while true; do
+    if [[ -d "${DIR}/i${CTR}" ]]; then
+      # If this iteration exists, grab the stat from its output
+      VAL=$(${SCRIPTS_DIR}/all/stat ${STAT_ARGS} "${DIR}/i${CTR}/")
+      VALS+=($VAL)
+    else
+      break
+    fi
+    CTR=$(echo "$CTR + 1" | bc)
+  done
+
+  local SUM=0
+  for VAL in ${VALS[@]}; do
+    SUM=$(echo "$SUM + $VAL" | bc -l)
+  done
+  SUM=$(echo "$SUM / $CTR" | bc -l)
+  echo ${SUM}
+}
+
 if [[ ${METRIC} = "" ]]; then
   echo "You didn't specify a metric. Aborting."
   exit 1
@@ -43,6 +71,15 @@ done
 MAX_BENCH_LENGTH=$(echo "$MAX_BENCH_LENGTH + 2" | bc)
 MAX_BENCH_LENGTH=20
 
+# Get the value for the baseconfig first
+BASECONFIG_VALS=()
+if [ ! -z ${FULL_BASECONFIG} ]; then
+  for BENCH in ${BENCHES[@]}; do
+    VAL=$(get_avg_val ${FULL_BASECONFIG} "${BENCH}" "${STAT_ARGS}")
+    BASECONFIG_VALS+=(${VAL})
+  done
+fi
+
 printf "%-${MAX_CONFIG_LENGTH}s" " "
 for BENCH in ${BENCHES[@]}; do
   printf "%-${MAX_BENCH_LENGTH}s" $BENCH
@@ -51,31 +88,14 @@ printf "\n"
 
 for FULL_CONFIG in ${FULL_CONFIGS[@]}; do
   printf "%-${MAX_CONFIG_LENGTH}s" $FULL_CONFIG
+  INDEX=0
   for BENCH in ${BENCHES[@]}; do
-
-    DIR="${RESULTS_DIR}/${BENCH}/${SIZE}/${FULL_CONFIG}"
-
-    # Iterate over the iterations
-    CTR=0
-    VALS=()
-    while true; do
-      if [[ -d "${DIR}/i${CTR}" ]]; then
-        # If this iteration exists, grab the stat from its output
-        VAL=$(${SCRIPTS_DIR}/all/stat ${STAT_ARGS} "${DIR}/i${CTR}/")
-        VALS+=($VAL)
-      else
-        break
-      fi
-      CTR=$(echo "$CTR + 1" | bc)
-    done
-
-    SUM=0
-    for VAL in ${VALS[@]}; do
-      SUM=$(echo "$SUM + $VAL" | bc -l)
-    done
-    SUM=$(echo "$SUM / $CTR" | bc -l)
-    printf "%-${MAX_BENCH_LENGTH}.5f" $SUM
-
+    VAL=$(get_avg_val "${FULL_CONFIG}" "${BENCH}" "${STAT_ARGS}")
+    if [ ! -z ${FULL_BASECONFIG} ]; then
+      VAL=$(echo "${VAL} / ${BASECONFIG_VALS[INDEX]}" | bc -l)
+    fi
+    printf "%-${MAX_BENCH_LENGTH}.5f" ${VAL}
+    INDEX=$(echo "$INDEX + 1" | bc)
   done
   printf "\n"
 done

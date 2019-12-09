@@ -78,3 +78,25 @@ function profile_all_and_extent_size_separate_threads_lessthreads {
   export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 3`
   profile_all_and_extent_size $@
 }
+
+function profile_all_and_rss {
+  export SH_PROFILE_RSS="1"
+  export SH_PROFILE_RSS_SKIP_INTERVALS="$SIZE_SKIP_INTERVALS"
+  profile_all_and_cap $@
+}
+
+function profile_all_and_rss_lessthreads {
+  export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
+  profile_all_and_rss $@
+}
+
+function profile_all_and_rss_separate_threads {
+  export SH_PROFILE_SEPARATE_THREADS="1"
+  profile_all_and_rss $@
+}
+
+function profile_all_and_rss_separate_threads_lessthreads {
+  export SH_PROFILE_SEPARATE_THREADS="1"
+  export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 3`
+  profile_all_and_rss $@
+}

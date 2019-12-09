@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 source $SCRIPTS_DIR/all/bench_build.sh
 cd $BENCH_DIR/cam-se/src
@@ -8,9 +9,9 @@ export HOMME_ROOT="${PWD}"
 # Flang will try to look for "sh_" symbols, which we don't have.
 # This compiler is listed in Spack as "clang@6.0.1", which we'll use to compile
 # dependencies.
-#spack install -j1 flang@20180921 %gcc@7.2.0
-#spack compiler find
-#spack config edit compilers
+spack install -j1 flang@20180921 %gcc@7.2.0
+spack compiler find
+spack config edit compilers
 
 # Load default Flang and LLVM
 spack load llvm@flang-20180921
@@ -32,13 +33,22 @@ cp mpif.h ${HOMME_ROOT}/mpi-serial/
 cp libmpi-serial.a ${HOMME_ROOT}/mpi-serial/
 cd ${HOMME_ROOT}
 
-cd $HOMME_ROOT/libs/lapack && ./configure && make clean && make -j 80 || exit -1
-cd $HOMME_ROOT/libs/blas && ./configure && make clean && make -j 80 || exit -1
+# LAPACK
+cd $HOMME_ROOT/libs/lapack
+autoreconf -i
+./configure
+make clean
+make -j 80
+
+# BLAS
+cd $HOMME_ROOT/libs/blas
+autoreconf -i
+./configure
+make clean
+make -j 80
 
 # Unload default Flang and LLVM
-spack unload llvm@flang-20180921
 spack unload flang@20180921
-#bench_build fort "" ""
 bench_build c "" ""
 
 # Hacky way to emulate the older versions of NetCDF. See, this version of CAM-SE
@@ -84,9 +94,12 @@ export CONFARGS_PRQ="NP=4 PLEV=26 --with-arch=Linux --with-netcdf=${NETCDF_PATH}
 export LDFLAGS="${LDFLAGS} -L../../libs/lapack -llapack -L../../libs/blas -lblas"
 
 # PIO
+spack install autoconf@2.63
+spack load autoconf@2.63
 cd $HOMME_ROOT/utils/pio
 make clean
 rm -rf *.args *.bc *.mod *.o
+autoreconf -i
 ./configure $CONFARGS_PIO
 make clean
 make -j 80
@@ -97,14 +110,19 @@ make clean
 rm -rf *.o *.mod *.bc *.args
 make -j 80
 
+# For some reason, we need an autoconf version higher than 2.63 to compile this next bit.
+# Our assumption here is that the system version of autoconf is higher than 2.65. Unload
+# the one that we just installed with Spack.
+spack unload autoconf@2.63
+
 # Now compile and link the final executable
 bench_build fort "" ""
 cd $HOMME_ROOT
-make clean
 cd $HOMME_ROOT/build/preqx
-make distclean
 rm -rf *.o *.mod *.bc *.args
+autoreconf -i
 ./configure $CONFARGS_PRQ
 make -j 80 depends
 make -j 80
+mkdir -p ${BENCH_DIR}/cam-se/run
 cp preqx $BENCH_DIR/cam-se/run
