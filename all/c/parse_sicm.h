@@ -8,12 +8,14 @@
 char *sicm_metrics_list[] = {
   "prof_tot_accesses",
   "prof_time_over",
+  "num_rebinds",
   NULL
 };
 
 typedef struct sicm_metrics {
   size_t interval_time_over,
-         total_accesses;
+         total_accesses,
+         num_rebinds;
 } sicm_metrics;
 
 sicm_metrics *init_sicm_metrics() {
@@ -21,6 +23,7 @@ sicm_metrics *init_sicm_metrics() {
   info = malloc(sizeof(sicm_metrics));
 
   info->interval_time_over = 0;
+  info->num_rebinds = 0;
 
   return info;
 }
@@ -29,7 +32,7 @@ void parse_sicm(FILE *file, sicm_metrics *info) {
   double time, interval_time;
   char retval = 0;
   char *line;
-  size_t len;
+  size_t len, rebinds;
   ssize_t read;
   application_profile *prof;
 
@@ -39,9 +42,11 @@ void parse_sicm(FILE *file, sicm_metrics *info) {
 
   line = NULL;
   len = 0;
-  while(read = getline(&line, &len, file) != 1) {
+  while(read = getline(&line, &len, file) != -1) {
     if(sscanf(line, "WARNING: Interval (%lf) went over the time limit (%lf).", &time, &interval_time) == 2) {
       info->interval_time_over += (time - interval_time);
+    } else if(sscanf(line, "  Number of rebinds: %zu", &rebinds) == 1) {
+      info->num_rebinds += rebinds;
     }
   }
 }
@@ -53,8 +58,13 @@ char *is_sicm_metric(char *metric) {
   i = 0;
   while((ptr = sicm_metrics_list[i]) != NULL) {
     if(strcmp(metric, ptr) == 0) {
-      filename = malloc(sizeof(char) * (strlen("profile.txt") + 1));
-      strcpy(filename, "profile.txt");
+      if(strcmp(metric, "num_rebinds") == 0) {
+        filename = malloc(sizeof(char) * (strlen("online.txt") + 1));
+        strcpy(filename, "online.txt");
+      } else {
+        filename = malloc(sizeof(char) * (strlen("profile.txt") + 1));
+        strcpy(filename, "profile.txt");
+      }
       return filename;
     }
     i++;
@@ -68,5 +78,7 @@ void print_sicm_metric(char *metric, sicm_metrics *info) {
     printf("%zu\n", info->total_accesses);
   } else if(strcmp(metric, "prof_time_over") == 0) {
     printf("%zu\n", info->interval_time_over);
+  } else if(strcmp(metric, "num_rebinds") == 0) {
+    printf("%zu\n", info->num_rebinds);
   }
 }

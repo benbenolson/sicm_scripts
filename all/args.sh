@@ -64,9 +64,10 @@ BASECONFIG_ARGS_UNDERSCORES=""
 if [[ ${BASECONFIG_ARGS_STR} = "-" ]]; then
   BASECONFIG_ARGS=" "
   BASECONFIG_ARGS_UNDERSCORES=" "
+else
+  BASECONFIG_ARGS="${BASECONFIG_ARGS_STR//,/ }"
+  BASECONFIG_ARGS_UNDERSCORES=${BASECONFIG_ARGS_STR//,/_}
 fi
-BASECONFIG_ARGS+=("${BASECONFIG_ARGS_STR//,/ }")
-BASECONFIG_ARGS_UNDERSCORES+=(${BASECONFIG_ARGS_STR//,/_})
 
 # Each member of the FULL_CONFIGS array is a full configuration string:
 # the config name, a colon, and an underscore-delimited list of arguments to that config.

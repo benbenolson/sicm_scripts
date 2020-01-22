@@ -101,7 +101,6 @@ export CONFARGS_PRQ="NP=4 PLEV=26 --with-arch=Linux --with-netcdf=${NETCDF_PATH}
 export LDFLAGS="${LDFLAGS} -L../../libs/lapack -llapack -L../../libs/blas -lblas"
 
 # PIO
-which pkg-config
 echo "${NETCDF_PATH}"
 cd $HOMME_ROOT/utils/pio
 make clean

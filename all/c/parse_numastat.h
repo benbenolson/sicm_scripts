@@ -3,10 +3,12 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
+#include <math.h>
 
 char *numastat_metrics_list[] = {
   "memfree",
   "avg_memfree",
+  "geomean_memfree",
   "memfree_noreserve",
   "memfree_before",
   NULL
@@ -21,6 +23,7 @@ typedef struct numastat_metrics {
 
   /* Per-node memfree averages. */
   long long *memfree_avgs;
+  double *memfree_geomeans;
 } numastat_metrics;
 
 numastat_metrics *init_numastat_metrics() {
@@ -30,6 +33,7 @@ numastat_metrics *init_numastat_metrics() {
   info->num_intervals = 0;
   info->memfree_vals = NULL;
   info->memfree_avgs = NULL;
+  info->memfree_geomeans = NULL;
 
   return info;
 }
@@ -68,8 +72,20 @@ void parse_numastat(FILE *file, numastat_metrics *info) {
 
   /* Now calculate the aggregated metrics */
   info->memfree_avgs = malloc(sizeof(long long) * num_mem_nodes);
+  info->memfree_geomeans = malloc(sizeof(double) * num_mem_nodes);
   for(i = 0; i < num_mem_nodes; i++) {
+    info->memfree_geomeans[i] = 0.0;
     info->memfree_avgs[i] = 0;
+
+    /* Calculate a geomean for this node. To do that, we're going to calculate
+       the sum of the logs of each value, then divide by the number of values, then
+       undo the logarithm. */
+    for(n = 0; n < info->num_intervals; n++) {
+      info->memfree_geomeans[i] += log((double) info->memfree_vals[n][i]);
+    }
+    info->memfree_geomeans[i] /= info->num_intervals;
+    info->memfree_geomeans[i] = exp(info->memfree_geomeans[i]);
+
     /* Calculate an average for this node. */
     for(n = 0; n < info->num_intervals; n++) {
       info->memfree_avgs[i] += (info->memfree_vals[n][i] - info->memfree_avgs[i]) / ((long long)(n + 1));
@@ -115,8 +131,15 @@ void print_numastat_metric(char *metric, numastat_metrics *info, long long node)
     exit(1);
   }
 
-  if((strcmp(metric, "memfree") == 0) || (strcmp(metric, "avg_memfree") == 0) ||
-     (strcmp(metric, "memfree_noreserve") == 0) || (strcmp(metric, "memfree_before") == 0)) {
+  if((strcmp(metric, "memfree") == 0) || (strcmp(metric, "geomean_memfree") == 0)) {
+    printf("%lf", info->memfree_geomeans[node]);
+  } else if(strcmp(metric, "avg_memfree") == 0) {
     printf("%ld", info->memfree_avgs[node]);
+  } else if(strcmp(metric, "memfree_noreserve") == 0) {
+    /* We've already read from numastat_noreserve.txt, so we can just print out the average memfree value */
+    printf("%lf", info->memfree_geomeans[node]);
+  } else if(strcmp(metric, "memfree_before") == 0) {
+    /* We've already read from numastat_before.txt, so we can just print out the average memfree value */
+    printf("%lf", info->memfree_geomeans[node]);
   }
 }
