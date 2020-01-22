@@ -109,6 +109,7 @@ fi
 sudo modprobe msr
 
 . $SPACK_DIR/share/spack/setup-env.sh
+cd $SICM_DIR
 spack load $SICM@develop%gcc@7.2.0
 
 # We need this for QMCPACK because otherwise it will link to an unpatched Flang, which will

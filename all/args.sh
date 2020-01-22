@@ -39,7 +39,7 @@ done
 
 MAX_ITER=$(echo "$ITERS - 1" | bc)
 
-SICM="sicm-high"
+export SICM="sicm-high"
 
 # Get the number of NUMA nodes on the system
 export NUM_NUMA_NODES=$(lscpu | awk '/NUMA node\(s\).*/{print $3;}')
@@ -89,7 +89,7 @@ if [[ ! -z "${BASECONFIG}" ]]; then
   FULL_BASECONFIG="${BASECONFIG}:${BASECONFIG_ARGS_UNDERSCORES}"
 fi
 
-export SICM_ENV="env LD_PRELOAD='$(spack location -i sicm-high)/lib/libsicm_overrides.so'"
+export SICM_ENV="env LD_PRELOAD='$(spack location -i ${SICM}%gcc@7.2.0)/lib/libsicm_overrides.so'"
 BENCH_COMMANDS=()
 for BENCH in ${BENCHES[@]}; do
   BENCH_COMMAND=""

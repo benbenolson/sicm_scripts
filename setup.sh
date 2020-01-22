@@ -12,14 +12,22 @@
 # so let's settle on 7.2.0 and use that for everything.
 . $SPACK_DIR/share/spack/setup-env.sh
 spack bootstrap
-#spack install gcc@7.2.0
+spack install gcc@7.2.0
 spack load gcc@7.2.0
 spack compiler find
+
+export TMPDIR="${HOME}/tmp"
+mkdir -p ${TMPDIR}
 
 # Install an unpatched version of LLVM, for compiling dependencies
 # that we don't want to transform with SICM.
 spack install flang@20180921 %gcc@7.2.0
 spack install -j1 flang@20180921 %gcc@7.2.0
+spack load flang@20180921%gcc@7.2.0
+spack load llvm-flang@20180921%gcc@7.2.0
+spack compiler find
+spack unload flang@20180921%gcc@7.2.0
+spack unload llvm-flang@20180921%gcc@7.2.0
 
 # Now that we've got the unpatched version of Flang, I haven't found a good
 # way of automatically installing it as a compiler in Spack. Do this manually.
@@ -28,12 +36,27 @@ echo "to include these paths under the spec 'clang@6.0.1'."
 spack find flang@20180921 %gcc@7.2.0
 read -p "Press 'Enter' to continue compiling dependencies..."
 
-# For QMCPACK
-spack install --only dependencies qmcpack@3.6.0 -phdf5 -mpi -qe +soa %clang@6.0.1 ^cmake@3.6.0 ^hdf5~mpi ^fftw~mpi ^netlib-lapack@3.8.0
+# For QMCPACK.
+# We do this twice because sometimes some of these packages randomly fail, then subsequently succeed.
+# Put these packages in a separate environment.
+spack env create qmcpack_deps
+spack env activate qmcpack_deps
+spack install --no-checksum hdf5@1.10.6%clang@6.0.1~mpi boost@1.70.0%clang@6.0.1 bzip2@1.0.8%clang@6.0.1 fftw@3.3.8~mpi%clang@6.0.1 libiconv@1.16%clang@6.0.1 libxml2@2.9.9%clang@6.0.1 netlib-lapack@3.8.0%clang@6.0.1 xz@5.2.4%clang@6.0.1 zlib@1.2.11%clang@6.0.1
+#spack install --no-checksum --only dependencies qmcpack@3.6.0 -phdf5 -mpi -qe +soa %clang@6.0.1 ^cmake@3.6.0 ^hdf5~mpi ^fftw~mpi ^netlib-lapack@3.8.0
+#spack install --no-checksum --only dependencies qmcpack@3.6.0 -phdf5 -mpi -qe +soa %clang@6.0.1 ^cmake@3.6.0 ^hdf5~mpi ^fftw~mpi ^netlib-lapack@3.8.0
+#spack remove qmcpack
+spack env loads -m tcl -r --input-only qmcpack_deps
+despacktivate
 
 # For CAM-SE
-spack install netcdf-fortran@4.5.2 ^netcdf~mpi ^hdf5~mpi %clang@6.0.1
-spack install autoconf@2.63 %clang@6.0.1
+spack env create cam-se_deps
+spack env activate cam-se_deps
+spack install -j1 netcdf-fortran@4.5.2~mpi ^hdf5~mpi ^netcdf-c~mpi %clang@6.0.1
+spack install -j1 flang@20180921%gcc@7.2.0
+spack install autoconf@2.63%gcc@7.2.0
+spack install autoconf@2.69%gcc@7.2.0
+spack env loads -m tcl -r --input-only cam-se_deps
+despacktivate
 
 # An example 'clang@6.0.1' entry in compilers.yaml:
 #- compiler:
