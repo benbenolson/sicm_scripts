@@ -63,6 +63,7 @@ function online_base {
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
     export SH_PROFILE_ONLINE_OUTPUT_FILE="${DIR}/online.txt"
+    export SH_PROFILE_OUTPUT_FILE="${DIR}/profile.txt"
     drop_caches
     if [ "$DO_MEMRESERVE" = true ]; then
       memreserve ${DIR} ${NUM_PAGES} ${SH_UPPER_NODE}

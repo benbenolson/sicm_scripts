@@ -19,10 +19,11 @@ function qmcpack_prerun {
     export JE_MALLOC_CONF="oversize_threshold:0"
   fi
   echo "Using JE_MALLOC_CONF='$JE_MALLOC_CONF'."
-  export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$(spack location -i llvm@7.0.1)/lib"
+  #export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$(spack location -i llvm@7.0.1)/lib"
 }
 
 function qmcpack_setup {
-  echo "Adding to LD_LIBRARY_PATH: $(spack location -i llvm@7.0.1)/lib"
-  export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$(spack location -i llvm@7.0.1)/lib"
+  echo "qmcpack_setup"
+  #echo "Adding to LD_LIBRARY_PATH: $(spack location -i llvm@7.0.1)/lib"
+  #export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$(spack location -i llvm@7.0.1)/lib"
 }

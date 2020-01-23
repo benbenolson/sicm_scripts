@@ -111,12 +111,12 @@ sudo modprobe msr
 . $SPACK_DIR/share/spack/setup-env.sh
 cd $SICM_DIR
 spack load $SICM@develop%gcc@7.2.0
-spack load llvm@flang-20180921
+spack load llvm-flang@20180921
 
 # We need this for QMCPACK because otherwise it will link to an unpatched Flang, which will
 # cause subtle issues due to their inexplicably overriding lots of NUMA functions to do nothing.
 # It shouldn't adversely affect any other benchmarks.
-export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$(spack location -i flang-patched)/lib:$(spack location -i llvm@7.0.1)/lib"
+export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$(spack location -i flang-patched)/lib"
 
 for BENCH_INDEX in ${!BENCHES[*]}; do
   for CONFIG_INDEX in ${!CONFIGS[*]}; do

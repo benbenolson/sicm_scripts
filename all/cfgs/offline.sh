@@ -42,7 +42,7 @@ function offline_base {
   eval "${PRERUN}"
 
   # Generate the guidance file
-  HOTSET_ARGS="--capacity=${NUM_BYTES} --scale=${SCALE} --node=${SH_UPPER_NODE} --verbose"
+  HOTSET_ARGS="--capacity=${NUM_BYTES} --scale=${SCALE} --event=MEM_LOAD_UOPS_LLC_MISS_RETIRED:LOCAL_DRAM --event=MEM_LOAD_UOPS_RETIRED:LOCAL_PMM --node=${SH_UPPER_NODE} --verbose"
   if [[ ! -z ${CAPACITY_PROF_TYPE} ]]; then
     HOTSET_ARGS="${HOTSET_ARGS} --weight=${CAPACITY_PROF_TYPE}"
   fi

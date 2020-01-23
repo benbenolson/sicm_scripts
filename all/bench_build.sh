@@ -6,9 +6,9 @@
 function bench_build {
   # Use Spack to load SICM into the environment
   if [ "$1" = "fort" ]; then
-    export LD_LINKER="flang $2 -Wno-unused-command-line-argument -Wl,-rpath,$(spack location -i llvm@flang-20180921)/lib -Wl,-rpath,$(spack location -i flang-patched@20180921)/lib -Wl,-rpath,$(spack location -i pgmath)/lib -L$(spack location -i flang-patched@20180921)/lib -lflang -lflangrti"
+    export LD_LINKER="flang $2 -Wno-unused-command-line-argument -Wl,-rpath,$(spack location -i llvm-flang@20180921%gcc@7.2.0)/lib -Wl,-rpath,$(spack location -i flang-patched@20180921%gcc@7.2.0)/lib -Wl,-rpath,$(spack location -i pgmath@20180921%gcc@7.2.0)/lib -L$(spack location -i flang-patched@20180921%gcc@7.2.0)/lib -lflang -lflangrti"
   elif [ "$1" = "c" ]; then
-    export LD_LINKER="clang++ $2 -Wno-unused-command-line-argument -L$(spack location -i flang-patched@20180921)/lib -lflang -lflangrti -Wl,-rpath,$(spack location -i llvm@flang-20180921)/lib -Wl,-rpath,$(spack location -i flang-patched@20180921)/lib -Wl,-rpath,$(spack location -i pgmath)/lib"
+    export LD_LINKER="clang++ $2 -Wno-unused-command-line-argument -L$(spack location -i flang-patched@20180921%gcc@7.2.0)/lib -lflang -lflangrti -Wl,-rpath,$(spack location -i llvm-flang@20180921%gcc@7.2.0)/lib -Wl,-rpath,$(spack location -i flang-patched@20180921%gcc@7.2.0)/lib -Wl,-rpath,$(spack location -i pgmath@20180921%gcc@7.2.0)/lib"
   else
     echo "No linker specified. Aborting."
     exit
@@ -17,7 +17,7 @@ function bench_build {
   # Define the variables for the compiler wrappers
   export LD_COMPILER="clang++ -Wno-unused-command-line-argument -march=x86-64" # Compiles from .bc -> .o
   export CXX_COMPILER="clang++ $3  -Wno-unused-command-line-argument -march=x86-64"
-  export FORT_COMPILER="flang $3  -Mpreprocess -Wno-unused-command-line-argument -march=x86-64 -I$(spack location -i flang-patched@20180921)/include -L$(spack location -i flang-patched@20180921)/lib -lflang -lflangrti"
+  export FORT_COMPILER="flang $3  -Mpreprocess -Wno-unused-command-line-argument -march=x86-64 -I$(spack location -i flang-patched@20180921%gcc@7.2.0)/include -L$(spack location -i flang-patched@20180921%gcc@7.2.0)/lib -lflang -lflangrti"
   export C_COMPILER="clang  $3 -Wno-unused-command-line-argument -march=x86-64"
   export LLVMLINK="llvm-link"
   export LLVMOPT="opt"

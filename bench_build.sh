@@ -15,9 +15,10 @@ for BENCH in ${BENCHES[@]}; do
 
   echo "Compiling ${BENCH} with $SICM."
 
+  cd $SICM_DIR
   spack load pgmath%gcc@7.2.0
-  spack load flang-patched%gcc@7.2.0
-  spack load llvm@flang-20180921%gcc@7.2.0
+  spack load flang-patched@20180921%gcc@7.2.0
+  spack load llvm-flang@20180921%gcc@7.2.0
   spack load $SICM%gcc@7.2.0
 
   # Clean up the source directory first
