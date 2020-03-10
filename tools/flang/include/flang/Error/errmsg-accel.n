@@ -1,0 +1,48 @@
+.\"/*
+.\" * Copyright (c) 2015-2018, NVIDIA CORPORATION.  All rights reserved.
+.\" *
+.\" * Licensed under the Apache License, Version 2.0 (the "License");
+.\" * you may not use this file except in compliance with the License.
+.\" * You may obtain a copy of the License at
+.\" *
+.\" *     http://www.apache.org/licenses/LICENSE-2.0
+.\" *
+.\" * Unless required by applicable law or agreed to in writing, software
+.\" * distributed under the License is distributed on an "AS IS" BASIS,
+.\" * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+.\" * See the License for the specific language governing permissions and
+.\" * limitations under the License.
+.\" *
+.\" */
+.MS S 1000 "Call in OpenACC region to procedure '$' which has no acc routine information"
+.MS S 1001 "All selected compute capabilities were disabled (see -Minfo)"
+.MS S 1002 "Reduction type not supported for this variable datatype - $"
+.MS W 1003 "Lambda capture by reference not supported in Accellerated region"
+.MS W 1004 "Lambda capture 'this' by reference not supported in Accellerated region"
+.\" Skipping ahead to 1011 to keep the same numbers as the fortran front-end.
+.MS S 1011 "Device variable cannot be THREADPRIVATE - $"
+.MS S 1012 "Threadprivate variables are not supported in acc routine - $"
+.MS S 1013 "Static Threadprivate variables are not supported - $"
+.MS S 1014 "Global Threadprivate variables are not supported - $"
+.\" skipping to keep same numbers as Fortran front-end
+.MS S 1100 "Cannot collapse non-tightly-nested loops"
+.MS F 1015 "No shape directive is defined in structure $"
+.MS F 1016 "No shape name $ is defined in structure $"
+.MS F 1017 "arrays/pointers appearing in the OpenACC shape and policy directives must be a member of current aggregate type"
+.MS F 1018 "Only one unnamed Shape directive is allowed in one aggregate type (struct/union)"
+.MS F 1019 "Type clause must be used to specified structure type when Shape/Policy is defined outside (struct/union/class) definition"
+.MS F 1020 "Data-Type appearing in type clause cannot be found"
+.MS F 1021 "Data-Type appearing in type clause must be struct/union type"
+.MS F 1022 "Duplicated shape names $ are defined for structure/union/class $"
+.MS F 1023 "Duplicated policy names $ are defined for structure/union/class $"
+.MS F 1024 "Type clause is not allowed within structure/union/class definition"
+.MS F 1025 "The number of dimension section descriptions doesn't match member $ which requires $ dimensions"
+.MS F 1026 "Pointers appearing within relative clause must be their sibling members"
+.MS F 1027 "As motion clauses, only create, copyin, copyout, copy, update, and deviceptr are allowed in policy directive"
+.MS F 1028 "The variable $ doesn't have predefined policy $ available"
+.MS F 1029 "The variable $ using policy $ is not a structure-based type"
+.MS F 1030 "Policy motion $ is not allowed in $ directive"
+.MS F 1034 "Only signed/unsigned 32 bits and 64 bits integer variables are allowed in bound expression. $ is is not such variable"
+.MS F 1035 "Only integer sibling members and global variables are allowed in bound expression. $ is is neither of them."
+.MS F 1036 "No global variable named $ has been defined"
+.MS F 1037 "Default clause can only contain include and exclude keyword."
