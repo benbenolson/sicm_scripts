@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Example firsttouch
+#./run.sh --bench=lulesh --size=medium_aep --iters=1 \
 #  --config=firsttouch_exclusive_device --args=- \
 #  --config=firsttouch_shared_site --args=- \
 
@@ -22,5 +23,8 @@
 #./run.sh --bench=amg --size=medium_aep --iters=3 \
 #  --config=online_memreserve_extent_size_orig_debug --args=share,16,1000,1,1,20,0.075,0
 
-./run.sh --bench=access-count --size=small_aep --iters=1 \
-  --config=profile_cache_miss_and_extent_size_intervals --args=16,10,1
+#./run.sh --bench=access-count --size=small_aep --iters=1 \
+#  --config=profile_cache_miss_and_extent_size_intervals --args=16,10,1
+
+./run.sh --bench=lulesh --size=small_aep --iters=1 \
+  --config=firsttouch_exclusive_device --args=- \

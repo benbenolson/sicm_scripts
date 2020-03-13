@@ -14,16 +14,17 @@ export HOMME_ROOT="${PWD}"
 
 cd ${HOMME_ROOT}
 
-# We're going to start by compiling the deps
+# Compile NetCDF
 dep_build
-cd $HOMME_ROOT/libs/netcdf-fortran-4.5.2
-./configure --prefix=$HOMME_ROOT/libs
-make -j 1
-make install
-
 cd $HOMME_ROOT/libs/netcdf-c-4.7.3
 ./configure --prefix=$HOMME_ROOT/libs
 make -j $(nproc)
+make install
+
+# Compile NetCDF-Fortran
+cd $HOMME_ROOT/libs/netcdf-fortran-4.5.2
+./configure --prefix=$HOMME_ROOT/libs
+make -j 1
 make install
 
 # Make sure the CAM-SE compilation can find these libraries

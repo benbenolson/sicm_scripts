@@ -90,7 +90,7 @@ if [[ ! -z "${BASECONFIG}" ]]; then
   FULL_BASECONFIG="${BASECONFIG}:${BASECONFIG_ARGS_UNDERSCORES}"
 fi
 
-export SICM_ENV="env LD_PRELOAD='${SICM_PREFIX}/lib/libsicm_overrides.so'"
+export SICM_ENV="env LD_LIBRARY_PATH="${SICM_PREFIX}/lib:${LD_LIBRARY_PATH}" LD_PRELOAD='${SICM_PREFIX}/lib/libsicm_overrides.so'"
 BENCH_COMMANDS=()
 for BENCH in ${BENCHES[@]}; do
   BENCH_COMMAND=""
