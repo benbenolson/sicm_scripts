@@ -1,10 +1,34 @@
 #!/bin/bash
 
+function dep_build {
+  echo "UNPATCHED_PREFIX: ${UNPATCHED_PREFIX}"
+  # The idea here is to default to using the unpatched binaries/libraries,
+  # but fall back to the patched ones.
+  export PATH="${UNPATCHED_PREFIX}/bin:${SICM_PREFIX}/bin:${PATH}"
+  export LD_LIBRARY_PATH="${UNPATCHED_PREFIX}/lib:${SICM_PREFIX}/lib:${LD_LIBRARY_PATH}"
+  export LIBRARY_PATH="${UNPATCHED_PREFIX}/lib:${SICM_PREFIX}/lib:${LIBRARY_PATH}"
+  export CPATH="${UNPATCHED_PREFIX}/include:${SICM_PREFIX}/include:${CPATH}"
+  export CMAKE_PREFIX_PATH="${UNPATCHED_PREFIX}/:${SICM_PREFIX}/:${CMAKE_PREFIX_PATH}"
+  export FC="${SICM_PREFIX}/bin/flang -L${UNPATCHED_PREFIX}/lib/"
+  export F77="${SICM_PREFIX}/bin/flang -L${UNPATCHED_PREFIX}/lib/"
+  export F90="${SICM_PREFIX}/bin/flang -L${UNPATCHED_PREFIX}/lib/"
+  export CC="${SICM_PREFIX}/bin/clang -L${UNPATCHED_PREFIX}/lib/"
+  export CXX="${SICM_PREFIX}/bin/clang++ -L${UNPATCHED_PREFIX}/lib/"
+}
+
 # First argument is "fort" or "c", which linker we should use
 # Second argument is a list of linker flags to add, which are just appended
 # Third argument is a list of compiler flags to add, which are just appended
 function bench_build {
-  # Use Spack to load SICM into the environment
+  export PATH="${SICM_PREFIX}/bin:${PATH}"
+  export LD_LIBRARY_PATH="${SICM_PREFIX}/lib:${LD_LIBRARY_PATH}"
+  export LIBRARY_PATH="${SICM_PREFIX}/lib:${LIBRARY_PATH}"
+  export CPATH="${SICM_PREFIX}/include:${CPATH}"
+  export CMAKE_PREFIX_PATH="${SICM_PREFIX}/:${CMAKE_PREFIX_PATH}"
+  export FC="${SICM_PREFIX}/bin/flang"
+  export F77="${SICM_PREFIX}/bin/flang"
+  export F90="${SICM_PREFIX}/bin/flang"
+  
   if [ "$1" = "fort" ]; then
     export LD_LINKER="flang $2 -Wno-unused-command-line-argument -Wl,-rpath,${SICM_PREFIX}/lib -L${SICM_PREFIX}/lib -lflang -lflangrti -g"
   elif [ "$1" = "c" ]; then
