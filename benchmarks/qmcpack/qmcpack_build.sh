@@ -1,6 +1,8 @@
 #!/bin/bash
 # On a Fedora 30 distro, I had to install the following packages:
 # lapack, lapack-devel, fftw, fftw-devel, hdf5, hdf5-devel, boost, boost-devel
+# On a Debian 10.0 distro, I had to install:
+# libxml2-dev, libxml2, libboost-dev, libxml2, libhdf5-103, libhdf5-dev, libfftw3-dev, liblapack-dev, libblas-dev
 
 source $SCRIPTS_DIR/all/bench_build.sh
 bench_build c "" ""
