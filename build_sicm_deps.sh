@@ -51,7 +51,7 @@ export PATH="${INSTALL_PREFIX}:${PATH}"
 cd libpfm4
 make -j$(nproc)
 cp -r include/* ${INSTALL_PREFIX}/include/
-cp -r lib/*.so ${INSTALL_PREFIX}/lib/
+cp -r lib/libpfm* ${INSTALL_PREFIX}/lib/
 cd ..
 
 # Build Flang-patched LLVM
