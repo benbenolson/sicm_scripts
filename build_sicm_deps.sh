@@ -32,6 +32,9 @@ if [ ! -d "sicm" ]; then
   git clone https://github.com/lanl/SICM.git sicm
   (cd sicm && git checkout high_dev)
 fi
+if [ ! -d "libpfm4" ]; then
+  git clone https://git.code.sf.net/p/perfmon2/libpfm4 libpfm4
+fi
 
 # Common CMake arguments for the Flang toolchain
 INSTALL_PREFIX=${SICM_DEPS_DIR}
@@ -43,6 +46,13 @@ CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX \
   -DCMAKE_Fortran_COMPILER=$INSTALL_PREFIX/bin/flang \
   -DLLVM_TARGETS_TO_BUILD=X86"
 export PATH="${INSTALL_PREFIX}:${PATH}"
+
+# Start with an easy one: libpfm4
+cd libpfm4
+make -j$(nproc)
+cp -r include/* ${INSTALL_PREFIX}/include/
+cp -r lib/*.so ${INSTALL_PREFIX}/lib/
+cd ..
 
 # Build Flang-patched LLVM
 cd llvm

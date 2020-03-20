@@ -10,11 +10,16 @@ function profile_cache_miss_and_cap {
   export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
   export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
+  
+  # Profile *all* L3 misses
+  export SH_PROFILE_ONE="1"
+  export SH_PROFILE_ONE_IMC="skx_unc_imc0,skx_unc_imc1,skx_unc_imc2,skx_unc_imc3,skx_unc_imc4,skx_unc_imc5"
+  export SH_PROFILE_ONE_EVENTS="UNC_M_CAS_COUNT:RD"
 
-  # Enable profiling
+  # Use PEBS to sample L3 misses
   export SH_PROFILE_ALL="1"
   export SH_PROFILE_RATE_NSECONDS=$(echo "$RATE * 1000000" | bc)
-  export SH_PROFILE_ALL_EVENTS="MEM_LOAD_UOPS_RETIRED:L1_HIT,MEM_LOAD_UOPS_RETIRED:L2_HIT,MEM_LOAD_UOPS_RETIRED:L3_HIT,MEM_LOAD_UOPS_RETIRED:L3_MISS"
+  export SH_PROFILE_ALL_EVENTS="MEM_LOAD_UOPS_RETIRED:L3_MISS"
   export SH_MAX_SAMPLE_PAGES="512"
   export SH_SAMPLE_FREQ="${FREQ}"
 

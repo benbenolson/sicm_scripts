@@ -9,9 +9,11 @@ cd ${SICM_PREFIX}/src/
 cd sicm
 rm -rf build && mkdir -p build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=${SICM_PREFIX} \
-  -DSICM_BUILD_HIGH_LEVEL=True \
+  -DCMAKE_INSTALL_RPATH="${SICM_PREFIX}/lib" \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DSICM_BUILD_HIGH_LEVEL=True \
   -DJEMALLOC_ROOT="${SICM_PREFIX}" \
+  -DLIBPFM_INSTALL="${SICM_PREFIX}" \
   ..
 make -j$(nproc)
 make install

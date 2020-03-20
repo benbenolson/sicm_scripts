@@ -39,10 +39,10 @@ function bench_build {
   fi
 
   # Define the variables for the compiler wrappers
-  export LD_COMPILER="clang++ -Wno-unused-command-line-argument -march=x86-64 -g" # Compiles from .bc -> .o
-  export CXX_COMPILER="clang++ $3  -Wno-unused-command-line-argument -march=x86-64 -g"
+  export LD_COMPILER="clang++ -Wno-unused-command-line-argument -march=x86-64 -g -L${SICM_PREFIX}/lib" # Compiles from .bc -> .o
+  export CXX_COMPILER="clang++ $3  -Wno-unused-command-line-argument -march=x86-64 -g -I${SICM_PREFIX}/include"
   export FORT_COMPILER="flang $3  -Mpreprocess -Wno-unused-command-line-argument -march=x86-64 -I${SICM_PREFIX}/include -L${SICM_PREFIX}/lib -lflang -lflangrti -g"
-  export C_COMPILER="clang  $3 -Wno-unused-command-line-argument -march=x86-64 -g"
+  export C_COMPILER="clang  $3 -Wno-unused-command-line-argument -march=x86-64 -g -I${SICM_PREFIX}/include"
   export LLVMLINK="llvm-link"
   export LLVMOPT="opt"
 

@@ -8,7 +8,6 @@ function online_base {
   CANARY_LAYOUT="$1"
   FREQ="$2"
   RATE="$3"
-  ONLINE_SKIP_INTERVALS="$4"
 
   # First, get ready to do memreserve if applicable
   if [ "${DO_MEMRESERVE}" = true ]; then
@@ -42,20 +41,21 @@ function online_base {
   export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
   export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
-  export SH_PROFILE_RATE_NSECONDS=$(echo "${RATE} * 1000000" | bc)
 
   # Value profiling
   export SH_PROFILE_ALL="1"
   export SH_MAX_SAMPLE_PAGES="512"
   export SH_SAMPLE_FREQ="${FREQ}"
-
-  export SH_PROFILE_ONLINE_EVENTS="MEM_LOAD_UOPS_LLC_MISS_RETIRED:LOCAL_DRAM,MEM_LOAD_UOPS_RETIRED:LOCAL_PMM"
+  export SH_PROFILE_RATE_NSECONDS=$(echo "${RATE} * 1000000" | bc)
   export SH_PROFILE_ALL_EVENTS="MEM_LOAD_UOPS_LLC_MISS_RETIRED:LOCAL_DRAM,MEM_LOAD_UOPS_RETIRED:LOCAL_PMM"
+  
+  # Size profiling
+  export SH_PROFILE_EXTENT_SIZE="1"
 
   # Turn on online
   export SH_PROFILE_ONLINE="1"
-  export SH_PROFILE_ONLINE_SKIP_INTERVALS="$ONLINE_SKIP_INTERVALS"
   export SH_PROFILE_ONLINE_WEIGHTS="1,5"
+  export SH_PROFILE_ONLINE_EVENTS="MEM_LOAD_UOPS_LLC_MISS_RETIRED:LOCAL_DRAM,MEM_LOAD_UOPS_RETIRED:LOCAL_PMM"
 
   export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
 
@@ -84,81 +84,35 @@ function online_base {
   done
 }
 
-function online_extent_size {
-  CAP_SKIP_INTERVALS="$5"
-  export SH_PROFILE_EXTENT_SIZE="1"
-  export SH_PROFILE_EXTENT_SIZE_SKIP_INTERVALS="$CAP_SKIP_INTERVALS"
-
-  online_base $@
-}
-
-function online_allocs {
-  CAP_SKIP_INTERVALS="$5"
-  export SH_PROFILE_ALLOCS="1"
-  export SH_PROFILE_ALLOCS_SKIP_INTERVALS="$CAP_SKIP_INTERVALS"
-
-  online_base $@
-}
-
-function online_rss {
-  CAP_SKIP_INTERVALS="$5"
-  export SH_PROFILE_RSS="1"
-  export SH_PROFILE_RSS_SKIP_INTERVALS="$CAP_SKIP_INTERVALS"
-
-  online_base $@
-}
-
-function online_memreserve_extent_size {
+function online_memreserve {
   DO_MEMRESERVE=true
-  MEMRESERVE_RATIO="$6"
+  MEMRESERVE_RATIO="$4"
 
-  online_extent_size $@
+  online_base $@
 }
 
-function online_memreserve_extent_size_orig {
-  DO_MEMRESERVE=true
-  MEMRESERVE_RATIO="$6"
+function online_memreserve_orig {
   export SH_PROFILE_ONLINE_STRAT_ORIG="1"
-  export SH_PROFILE_ONLINE_RECONF_WEIGHT_RATIO="$7"
-  export SH_PROFILE_ONLINE_HOT_INTERVALS="$8"
+  export SH_PROFILE_ONLINE_RECONF_WEIGHT_RATIO="$5"
+  export SH_PROFILE_ONLINE_HOT_INTERVALS="$6"
 
-  online_extent_size $@
+  online_memreserve $@
 }
 
-function online_memreserve_extent_size_orig_debug {
+function online_memreserve_orig_debug {
   DO_DEBUG=true
 
-  online_memreserve_extent_size_orig $@
+  online_memreserve_orig $@
 }
 
-function online_memreserve_extent_size_nobind {
-  DO_MEMRESERVE=true
-  MEMRESERVE_RATIO="$6"
+function online_memreserve_ski {
+  export SH_PROFILE_ONLINE_STRAT_SKI="1"
 
-  export SH_PROFILE_ONLINE_NOBIND="1"
-
-  online_extent_size $@
+  online_memreserve $@
 }
 
-function online_memreserve_extent_size_gp1000 {
-  DO_MEMRESERVE=true
-  MEMRESERVE_RATIO="$6"
+function online_memreserve_ski_debug {
+  DO_DEBUG=true
 
-  export SH_PROFILE_ONLINE_GRACE_ACCESSES="1000"
-
-  online_extent_size $@
-}
-
-function online_memreserve_allocs {
-  DO_MEMRESERVE=true
-  MEMRESERVE_RATIO="$6"
-
-  online_allocs $@
-}
-
-function online_memreserve_rss {
-  DO_MEMRESERVE=true
-  MEMRESERVE_RATIO="$6"
-
-  online_rss $@
+  online_memreserve_ski $@
 }
