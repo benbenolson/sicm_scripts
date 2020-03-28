@@ -20,8 +20,7 @@ make install
 cd ..
 
 # Compile the "scripts"
-#INCLUDE="-I$(spack location -i $SICM%gcc@7.2.0)/include"
-#spack load $SICM%gcc@7.2.0
-#cd $SCRIPTS_DIR/all
-#gcc -g -lm c/stat.c ${INCLUDE} -o stat
-#gcc -g c/memreserve.c ${INCLUDE} -lnuma -lpthread -o memreserve
+cd ${SCRIPTS_DIR}/all
+INCLUDE="-I${SICM_PREFIX}/include"
+gcc -g -lm c/stat.c ${INCLUDE} -o stat
+gcc -g c/memreserve.c -lnuma -lpthread ${INCLUDE} -o memreserve

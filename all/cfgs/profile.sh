@@ -57,3 +57,10 @@ function profile_all_and_rss {
   export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
   profile_all_and_cap $@
 }
+
+function profile_rss_intervals {
+  export SH_PROFILE_RSS="1"
+  export SH_PROFILE_INTERVALS="1"
+  export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
+  profile_all_and_cap $@
+}

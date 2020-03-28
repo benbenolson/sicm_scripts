@@ -8,6 +8,6 @@ export PREPROCESS_WRAPPER="${BENCH_DIR}/cpu2017/bin/specperl -I ${BENCH_DIR}/cpu
 # Compile roms
 cd $BENCH_DIR/roms/src
 make clean
-make -j $(nproc --all)
+make -j $(nproc)
 mkdir -p $BENCH_DIR/roms/run
 cp sroms roms.exe

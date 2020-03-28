@@ -26,5 +26,16 @@
 #./run.sh --bench=access-count --size=small_aep --iters=1 \
 #  --config=profile_cache_miss_and_extent_size_intervals --args=16,10,1
 
-./run.sh --bench=lulesh --size=small_aep --iters=1 \
-  --config=firsttouch_exclusive_device --args=- \
+./run.sh --bench=lulesh --size=medium_aep --iters=5 \
+  --config=online_memreserve_ski_debug --args=share,128,10,20
+
+#./run.sh --bench=lulesh --size=medium_aep --iters=1 \
+#  --config=profile_all_and_extent_size_intervals --args=16,10,1 \
+  
+#./run.sh --bench=lulesh --size=medium_aep --iters=1 \
+#  --config=offline_memreserve_extent_size --args=hotset,20 \
+#  --profile="${HOME}/results/lulesh/medium_aep/profile_all_and_extent_size_intervals:16_10_1/i0"
+
+#./run.sh --bench=lulesh --size=medium_aep --iters=1 \
+#  --config=offline_memreserve_extent_size --args=hotset,20 \
+#  --profile="${HOME}/results/lulesh/medium_aep/online_memreserve_ski_debug:share_128_10_20/i0/"

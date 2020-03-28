@@ -1,5 +1,6 @@
 #!/bin/bash
 # By default, averages across iterations.
+source ./all/vars.sh
 source $SCRIPTS_DIR/all/args.sh
 
 function get_avg_val {

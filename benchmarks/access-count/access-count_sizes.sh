@@ -1,6 +1,7 @@
 #!/bin/bash
 
-export SMALL_AEP="${SICM_ENV} ./access_count 131072 1024 16 1"
+# One MB each node, two gigabytes, each stride is 64 bytes
+export SMALL_AEP="${SICM_ENV} ./access_count 2048 1048576 16384 1"
 
 function acess-count_prerun {
   if [[ $SH_ARENA_LAYOUT = "SHARED_SITE_ARENAS" ]]; then

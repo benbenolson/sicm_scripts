@@ -203,7 +203,7 @@ int main(int argc, char **argv)
   /* Locals */
   long long freemem;
   size_t num_pages_to_allocate, num_reserved_pages, num_free_pages;
-  char *data;
+  char *data, *freemem_ptr;
   int pagesize;
   struct bitmask *bitmask;
   long ret;
@@ -247,15 +247,19 @@ int main(int argc, char **argv)
   parallel_memset(data, num_pages_to_allocate);
   numa_node_size64(arg_node, &freemem);
   num_free_pages = freemem / pagesize;
-
+  
   printf("===== BEGIN MEMRESERVE =====\n");
   printf("Requested pages: %zu\n", arg_num_pages);
   printf("Reserved pages: %zu\n", num_reserved_pages);
   printf("Final free pages: %zu\n", num_free_pages);
   printf("Estimated allocatable pages: %zu\n", num_free_pages - num_reserved_pages);
   printf("===== END MEMRESERVE =====\n");
-
   fflush(stdout);
+  
+  /* Wait until told to stop */
   pause();
+  
+  free(data);
+  numa_bitmask_free(bitmask);
   return 0;
 }

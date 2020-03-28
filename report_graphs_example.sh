@@ -1,4 +1,5 @@
 #!/bin/bash
+source ./all/vars.sh
 
 bench="lulesh"
 #for bench in lulesh amg snap qmcpack cam-se; do
@@ -16,9 +17,18 @@ bench="lulesh"
 #done
 
 # Proposal
-bench="lulesh"
-./all/stat --eps --graph_title='' --metric=graph_heatmap_proposal --filename=graphs/${bench}/${bench}_medium_heatmap_proposal.eps ~/results/${bench}/medium_aep/profile_all_and_extent_size_intervals\:16_1000_1/i0/
-./all/stat --graph_title='' --metric=graph_heatmap_proposal --filename=graphs/${bench}/${bench}_medium_heatmap_proposal.png ~/results/${bench}/medium_aep/profile_all_and_extent_size_intervals\:16_1000_1/i0/
-bench="amg"
-./all/stat --eps --graph_title='' --metric=graph_heatmap_proposal --filename=graphs/${bench}/${bench}_medium_heatmap_proposal.eps ~/results/${bench}/medium_aep/profile_all_and_extent_size_intervals\:16_1000_1/i0/
-./all/stat --graph_title='' --metric=graph_heatmap_proposal --filename=graphs/${bench}/${bench}_medium_heatmap_proposal.png ~/results/${bench}/medium_aep/profile_all_and_extent_size_intervals\:16_1000_1/i0/
+#bench="lulesh"
+#./all/stat --eps --graph_title='' --metric=graph_heatmap_proposal --filename=graphs/${bench}/${bench}_medium_heatmap_proposal.eps ~/results/${bench}/medium_aep/profile_all_and_extent_size_intervals\:16_1000_1/i0/
+#./all/stat --graph_title='' --metric=graph_heatmap_proposal --filename=graphs/${bench}/${bench}_medium_heatmap_proposal.png ~/results/${bench}/medium_aep/profile_all_and_extent_size_intervals\:16_1000_1/i0/
+#bench="amg"
+#./all/stat --eps --graph_title='' --metric=graph_heatmap_proposal --filename=graphs/${bench}/${bench}_medium_heatmap_proposal.eps ~/results/${bench}/medium_aep/profile_all_and_extent_size_intervals\:16_1000_1/i0/
+#./all/stat --graph_title='' --metric=graph_heatmap_proposal --filename=graphs/${bench}/${bench}_medium_heatmap_proposal.png ~/results/${bench}/medium_aep/profile_all_and_extent_size_intervals\:16_1000_1/i0/
+
+#./all/stat --eps --graph_title='' --metric=graph_heatmap_top100 --filename=graphs/${bench}/${bench}_medium_heatmap_top100_ski20.eps ~/results/${bench}/medium_aep/online_memreserve_ski_debug\:share_16_1000_20/i0/
+#./all/stat --graph_title='' --metric=graph_heatmap_top100 --filename=graphs/${bench}/${bench}_medium_heatmap_top100_ski20.png ~/results/${bench}/medium_aep/online_memreserve_ski_debug\:share_16_1000_20/i0/
+
+./all/stat --graph_title='' --metric=graph_hotset_diff_top100 --filename=graphs/${bench}/${bench}_medium_hotset_diff_10_top100_ski20_i0.png ~/results/${bench}/medium_aep/online_memreserve_ski_debug\:share_128_10_20/i0/
+#./all/stat --graph_title='' --metric=graph_hotset_diff_top100 --filename=graphs/${bench}/${bench}_medium_hotset_diff_1000_top100_ski20_i1.png ~/results/${bench}/medium_aep/online_memreserve_ski_debug\:share_16_1000_20/i1/
+#./all/stat --graph_title='' --metric=graph_hotset_diff_top100 --filename=graphs/${bench}/${bench}_medium_hotset_diff_1000_top100_ski20_i2.png ~/results/${bench}/medium_aep/online_memreserve_ski_debug\:share_16_1000_20/i2/
+#./all/stat --graph_title='' --metric=graph_hotset_diff_top100 --filename=graphs/${bench}/${bench}_medium_hotset_diff_1000_top100_ski20_i3.png ~/results/${bench}/medium_aep/online_memreserve_ski_debug\:share_16_1000_20/i3/
+#./all/stat --graph_title='' --metric=graph_hotset_diff_top100 --filename=graphs/${bench}/${bench}_medium_hotset_diff_1000_top100_ski20_i4.png ~/results/${bench}/medium_aep/online_memreserve_ski_debug\:share_16_1000_20/i4/

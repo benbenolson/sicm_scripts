@@ -2,6 +2,8 @@
 
 source ./all/vars.sh
 
+export PATH="${SICM_PREFIX}/bin:${PATH}"
+
 # Set all per-platform options, based on the hostname
 if [[ "$(hostname)" = "JF1121-080209T" ]]; then
   # Old CLX machine
