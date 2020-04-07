@@ -10,9 +10,6 @@
 
 #define DEFAULT_HEATMAP_TITLE "Relative Allocation Site Per-Interval Accesses"
 #define DEFAULT_HOTSET_DIFF_TITLE "Offline and Online Hotset Differences"
-#define SORT_WEIGHT_STRING "weight"
-#define CURRENT_VALUE_STRING "profile_all_current"
-#define TOTAL_VALUE_STRING "profile_all"
 
 char *sicm_metrics_list[] = {
   "graph_hotset_diff_weighted",
@@ -47,8 +44,8 @@ void graph_hotset_diff(FILE *input_file, char *metric, char top100) {
        *line, *args;
 
   /* First, use the parsing and packing libraries to gather the info */
-  hotset_diff_table_name = generate_hotset_diff_table(input_file, top100, NULL);
-  weight_ratio_table_name = generate_weight_ratio_table(input_file, top100, NULL);
+  hotset_diff_table_name = generate_hotset_diff_table(input_file, top100, 0);
+  weight_ratio_table_name = generate_weight_ratio_table(input_file, top100, 0);
 
   /* Call the graphing script wrapper */
   if(!graph_title) {
@@ -76,14 +73,14 @@ void graph_hotset_diff(FILE *input_file, char *metric, char top100) {
   }
 }
 
-void graph_heatmap(FILE *input_file, char *metric, char top100, char *sort_string) {
+void graph_heatmap(FILE *input_file, char *metric, char top100, int sort_arg) {
   char *heatmap_name, *weight_ratio_table_name,
        *args;
   application_profile *prof;
 
   /* Now use the profiling info to generate the input tables */
-  heatmap_name = generate_heatmap_table(input_file, top100, sort_string);
-  weight_ratio_table_name = generate_weight_ratio_table(input_file, top100, sort_string);
+  heatmap_name = generate_heatmap_table(input_file, top100, sort_arg);
+  weight_ratio_table_name = generate_weight_ratio_table(input_file, top100, sort_arg);
 
   /* Call the graphing script wrapper */
   if(!graph_title) {
@@ -120,15 +117,15 @@ void parse_sicm(FILE *file, char *metric, sicm_metrics *info, int site) {
   ssize_t read;
 
   if(strcmp(metric, "graph_heatmap_weighted") == 0) {
-    graph_heatmap(file, metric, 0, NULL);
+    graph_heatmap(file, metric, 0, 0);
   } else if(strcmp(metric, "graph_hotset_diff_weighted") == 0) {
     graph_hotset_diff(file, metric, 0);
   } else if(strcmp(metric, "graph_heatmap_top100") == 0) {
-    graph_heatmap(file, metric, 1, NULL);
+    graph_heatmap(file, metric, 1, 0);
   } else if(strcmp(metric, "graph_hotset_diff_top100") == 0) {
     graph_hotset_diff(file, metric, 1);
   } else if(strcmp(metric, "graph_heatmap_proposal") == 0) {
-    graph_heatmap(file, metric, 1, SORT_WEIGHT_STRING);
+    graph_heatmap(file, metric, 1, WEIGHT);
   } else {
     /* The metric requires parsing a file in-house */
     line = NULL;

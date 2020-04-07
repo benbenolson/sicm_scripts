@@ -4,7 +4,7 @@ DO_MEMRESERVE=false
 CAPACITY_PROF_TYPE=""
 
 function offline_base {
-  PACK_ALGO="$1"
+  PACKING_ALGO="$1"
 
   CANARY_CFG="firsttouch_exclusive_device:"
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
@@ -42,11 +42,12 @@ function offline_base {
   eval "${PRERUN}"
 
   # Generate the guidance file
-  HOTSET_ARGS="--capacity=${NUM_BYTES} --scale=${SCALE} --event=MEM_LOAD_UOPS_LLC_MISS_RETIRED:LOCAL_DRAM --event=MEM_LOAD_UOPS_RETIRED:LOCAL_PMM --node=${SH_UPPER_NODE} --verbose"
+  HOTSET_ARGS="--capacity=${NUM_BYTES} --scale=${SCALE} --node=${SH_UPPER_NODE} --verbose"
   if [[ ! -z ${CAPACITY_PROF_TYPE} ]]; then
     HOTSET_ARGS="${HOTSET_ARGS} --weight=${CAPACITY_PROF_TYPE}"
   fi
   HOTSET_ARGS="${HOTSET_ARGS} --multiplier=1 --multiplier=5"
+  HOTSET_ARGS="${HOTSET_ARGS} --algo=${PACKING_ALGO}"
   cat "${PEBS_FILE}" | \
     sicm_hotset ${HOTSET_ARGS} \
     > ${BASEDIR}/guidance.txt
@@ -109,6 +110,11 @@ function offline_memreserve_extent_size_onlineprofiling {
 }
 
 function offline_memreserve_rss {
+  CAPACITY_PROF_TYPE="profile_rss"
+  offline_memreserve $@
+}
+
+function offline_memreserve_rss_onlineprofiling {
   CAPACITY_PROF_TYPE="profile_rss"
   offline_memreserve $@
 }

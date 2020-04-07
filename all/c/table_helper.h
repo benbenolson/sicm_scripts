@@ -8,14 +8,10 @@
 #include <sicm_parsing.h>
 #include <sicm_packing.h>
 
-#define SORT_WEIGHT_STRING "weight"
-#define CURRENT_VALUE_STRING "profile_all_current"
-#define TOTAL_VALUE_STRING "profile_all"
-
 /* Functions that generate tables for the graphs */
-char *generate_hotset_diff_table(FILE *input_file, char top100, char *sort_string);
-char *generate_weight_ratio_table(FILE *input_file, char top100, char *sort_string);
-char *generate_heatmap_table(FILE *input_file, char top100, char *sort_string);
+char *generate_hotset_diff_table(FILE *input_file, char top100, int sort_arg);
+char *generate_weight_ratio_table(FILE *input_file, char top100, int sort_arg);
+char *generate_heatmap_table(FILE *input_file, char top100, int sort_arg);
 
 static application_profile *app_prof = NULL;
 
@@ -39,32 +35,15 @@ void open_tmp_file(char **filename, FILE **fp) {
 }
 
 
-void packing_init_wrapper(FILE *input_file, char *value_arg, char *sort_arg) {
+void packing_init_wrapper(FILE *input_file, int value_arg, int weight_arg, int sort_arg) {
   /* Arguments to the packing library */
-  char *value, *weight, *algo, *sort, **events;
-  size_t num_events;
-  float *multipliers;
+  packing_options *opts;
+  
+  opts = orig_calloc(sizeof(char), sizeof(packing_options));
 
-  /* Arguments to sh_packing_init */
-  value          = NULL;
-  weight         = NULL;
-  algo           = NULL;
-  sort           = NULL;
-  events         = NULL;
-  num_events     = 0;
-  multipliers    = orig_malloc(sizeof(float) * 2);
-  multipliers[0] = 1.0;
-  multipliers[1] = 5.0;
-
-  /* If the user provided on of these copy */
-  if(value_arg) {
-    value = orig_malloc(sizeof(char) * (strlen(value_arg) + 1));
-    strcpy(value, value_arg);
-  }
-  if(sort_arg) {
-    sort = orig_malloc(sizeof(char) * (strlen(sort_arg) + 1));
-    strcpy(sort, sort_arg);
-  }
+  opts->value = value_arg;
+  opts->weight = weight_arg;
+  opts->sort = sort_arg;
 
   if(!app_prof) {
     /* Only parse the file again if it's not already set. Beware that this means that
@@ -74,7 +53,7 @@ void packing_init_wrapper(FILE *input_file, char *value_arg, char *sort_arg) {
   }
 
   /* Initialize the packing library */
-  sh_packing_init(app_prof, &value, &events, &num_events, &weight, &algo, &sort, multipliers, 0);
+  sh_packing_init(app_prof, &opts);
 }
 
 size_t get_total_site_weight(tree(site_info_ptr, int) site_tree) {
@@ -91,7 +70,7 @@ size_t get_total_site_weight(tree(site_info_ptr, int) site_tree) {
 
 /* If `top100` is set, we'll only generate a table of the top 100 sites (by value/weight). Everything
    else will be the same. */
-char *generate_hotset_diff_table(FILE *input_file, char top100, char *sort_string) {
+char *generate_hotset_diff_table(FILE *input_file, char top100, int sort_arg) {
   /* Trees, keyed by their site_info. Sorted by weight. */
   tree(site_info_ptr, int) online_sites,
                            offline_sites;
@@ -114,7 +93,7 @@ char *generate_hotset_diff_table(FILE *input_file, char top100, char *sort_strin
   open_tmp_file(&hotset_diff_table_name, &hotset_diff_table_f);
 
   /* This site_tree will be sorted by value/weight, because we need that to generate the hotset. */
-  packing_init_wrapper(input_file, TOTAL_VALUE_STRING, NULL);
+  packing_init_wrapper(input_file, PROFILE_ALL_TOTAL, 0, 0);
   offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1);
   offline_hotset = sh_get_hot_sites(offline_sites, app_prof->upper_capacity);
   if(top100) {
@@ -122,7 +101,7 @@ char *generate_hotset_diff_table(FILE *input_file, char top100, char *sort_strin
   }
 
   /* Now get the same sites, but sorted by weight. */
-  packing_init_wrapper(input_file, TOTAL_VALUE_STRING, sort_string);
+  packing_init_wrapper(input_file, PROFILE_ALL_TOTAL, 0, sort_arg);
   offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1);
 
   /* Print the header of site IDs */
@@ -208,7 +187,7 @@ char *generate_hotset_diff_table(FILE *input_file, char top100, char *sort_strin
 
 /* Uses the given application_profile to generate a list of weight ratios
    for each site. Returns the filename, which the caller should free. */
-char *generate_weight_ratio_table(FILE *input_file, char top100, char *sort_string) {
+char *generate_weight_ratio_table(FILE *input_file, char top100, int sort_arg) {
   size_t total_site_size;
   char *weight_ratio_table_name;
   FILE *weight_ratio_table_f;
@@ -221,13 +200,13 @@ char *generate_weight_ratio_table(FILE *input_file, char top100, char *sort_stri
   if(top100) {
     /* We first need to get the sites sorted by value/weight, then
        get the top 100 */
-    packing_init_wrapper(input_file, TOTAL_VALUE_STRING, NULL);
+    packing_init_wrapper(input_file, PROFILE_ALL_TOTAL, 0, 0);
     offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1);
     top100_sites = sh_get_top_sites(offline_sites, 100);
   }
 
   /* The resulting tree will be sorted by the weight of the site */
-  packing_init_wrapper(input_file, TOTAL_VALUE_STRING, sort_string);
+  packing_init_wrapper(input_file, PROFILE_ALL_TOTAL, 0, sort_arg);
   offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1);
 
   /* Calculate the total weight first. */
@@ -261,7 +240,7 @@ char *generate_weight_ratio_table(FILE *input_file, char top100, char *sort_stri
 
 /* Uses the given application_profile to generate a heatmap file.
    Returns the filename, which the caller should free. */
-char *generate_heatmap_table(FILE *input_file, char top100, char *sort_string) {
+char *generate_heatmap_table(FILE *input_file, char top100, int sort_arg) {
   char *heatmap_name;
   FILE *heatmap_f;
   size_t total_site_size, i, n;
@@ -276,13 +255,13 @@ char *generate_heatmap_table(FILE *input_file, char top100, char *sort_string) {
   open_tmp_file(&heatmap_name, &heatmap_f);
 
   if(top100) {
-    packing_init_wrapper(input_file, CURRENT_VALUE_STRING, NULL);
+    packing_init_wrapper(input_file, PROFILE_ALL_CURRENT, 0, 0);
     last_interval_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1);
     top100_sites = sh_get_top_sites(last_interval_sites, 100);
   }
 
   /* Sort sites by weight */
-  packing_init_wrapper(input_file, CURRENT_VALUE_STRING, sort_string);
+  packing_init_wrapper(input_file, PROFILE_ALL_CURRENT, 0, sort_arg);
   last_interval_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1);
 
   /* Print out the header to the table. This is just site IDs. We're iterating over

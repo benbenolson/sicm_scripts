@@ -32,13 +32,6 @@ function profile_all_and_cap {
   done
 }
 
-function profile_all_and_allocs {
-  export SH_PROFILE_ALLOCS="1"
-  export SH_PROFILE_ALLOCS_SKIP_INTERVALS="$3"
-  export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 3`
-  profile_all_and_cap $@
-}
-
 function profile_all_and_extent_size {
   export SH_PROFILE_EXTENT_SIZE="1"
   export SH_PROFILE_EXTENT_SIZE_SKIP_INTERVALS="$3"
@@ -58,9 +51,7 @@ function profile_all_and_rss {
   profile_all_and_cap $@
 }
 
-function profile_rss_intervals {
-  export SH_PROFILE_RSS="1"
+function profile_all_and_rss_intervals {
   export SH_PROFILE_INTERVALS="1"
-  export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
-  profile_all_and_cap $@
+  profile_all_and_rss $@
 }
