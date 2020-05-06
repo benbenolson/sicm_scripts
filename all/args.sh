@@ -3,7 +3,7 @@
 source ./all/vars.sh
 
 # Arguments
-GETOPT_OUTPUT=`getopt -o bcsagmipnrt --long bench:,config:,size:,args:,graph,metric:,iters:,profile:,node:,baseconfig:,base_args: -n 'args.sh' -- "$@"`
+GETOPT_OUTPUT=`getopt -o bcsagumipnrt --long bench:,config:,size:,args:,groupsize:,groupname:,metric:,iters:,profile:,node:,baseconfig:,base_args: -n 'args.sh' -- "$@"`
 if [ $? != 0 ] ; then echo "'getopt' failed. Aborting." >&2 ; exit 1 ; fi
 eval set -- "$GETOPT_OUTPUT"
 
@@ -11,6 +11,7 @@ eval set -- "$GETOPT_OUTPUT"
 NODE=""
 BENCHES=()
 CONFIGS=()
+GROUPSIZE="0"
 BASECONFIG=""
 BASECONFIG_ARGS_STR=""
 SIZE=""
@@ -18,16 +19,17 @@ CONFIG_ARGS_STRS=()
 ITERS="3"
 METRIC=""
 PROFILE_DIR=""
-GRAPH=false
+GROUPNAMES=()
 while true; do
   case "$1" in
     -b | --bench ) BENCHES+=("$2"); shift 2;;
     -c | --config ) CONFIGS+=("$2"); shift 2;;
+    -g | --groupsize ) GROUPSIZE="$2"; shift 2;;
+    -u | --groupname ) echo "GROUPNAME: $2"; GROUPNAMES+=("$2"); shift 2;;
     -a | --args ) CONFIG_ARGS_STRS+=("$2"); shift 2;;
     -r | --baseconfig ) BASECONFIG="$2"; shift 2;;
     -t | --base_args ) BASECONFIG_ARGS_STR="$2"; shift 2;;
     -s | --size ) SIZE="$2"; shift 2;;
-    -g | --graph ) GRAPH=true; shift;;
     -m | --metric ) METRIC="$2"; shift 2;;
     -i | --iters ) ITERS="$2"; shift 2;;
     -p | --profile ) PROFILE_DIR="$2"; shift 2;;

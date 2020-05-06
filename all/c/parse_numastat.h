@@ -125,21 +125,23 @@ char *is_numastat_metric(char *metric) {
   return NULL;
 }
 
-void print_numastat_metric(char *metric, numastat_metrics *info, long long node) {
+void set_numastat_metric(char *metric_str, numastat_metrics *info, long long node, metric *m) {
   if(node == UINT_MAX) {
     fprintf(stderr, "This metric requires the `--node` argument. Aborting.\n");
     exit(1);
   }
 
-  if((strcmp(metric, "memfree") == 0) || (strcmp(metric, "geomean_memfree") == 0)) {
-    printf("%lf", info->memfree_geomeans[node]);
-  } else if(strcmp(metric, "avg_memfree") == 0) {
-    printf("%ld", info->memfree_avgs[node]);
-  } else if(strcmp(metric, "memfree_noreserve") == 0) {
-    /* We've already read from numastat_noreserve.txt, so we can just print out the average memfree value */
-    printf("%lf", info->memfree_geomeans[node]);
-  } else if(strcmp(metric, "memfree_before") == 0) {
-    /* We've already read from numastat_before.txt, so we can just print out the average memfree value */
-    printf("%lf", info->memfree_geomeans[node]);
+  if((strcmp(metric_str, "memfree") == 0) || (strcmp(metric_str, "geomean_memfree") == 0)) {
+    m->val.f = info->memfree_geomeans[node];
+    m->type = 0;
+  } else if(strcmp(metric_str, "avg_memfree") == 0) {
+    m->val.s = (size_t) info->memfree_avgs[node];
+    m->type = 1;
+  } else if(strcmp(metric_str, "memfree_noreserve") == 0) {
+    m->val.f = info->memfree_geomeans[node];
+    m->type = 0;
+  } else if(strcmp(metric_str, "memfree_before") == 0) {
+    m->val.f = info->memfree_geomeans[node];
+    m->type = 0;
   }
 }

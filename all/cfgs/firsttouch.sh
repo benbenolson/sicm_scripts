@@ -8,7 +8,7 @@ function firsttouch {
   for i in $(seq 0 $MAX_ITER); do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
-    drop_caches
+    drop_caches_start
     if [ "$DO_MEMRESERVE" = true ]; then
       memreserve ${DIR} ${NUM_PAGES} ${SH_UPPER_NODE}
     fi
@@ -21,6 +21,7 @@ function firsttouch {
     if [ "$DO_MEMRESERVE" = true ]; then
       memreserve_kill
     fi
+    drop_caches_end
   done
 }
 

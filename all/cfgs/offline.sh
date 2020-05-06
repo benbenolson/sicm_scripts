@@ -1,7 +1,9 @@
 #!/bin/bash
 
 DO_MEMRESERVE=false
+DO_SCALE=true
 CAPACITY_PROF_TYPE=""
+VALUE_PROF_TYPE=""
 
 function offline_base {
   PACKING_ALGO="$1"
@@ -31,8 +33,10 @@ function offline_base {
   PEAK_RSS_PROFILING=`${SCRIPTS_DIR}/all/stat --metric=peak_rss_kbytes ${PEBS_DIR}`
   PEAK_RSS_PROFILING_BYTES=$(echo "${PEAK_RSS_PROFILING} * 1024" | bc)
 
-  # Now get the ratio that we should scale the sites' weights down by
-  SCALE=$(echo "${PEAK_RSS_CANARY_BYTES} / ${PEAK_RSS_PROFILING_BYTES}" | bc -l)
+  if [ "$DO_SCALE" = true ]; then
+    # Now get the ratio that we should scale the sites' weights down by
+    SCALE=$(echo "${PEAK_RSS_CANARY_BYTES} / ${PEAK_RSS_PROFILING_BYTES}" | bc -l)
+  fi
 
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="4096"
@@ -42,11 +46,17 @@ function offline_base {
   eval "${PRERUN}"
 
   # Generate the guidance file
-  HOTSET_ARGS="--capacity=${NUM_BYTES} --scale=${SCALE} --node=${SH_UPPER_NODE} --verbose"
+  HOTSET_ARGS="--capacity=${NUM_BYTES} --node=${SH_UPPER_NODE} --verbose"
+  if [ "$DO_SCALE" = true ]; then
+    HOTSET_ARGS="${HOTSET_ARGS} --scale=${SCALE}"
+  fi
   if [[ ! -z ${CAPACITY_PROF_TYPE} ]]; then
     HOTSET_ARGS="${HOTSET_ARGS} --weight=${CAPACITY_PROF_TYPE}"
   fi
-  HOTSET_ARGS="${HOTSET_ARGS} --multiplier=1 --multiplier=5"
+  if [[ ! -z ${VALUE_PROF_TYPE} ]]; then
+    echo "${VALUE_PROF_TYPE}"
+    HOTSET_ARGS="${HOTSET_ARGS} --value=${VALUE_PROF_TYPE}"
+  fi
   HOTSET_ARGS="${HOTSET_ARGS} --algo=${PACKING_ALGO}"
   cat "${PEBS_FILE}" | \
     sicm_hotset ${HOTSET_ARGS} \
@@ -56,7 +66,7 @@ function offline_base {
   for i in $(seq 0 $MAX_ITER); do
     DIR="${BASEDIR}/i${i}"
     mkdir ${DIR}
-    drop_caches
+    drop_caches_start
     if [ "$DO_MEMRESERVE" = true ]; then
       memreserve ${DIR} ${NUM_PAGES} ${SH_UPPER_NODE}
     fi
@@ -69,6 +79,7 @@ function offline_base {
     if [ "$DO_MEMRESERVE" = true ]; then
       memreserve_kill
     fi
+    drop_caches_end
   done
 }
 
@@ -81,7 +92,7 @@ function offline {
   offline_base $@
 }
 
-function offline_memreserve {
+function offline_mr {
   RATIO=$(echo "${2}/100" | bc -l)
   CANARY_CFG="firsttouch_exclusive_device:"
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
@@ -99,27 +110,34 @@ function offline_memreserve {
   offline_base "$@"
 }
 
-function offline_memreserve_extent_size {
-  CAPACITY_PROF_TYPE="profile_extent_size"
-  offline_memreserve $@
+function offline_mr_all {
+  VALUE_PROF_TYPE="profile_all_total"
+  offline_mr $@
 }
 
-function offline_memreserve_extent_size_onlineprofiling {
-  CAPACITY_PROF_TYPE="profile_extent_size"
-  offline_memreserve $@
+function offline_mr_bw_relative {
+  VALUE_PROF_TYPE="profile_bw_relative_total"
+  offline_mr $@
 }
 
-function offline_memreserve_rss {
-  CAPACITY_PROF_TYPE="profile_rss"
-  offline_memreserve $@
+function offline_mr_all_rss {
+  DO_SCALE=false
+  CAPACITY_PROF_TYPE="profile_rss_peak"
+  offline_mr_all $@
 }
 
-function offline_memreserve_rss_onlineprofiling {
-  CAPACITY_PROF_TYPE="profile_rss"
-  offline_memreserve $@
+function offline_mr_all_es {
+  CAPACITY_PROF_TYPE="profile_extent_size_peak"
+  offline_mr_all $@
 }
 
-function offline_memreserve_allocs {
-  CAPACITY_PROF_TYPE="profile_allocs"
-  offline_memreserve $@
+function offline_mr_bw_relative_rss {
+  DO_SCALE=false
+  CAPACITY_PROF_TYPE="profile_rss_peak"
+  offline_mr_bw_relative $@
+}
+
+function offline_mr_bw_relative_es {
+  CAPACITY_PROF_TYPE="profile_extent_size_peak"
+  offline_mr_bw_relative $@
 }

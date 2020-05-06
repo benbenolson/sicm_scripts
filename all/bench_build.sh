@@ -32,14 +32,14 @@ function bench_build {
   if [ "$1" = "fort" ]; then
     export LD_LINKER="flang $2 -Wno-unused-command-line-argument -Wl,-rpath,${SICM_PREFIX}/lib -L${SICM_PREFIX}/lib -lflang -lflangrti -g"
   elif [ "$1" = "c" ]; then
-    export LD_LINKER="clang++ $2 -Wno-unused-command-line-argument -L${SICM_PREFIX}/lib -lflang -lflangrti -Wl,-rpath,${SICM_PREFIX}/lib -g"
+    export LD_LINKER="clang++ $2 -Wno-unused-command-line-argument -L${SICM_PREFIX}/lib -lflang -lflangrti -Wl,-rpath,${SICM_PREFIX}/lib -lsicm_runtime -g -ldl"
   else
     echo "No linker specified. Aborting."
     exit
   fi
 
   # Define the variables for the compiler wrappers
-  export LD_COMPILER="clang++ -Wno-unused-command-line-argument -march=x86-64 -g -L${SICM_PREFIX}/lib" # Compiles from .bc -> .o
+  export LD_COMPILER="clang++ -Wno-unused-command-line-argument -march=x86-64 -g -L${SICM_PREFIX}/lib -lsicm_runtime" # Compiles from .bc -> .o
   export CXX_COMPILER="clang++ $3  -Wno-unused-command-line-argument -march=x86-64 -g -I${SICM_PREFIX}/include"
   export FORT_COMPILER="flang $3  -Mpreprocess -Wno-unused-command-line-argument -march=x86-64 -I${SICM_PREFIX}/include -L${SICM_PREFIX}/lib -lflang -lflangrti -g"
   export C_COMPILER="clang  $3 -Wno-unused-command-line-argument -march=x86-64 -g -I${SICM_PREFIX}/include"

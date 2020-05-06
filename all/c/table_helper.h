@@ -12,6 +12,11 @@
 char *generate_hotset_diff_table(FILE *input_file, char top100, int sort_arg);
 char *generate_weight_ratio_table(FILE *input_file, char top100, int sort_arg);
 char *generate_heatmap_table(FILE *input_file, char top100, int sort_arg);
+char *generate_bandwidth_table(FILE *input_file);
+char *generate_reconfigure_table(FILE *input_file);
+char *generate_phase_change_table(FILE *input_file);
+char *generate_interval_time_table(FILE *input_file);
+void packing_init_wrapper(FILE *input_file, int value_arg, int weight_arg, int sort_arg);
 
 static application_profile *app_prof = NULL;
 
@@ -34,6 +39,32 @@ void open_tmp_file(char **filename, FILE **fp) {
   }
 }
 
+char *generate_metric_table(FILE *input_file) {
+  char *bandwidth_table_name;
+  FILE *bandwidth_table_f;
+  size_t i, skt, bw;
+
+  open_tmp_file(&bandwidth_table_name, &bandwidth_table_f);
+
+  packing_init_wrapper(input_file, 0, 0, 0);
+  
+  /* Iterate over the intervals */
+  if(!(app_prof->has_profile_bw)) {
+    fprintf(stderr, "This profiling doesn't have any bandwidth profiling information. Aborting.\n");
+    exit(1);
+  }
+  for(i = 0; i < app_prof->num_intervals; i++) {
+    bw = 0;
+    for(skt = 0; skt < app_prof->num_profile_skts; skt++) {
+      bw += app_prof->intervals[i].profile_bw.skt[skt].current;
+    }
+    fprintf(bandwidth_table_f, "%zu ", bw);
+  }
+  fprintf(bandwidth_table_f, "\n");
+  fclose(bandwidth_table_f);
+  
+  return bandwidth_table_name;
+}
 
 void packing_init_wrapper(FILE *input_file, int value_arg, int weight_arg, int sort_arg) {
   /* Arguments to the packing library */
@@ -66,6 +97,98 @@ size_t get_total_site_weight(tree(site_info_ptr, int) site_tree) {
   }
 
   return total_site_size;
+}
+
+char *generate_bandwidth_table(FILE *input_file) {
+  char *bandwidth_table_name;
+  FILE *bandwidth_table_f;
+  size_t i, skt, bw;
+
+  open_tmp_file(&bandwidth_table_name, &bandwidth_table_f);
+
+  packing_init_wrapper(input_file, 0, 0, 0);
+  
+  /* Iterate over the intervals */
+  if(!(app_prof->has_profile_bw)) {
+    fprintf(stderr, "This profiling doesn't have any bandwidth profiling information. Aborting.\n");
+    exit(1);
+  }
+  for(i = 0; i < app_prof->num_intervals; i++) {
+    bw = 0;
+    for(skt = 0; skt < app_prof->num_profile_skts; skt++) {
+      bw += app_prof->intervals[i].profile_bw.skt[skt].current;
+    }
+    fprintf(bandwidth_table_f, "%zu ", bw);
+  }
+  fprintf(bandwidth_table_f, "\n");
+  fclose(bandwidth_table_f);
+  
+  return bandwidth_table_name;
+}
+
+char *generate_reconfigure_table(FILE *input_file) {
+  char *reconfigure_table_name;
+  FILE *reconfigure_table_f;
+  size_t i;
+
+  open_tmp_file(&reconfigure_table_name, &reconfigure_table_f);
+
+  packing_init_wrapper(input_file, 0, 0, 0);
+  
+  /* Iterate over the intervals */
+  if(!(app_prof->has_profile_online)) {
+    fprintf(stderr, "This profiling doesn't have any reconfigure profiling information. Aborting.\n");
+    exit(1);
+  }
+  for(i = 0; i < app_prof->num_intervals; i++) {
+    fprintf(reconfigure_table_f, "%d ", app_prof->intervals[i].profile_online.reconfigure);
+  }
+  fprintf(reconfigure_table_f, "\n");
+  fclose(reconfigure_table_f);
+  
+  return reconfigure_table_name;
+}
+
+char *generate_phase_change_table(FILE *input_file) {
+  char *phase_change_table_name;
+  FILE *phase_change_table_f;
+  size_t i;
+
+  open_tmp_file(&phase_change_table_name, &phase_change_table_f);
+
+  packing_init_wrapper(input_file, 0, 0, 0);
+  
+  /* Iterate over the intervals */
+  if(!(app_prof->has_profile_online)) {
+    fprintf(stderr, "This profiling doesn't have any phase_change profiling information. Aborting.\n");
+    exit(1);
+  }
+  for(i = 0; i < app_prof->num_intervals; i++) {
+    fprintf(phase_change_table_f, "%d ", app_prof->intervals[i].profile_online.phase_change);
+  }
+  fprintf(phase_change_table_f, "\n");
+  fclose(phase_change_table_f);
+  
+  return phase_change_table_name;
+}
+
+char *generate_interval_time_table(FILE *input_file) {
+  char *interval_time_table_name;
+  FILE *interval_time_table_f;
+  size_t i;
+
+  open_tmp_file(&interval_time_table_name, &interval_time_table_f);
+
+  packing_init_wrapper(input_file, 0, 0, 0);
+  
+  /* Iterate over the intervals */
+  for(i = 0; i < app_prof->num_intervals; i++) {
+    fprintf(interval_time_table_f, "%.4lf ", app_prof->intervals[i].time);
+  }
+  fprintf(interval_time_table_f, "\n");
+  fclose(interval_time_table_f);
+  
+  return interval_time_table_name;
 }
 
 /* If `top100` is set, we'll only generate a table of the top 100 sites (by value/weight). Everything

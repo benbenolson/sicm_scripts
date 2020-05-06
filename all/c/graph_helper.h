@@ -1,3 +1,4 @@
+#pragma once
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,7 +6,7 @@
 #include <limits.h>
 
 /* Takes a metric (graphing script name) as input, runs `jgraph` on it and generates a PNG of the graph */
-void jgraph_wrapper(char *metric, char *args) {
+void jgraph_wrapper(char *metric_str, char *args) {
   char *command, *line;
   size_t nread, line_length;
   FILE *output;
@@ -16,21 +17,21 @@ void jgraph_wrapper(char *metric, char *args) {
     if(output_filetype) {
       snprintf(command, 400,
         "${SCRIPTS_DIR}/all/bash/%s.sh %s | ${SCRIPTS_DIR}/tools/jgraph/jgraph > %s",
-        metric, args, output_filename);
+        metric_str, args, output_filename);
     } else {
       snprintf(command, 400,
         "${SCRIPTS_DIR}/all/bash/%s.sh %s | ${SCRIPTS_DIR}/tools/jgraph/jgraph | gs -dSAFER -dBATCH -dNOPAUSE -sDEVICE=png16m -dEPSCrop -r500 -dGraphicsAlphaBits=1 -dTextAlphaBits=4 -sOutputFile=%s -",
-        metric, args, output_filename);
+        metric_str, args, output_filename);
     }
   } else {
     if(output_filetype) {
       snprintf(command, 400,
         "${SCRIPTS_DIR}/all/bash/%s.sh %s | ${SCRIPTS_DIR}/tools/jgraph/jgraph",
-        metric, args);
+        metric_str, args);
     } else {
       snprintf(command, 400,
         "${SCRIPTS_DIR}/all/bash/%s.sh %s | ${SCRIPTS_DIR}/tools/jgraph/jgraph | gs -dSAFER -dBATCH -dNOPAUSE -sDEVICE=png16m -dEPSCrop -r500 -dGraphicsAlphaBits=1 -dTextAlphaBits=4 -sOutputFile=test.png -",
-        metric, args);
+        metric_str, args);
     }
   }
   output = popen(command, "r");

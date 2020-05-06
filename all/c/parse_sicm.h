@@ -17,104 +17,59 @@ char *sicm_metrics_list[] = {
   "graph_hotset_diff_top100",
   "graph_heatmap_top100",
   "graph_heatmap_proposal",
-  "prof_tot_value",
-  "prof_time_over",
-  "num_rebinds",
+  "graph_online_bandwidth",
+  "online_num_rebinds",
+  "online_total_rebind_time",
+  "online_total_rebind_estimate",
+  "prof_num_intervals",
+  "prof_total_interval_time",
+  "prof_num_phases",
+  "prof_avg_interval_time",
+  "prof_last_phase_time",
   NULL
 };
 
 typedef struct sicm_metrics {
-  size_t interval_time_over,
-         total_accesses,
-         num_rebinds;
+  double online_total_rebind_time,
+         prof_total_interval_time,
+         prof_avg_interval_time,
+         prof_last_phase_time,
+         prof_avg_phase_time;
+  size_t online_num_rebinds,
+         online_total_rebind_estimate,
+         prof_num_intervals,
+         prof_num_phases;
+  application_profile *app_prof;
 } sicm_metrics;
 
 sicm_metrics *init_sicm_metrics() {
   sicm_metrics *info;
   info = malloc(sizeof(sicm_metrics));
-
-  info->interval_time_over = 0;
-  info->num_rebinds = 0;
+  info->app_prof = NULL;
+  info->online_total_rebind_time = 0;
+  info->online_num_rebinds = 0;
+  info->prof_total_interval_time = 0;
+  info->prof_avg_interval_time = 0;
+  info->prof_last_phase_time = 0;
+  info->prof_avg_phase_time = 0;
+  info->prof_num_intervals = 0;
+  info->prof_num_phases = 0;
 
   return info;
 }
 
-void graph_hotset_diff(FILE *input_file, char *metric, char top100) {
-  char *hotset_diff_table_name, *weight_ratio_table_name,
-       *line, *args;
-
-  /* First, use the parsing and packing libraries to gather the info */
-  hotset_diff_table_name = generate_hotset_diff_table(input_file, top100, 0);
-  weight_ratio_table_name = generate_weight_ratio_table(input_file, top100, 0);
-
-  /* Call the graphing script wrapper */
-  if(!graph_title) {
-    /* Set a default title */
-    graph_title = malloc(sizeof(char) * (strlen(DEFAULT_HOTSET_DIFF_TITLE) + 1));
-    strcpy(graph_title, DEFAULT_HOTSET_DIFF_TITLE);
-  }
-  args = orig_malloc(sizeof(char) *
-                     (strlen(hotset_diff_table_name) +
-                      strlen(weight_ratio_table_name) +
-                      strlen(graph_title) +
-                      5)); /* Room for 3 spaces, two quotes, and NULL */
-  strcpy(args, hotset_diff_table_name);
-  strcat(args, " ");
-  strcat(args, weight_ratio_table_name);
-  strcat(args, " '");
-  strcat(args, graph_title);
-  strcat(args, "'");
-  jgraph_wrapper(metric, args);
-
-  free(hotset_diff_table_name);
-  free(args);
-  if(graph_title) {
-    free(graph_title);
-  }
-}
-
-void graph_heatmap(FILE *input_file, char *metric, char top100, int sort_arg) {
-  char *heatmap_name, *weight_ratio_table_name,
-       *args;
-  application_profile *prof;
-
-  /* Now use the profiling info to generate the input tables */
-  heatmap_name = generate_heatmap_table(input_file, top100, sort_arg);
-  weight_ratio_table_name = generate_weight_ratio_table(input_file, top100, sort_arg);
-
-  /* Call the graphing script wrapper */
-  if(!graph_title) {
-    /* Set a default title */
-    graph_title = malloc(sizeof(char) * (strlen(DEFAULT_HEATMAP_TITLE) + 1));
-    strcpy(graph_title, DEFAULT_HEATMAP_TITLE);
-  }
-  args = orig_malloc(sizeof(char) *
-                     (strlen(heatmap_name) +
-                      strlen(weight_ratio_table_name) +
-                      strlen(graph_title) +
-                      strlen("relative") +
-                      6)); /* Room for 3 spaces, two quotes, and NULL */
-  strcpy(args, heatmap_name);
-  strcat(args, " ");
-  strcat(args, weight_ratio_table_name);
-  strcat(args, " '");
-  strcat(args, graph_title);
-  strcat(args, "' relative");
-  jgraph_wrapper(metric, args);
-
-  free(heatmap_name);
-  free(args);
-  if(graph_title) {
-    free(graph_title);
-  }
-}
+#include "sicm_graphs.h"
 
 void parse_sicm(FILE *file, char *metric, sicm_metrics *info, int site) {
-  double time, interval_time;
   char retval = 0;
   char *line;
   size_t len, rebinds, i, n;
   ssize_t read;
+  interval_profile *interval;
+  double sum;
+  
+  size_t tmp_sizet;
+  double tmp_dbl;
 
   if(strcmp(metric, "graph_heatmap_weighted") == 0) {
     graph_heatmap(file, metric, 0, 0);
@@ -126,15 +81,30 @@ void parse_sicm(FILE *file, char *metric, sicm_metrics *info, int site) {
     graph_hotset_diff(file, metric, 1);
   } else if(strcmp(metric, "graph_heatmap_proposal") == 0) {
     graph_heatmap(file, metric, 1, WEIGHT);
-  } else {
+  } else if(strcmp(metric, "graph_online_bandwidth") == 0) {
+    graph_online_bandwidth(file, metric);
+  } else if(strncmp(metric, "prof_", 5) == 0) {
+    info->app_prof = sh_parse_profiling(file);
+    fseek(file, 0, SEEK_SET);
+    for(i = 0; i < info->app_prof->num_intervals; i++) {
+      interval = &(info->app_prof->intervals[i]);
+      info->prof_total_interval_time += interval->time;
+      info->prof_num_intervals++;
+      if(info->app_prof->has_profile_online && interval->profile_online.phase_change) {
+        info->prof_num_phases++;
+      }
+    }
+    info->prof_num_phases++;
+    info->prof_avg_interval_time = info->prof_total_interval_time / info->prof_num_intervals;
+  } else if(strncmp(metric, "online_", 7) == 0) {
     /* The metric requires parsing a file in-house */
     line = NULL;
     len = 0;
     while(read = getline(&line, &len, file) != -1) {
-      if(sscanf(line, "WARNING: Interval (%lf) went over the time limit (%lf).", &time, &interval_time) == 2) {
-        info->interval_time_over += (time - interval_time);
-      } else if(sscanf(line, "  Number of rebinds: %zu", &rebinds) == 1) {
-        info->num_rebinds += rebinds;
+      if(sscanf(line, "Full rebind estimate: %zu ms, real: %lf s.", &tmp_sizet, &tmp_dbl) == 2) {
+        info->online_total_rebind_time += tmp_dbl;
+        info->online_total_rebind_estimate += tmp_sizet;
+        info->online_num_rebinds++;
       }
     }
   }
@@ -147,9 +117,12 @@ char *is_sicm_metric(char *metric) {
   i = 0;
   while((ptr = sicm_metrics_list[i]) != NULL) {
     if(strcmp(metric, ptr) == 0) {
-      if(strcmp(metric, "num_rebinds") == 0) {
+      if(strncmp(metric, "online_", 7) == 0) {
         filename = malloc(sizeof(char) * (strlen("online.txt") + 1));
         strcpy(filename, "online.txt");
+      } else if(strncmp(metric, "prof_", 5) == 0) {
+        filename = malloc(sizeof(char) * (strlen("profile.txt") + 1));
+        strcpy(filename, "profile.txt");
       } else {
         filename = malloc(sizeof(char) * (strlen("profile.txt") + 1));
         strcpy(filename, "profile.txt");
@@ -162,17 +135,28 @@ char *is_sicm_metric(char *metric) {
   return NULL;
 }
 
-void print_sicm_metric(char *metric, sicm_metrics *info) {
-  if(strcmp(metric, "prof_tot_value") == 0) {
-    printf("%zu\n", info->total_accesses);
-  } else if(strcmp(metric, "prof_time_over") == 0) {
-    printf("%zu\n", info->interval_time_over);
-  } else if(strcmp(metric, "num_rebinds") == 0) {
-    printf("%zu\n", info->num_rebinds);
-  } else if(strcmp(metric, "graph_heatmap_weighted") == 0) {
-  } else if(strcmp(metric, "graph_hotset_diff_weighted") == 0) {
-  } else if(strcmp(metric, "graph_heatmap_top100") == 0) {
-  } else if(strcmp(metric, "graph_hotset_diff_top100") == 0) {
-  } else if(strcmp(metric, "graph_heatmap_proposal") == 0) {
+void set_sicm_metric(char *metric_str, sicm_metrics *info, metric *m) {
+  if(strncmp(metric_str, "graph_", 6) == 0) {
+    
+  /* Use profile.txt */
+  } else if(strcmp(metric_str, "prof_avg_interval_time") == 0) {
+    m->val.f = info->prof_avg_interval_time;
+    m->type = 0;
+  } else if(strcmp(metric_str, "prof_last_phase_time") == 0) {
+    m->val.f = info->prof_last_phase_time;
+    m->type = 0;
+  } else if(strcmp(metric_str, "prof_num_phases") == 0) {
+    m->val.f = info->prof_num_phases;
+    m->type = 0;
+  /* Specific to online approach */
+  } else if(strcmp(metric_str, "online_total_rebind_time") == 0) {
+    m->val.f = info->online_total_rebind_time;
+    m->type = 0;
+  } else if(strcmp(metric_str, "online_total_rebind_estimate") == 0) {
+    m->val.s = info->online_total_rebind_estimate;
+    m->type = 1;
+  } else if(strcmp(metric_str, "online_num_rebinds") == 0) {
+    m->val.f = info->online_num_rebinds;
+    m->type = 0;
   }
 }

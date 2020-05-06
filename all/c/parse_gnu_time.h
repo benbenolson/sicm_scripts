@@ -8,6 +8,7 @@ char *gnu_time_metrics_list[] = {
   "peak_rss_kbytes",
   "runtime_seconds",
   "runtime",
+  "graph_runtime",
   NULL
 };
 
@@ -23,7 +24,7 @@ void parse_gnu_time(FILE *file, gnu_time_metrics *info) {
   char *line;
   size_t len;
   ssize_t read;
-
+  
   line = NULL;
   len = 0;
   while(read = getline(&line, &len, file) != -1) {
@@ -42,7 +43,7 @@ void parse_gnu_time(FILE *file, gnu_time_metrics *info) {
       info->runtime_seconds = (tmp * 60) + ((size_t) tmp_f);
     }
   }
-
+  
 cleanup:
   free(line);
   return;
@@ -76,14 +77,19 @@ char *is_gnu_time_metric(char *metric) {
   return NULL;
 }
 
-void print_gnu_time_metric(char *metric, gnu_time_metrics *info) {
-  if(strcmp(metric, "peak_rss") == 0) {
-    printf("%lf", info->peak_rss);
-  } else if(strcmp(metric, "peak_rss_kbytes") == 0) {
-    printf("%zu", info->peak_rss_kbytes);
-  } else if(strcmp(metric, "runtime") == 0) {
-    printf("%zu", info->runtime_seconds);
-  } else if(strcmp(metric, "runtime_seconds") == 0) {
-    printf("%zu", info->runtime_seconds);
+void set_gnu_time_metric(char *metric_str, gnu_time_metrics *info, metric *m) {
+  if(strcmp(metric_str, "peak_rss") == 0) {
+    m->val.f = info->peak_rss;
+    m->type = 0;
+  } else if(strcmp(metric_str, "peak_rss_kbytes") == 0) {
+    m->val.s = info->peak_rss_kbytes;
+    m->type = 1;
+  } else if((strcmp(metric_str, "runtime") == 0) || (strcmp(metric_str, "graph_runtime") == 0)) {
+    /* Even if we're doing graph_runtime, output the runtime anyway */
+    m->val.s = info->runtime_seconds;
+    m->type = 1;
+  } else if(strcmp(metric_str, "runtime_seconds") == 0) {
+    m->val.s = info->runtime_seconds;
+    m->type = 1;
   }
 }
