@@ -217,7 +217,7 @@ int32 PciHandle::write32(uint64 offset, uint32 value)
 }
 
 int32 PciHandle::read64(uint64 offset, uint64 * value)
-{
+{  
     uint32_t pci_address = FORM_PCI_ADDR(bus, device, function, (uint32_t)offset);
     return PCIDriver_read64(pci_address, value);
 }
@@ -382,7 +382,7 @@ PciHandle::PciHandle(uint32 groupnr_, uint32 bus_, uint32 device_, uint32 functi
     }
     fd = handle;
 
-    // std::cout << "DEBUG: Opened "<< path.str().c_str() << " on handle "<< fd << std::endl;
+    //std::cout << "DEBUG: Opened "<< path.str().c_str() << " on handle "<< fd << std::endl;
 }
 
 
@@ -414,7 +414,9 @@ bool PciHandle::exists(uint32 groupnr_, uint32 bus_, uint32 device_, uint32 func
 
 int32 PciHandle::read32(uint64 offset, uint32 * value)
 {
-    return ::pread(fd, (void *)value, sizeof(uint32), offset);
+    int32 retval;
+    retval = ::pread(fd, (void *)value, sizeof(uint32), offset);
+    return retval;
 }
 
 int32 PciHandle::write32(uint64 offset, uint32 value)
@@ -691,7 +693,7 @@ int32 PciHandleMM::read64(uint64 offset, uint64 * value)
 {
     read32(offset, (uint32 *)value);
     read32(offset + sizeof(uint32), ((uint32 *)value) + 1);
-
+    
     return sizeof(uint64);
 }
 

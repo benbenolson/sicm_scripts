@@ -2419,6 +2419,8 @@ PCM::ErrorCode PCM::programCoreCounters(const int i /* core */,
                 if (errno == 24) std::cerr << "try executing 'ulimit -n 10000' to increase the limit on the number of open files." << std::endl;
                 decrementInstanceSemaphore();
                 return PCM::UnknownError;
+            } else {
+                std::cerr << "Linux Perf: Error on programming generic event #" << i << " error: " << strerror(errno) << std::endl;
             }
         }
         else
@@ -4714,6 +4716,7 @@ void ServerPCICFGUncore::initDirect(uint32 socket_, const PCM * pcm)
                 );
             }
             else {
+                std::cout << "Configuring IMC: " << handle << std::endl;
                 imcPMUs.push_back(
                     UncorePMU(
                         std::make_shared<PCICFGRegister32>(handle, XPF_MC_CH_PCI_PMON_BOX_CTL_ADDR),
@@ -4940,6 +4943,9 @@ public:
             std::cerr << "config: 0x" << std::hex << event.config << " config1: 0x" << event.config1 << " config2: 0x" << event.config2 << std::dec << std::endl;
             if (errno == 24) std::cerr << "try executing 'ulimit -n 10000' to increase the limit on the number of open files." << std::endl;
             return;
+        } else {
+            std::cerr << "Linux Perf: Error on programming PMU " << pmuID << ":  " << strerror(errno) << std::endl;
+            std::cerr << "config: 0x" << std::hex << event.config << " config1: 0x" << event.config1 << " config2: 0x" << event.config2 << std::dec << std::endl;
         }
     }
     operator uint64 () override
@@ -5644,7 +5650,7 @@ uint64 ServerPCICFGUncore::getDRAMClocks(uint32 channel)
     if (channel < (uint32)imcPMUs.size())
         result = *(imcPMUs[channel].fixedCounterValue);
 
-    // std::cout << "DEBUG: DRAMClocks on channel " << channel << " = " << result << std::endl;
+    std::cout << "DEBUG: DRAMClocks on channel " << channel << " = " << result << std::endl;
     return result;
 }
 

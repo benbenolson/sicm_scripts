@@ -250,6 +250,7 @@ typedef struct graphs {
   float height;
   float width;
   int bb[4]; /* Bounding box */
+  float pad; /* Ratio to expand bbox by */
   char *preamble;
   char *epilogue;
   int prefile;

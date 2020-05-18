@@ -20,10 +20,9 @@ function profile_all {
   export SH_SAMPLE_FREQ="${FREQ}"
   export SH_PROFILE_RATE_NSECONDS=$(echo "${RATE} * 1000000" | bc)
   export SH_PROFILE_ALL_EVENTS="MEM_LOAD_UOPS_LLC_MISS_RETIRED:LOCAL_DRAM,MEM_LOAD_UOPS_RETIRED:LOCAL_PMM"
-  export SH_PROFILE_ALL_MULTIPLIERS="1,5"
   
   export SH_PROFILE_BW="1"
-  export SH_PROFILE_BW_IMC="skx_unc_imc0,skx_unc_imc1,skx_unc_imc2,skx_unc_imc3,skx_unc_imc4,skx_unc_imc5"
+  export SH_PROFILE_IMC="skx_unc_imc0,skx_unc_imc1,skx_unc_imc2,skx_unc_imc3,skx_unc_imc4,skx_unc_imc5"
   export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
   export SH_PROFILE_BW_SKIP_INTERVALS="1"
   export SH_PROFILE_BW_RELATIVE="1"

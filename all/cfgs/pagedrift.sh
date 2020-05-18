@@ -17,7 +17,6 @@ function pagedrift_base {
     mkdir ${DIR}
     drop_caches_start
     if [ "$DO_MEMRESERVE" = true ]; then
-      echo "Calling memreserve ${DIR} ${NUM_PAGES} ${SH_UPPER_NODE}"
       memreserve ${DIR} ${NUM_PAGES} ${SH_UPPER_NODE}
     fi
     pcm_background "${DIR}"

@@ -24,7 +24,7 @@ function online_base {
     fi
 
     # This is in kilobytes
-    PEAK_RSS=`${SCRIPTS_DIR}/all/stat --metric=peak_rss_kbytes ${CANARY_DIR}`
+    PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single --metric=peak_rss_kbytes ${CANARY_DIR}`
     PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
 
     # How many pages we need to be free on upper tier
@@ -48,10 +48,15 @@ function online_base {
   
   # Bandwidth profiling
   export SH_PROFILE_BW="1"
-  export SH_PROFILE_BW_IMC="skx_unc_imc0,skx_unc_imc1,skx_unc_imc2,skx_unc_imc3,skx_unc_imc4,skx_unc_imc5"
   export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
   export SH_PROFILE_BW_SKIP_INTERVALS="1"
   export SH_PROFILE_BW_RELATIVE="1"
+  
+  export SH_PROFILE_LATENCY="1"
+  export SH_PROFILE_IMC="skx_unc_imc0,skx_unc_imc1,skx_unc_imc2,skx_unc_imc3,skx_unc_imc4,skx_unc_imc5"
+  export SH_PROFILE_LATENCY_CLOCKTICK_EVENT="UNC_M_DCLOCKTICKS"
+  export SH_PROFILE_LATENCY_EVENTS="UNC_M_RPQ_INSERTS,UNC_M_RPQ_OCCUPANCY,UNC_M_WPQ_INSERTS,UNC_M_WPQ_OCCUPANCY,UNC_M_PMM_RPQ_INSERTS,UNC_M_PMM_RPQ_OCCUPANCY:DEFAULT,UNC_M_PMM_WPQ_INSERTS,UNC_M_PMM_WPQ_OCCUPANCY:DEFAULT"
+  export SH_PROFILE_LATENCY_SKIP_INTERVALS="1"
   
   export SH_PROFILE_EXTENT_SIZE_SKIP_INTERVALS="${CAPACITY_SKIP_INTERVALS}"
   export SH_PROFILE_RSS_SKIP_INTERVALS="${CAPACITY_SKIP_INTERVALS}"
@@ -135,7 +140,47 @@ function online_mr_ski_bw_relative_es {
   export SH_PROFILE_EXTENT_SIZE="1"
   online_mr_ski $@
 }
+
+function online_mr_ski_all_lat_rss {
+  export SH_PROFILE_ONLINE_VALUE="profile_all_total"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_rss_peak"
+  export SH_PROFILE_RSS="1"
+  export SH_PROFILE_LATENCY_SET_MULTIPLIERS="1"
+  online_mr_ski $@
+}
+
+function online_mr_ski_all_lat_es {
+  export SH_PROFILE_ONLINE_VALUE="profile_all_total"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_extent_size_peak"
+  export SH_PROFILE_EXTENT_SIZE="1"
+  export SH_PROFILE_LATENCY_SET_MULTIPLIERS="1"
+  online_mr_ski $@
+}
+
+function online_mr_ski_bw_relative_lat_rss {
+  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_rss_peak"
+  export SH_PROFILE_RSS="1"
+  export SH_PROFILE_LATENCY_SET_MULTIPLIERS="1"
+  online_mr_ski $@
+}
+
+function online_mr_ski_bw_relative_lat_es {
+  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_extent_size_peak"
+  export SH_PROFILE_EXTENT_SIZE="1"
+  export SH_PROFILE_LATENCY_SET_MULTIPLIERS="1"
+  online_mr_ski $@
+}
+
 # Temporary function for debugging
 function online_mr_ski_bw_relative_rss_tmp {
   online_mr_ski_bw_relative_rss $@
+}
+function online_mr_ski_bw_relative_lat_rss_test {
+  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_rss_current"
+  export SH_PROFILE_RSS="1"
+  export SH_PROFILE_LATENCY_SET_MULTIPLIERS="1"
+  online_mr_ski $@
 }

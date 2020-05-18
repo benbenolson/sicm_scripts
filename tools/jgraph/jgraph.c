@@ -356,6 +356,7 @@ Graphs gs;
   newg->width = 0.0;
   newg->bb[0] = ISIG; newg->bb[1] = ISIG;
   newg->bb[2] = ISIG; newg->bb[3] = ISIG;
+  newg->pad = 0.0;
   newg->preamble = CNULL;
   newg->epilogue = CNULL;
   newg->prefile = 0;

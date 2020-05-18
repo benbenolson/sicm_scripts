@@ -57,6 +57,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 #include <fcntl.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include <inttypes.h>
 #endif
 
 class SystemCounterState;
@@ -1988,7 +1989,10 @@ double getNormalizedQPIL1Cycles(uint32 port, const CounterStateType & before, co
 */
 template <class CounterStateType>
 uint64 getDRAMClocks(uint32 channel, const CounterStateType & before, const CounterStateType & after)
-{
+{   uint64 before_val, after_val;
+    after_val = after.DRAMClocks[channel];
+    before_val = before.DRAMClocks[channel];
+    std::cout << "Got DRAM Clocks: " << after_val << " " << before_val << std::endl << std::flush;
     return after.DRAMClocks[channel] - before.DRAMClocks[channel];
 }
 
@@ -2013,7 +2017,9 @@ uint64 getMCDRAMClocks(uint32 channel, const CounterStateType & before, const Co
 template <class CounterStateType>
 uint64 getMCCounter(uint32 channel, uint32 counter, const CounterStateType & before, const CounterStateType & after)
 {
-    return after.MCCounter[channel][counter] - before.MCCounter[channel][counter];
+    uint64 diff;
+    diff = after.MCCounter[channel][counter] - before.MCCounter[channel][counter];
+    return diff;
 }
 
 

@@ -713,6 +713,15 @@ int landscape;
 {
   FILE *f;
   char c;
+  
+  /* If the user specifies a padding around the figure,
+     expand the bounding box by this ratio */
+  if(gs->pad != 0.0) {
+    gs->bb[0] += (gs->bb[0] * gs->pad);
+    gs->bb[1] += (gs->bb[1] * gs->pad);
+    gs->bb[2] += (gs->bb[2] * gs->pad);
+    gs->bb[3] += (gs->bb[3] * gs->pad);
+  }
 
   if (gs->page == 1) printf("%%!PS-Adobe-2.0 EPSF-1.2\n");
   printf("%%%%Page: %d %d\n", gs->page, gs->page);

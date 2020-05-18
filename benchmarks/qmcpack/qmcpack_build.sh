@@ -13,8 +13,10 @@ bench_build c "" ""
 export FFTW_INCLUDE_DIRS="/usr/include"
 export FFTW_LIBRARY_DIRS="/usr/lib/x86_64-linux-gnu"
 export HDF5_INCLUDE_DIRS="/usr/include/hdf5/serial"
-export CFLAGS="-I${HDF5_INCLUDE_DIRS}"
-export CXXFLAGS="-I${HDF5_INCLUDE_DIRS}"
+export HDF5_LIBRARY_DIRS="/usr/lib/x86_64-linux-gnu/hdf5/serial"
+export CFLAGS="-I${HDF5_INCLUDE_DIRS} -L${HDF5_LIBRARY_DIRS}"
+export CXXFLAGS="-I${HDF5_INCLUDE_DIRS} -L${HDF5_LIBRARY_DIRS}"
+export LDFLAGS="-L${HDF5_LIBRARY_DIRS}"
 
 # Compile QMCPACK
 cd $BENCH_DIR/qmcpack/src
@@ -32,8 +34,8 @@ cmake -DBUILD_UNIT_TESTS=False \
       -DQMC_CUDA=0 \
       -DCMAKE_CXX_COMPILER:PATH=${COMPILER_WRAPPER} \
       -DCMAKE_C_COMPILER:PATH=${COMPILER_WRAPPER} \
-      -DCMAKE_C_FLAGS="-llapack -lblas -lfftw3 -lhdf5" \
-      -DCMAKE_CXX_FLAGS="-Wno-#warnings -Wno-deprecated -Wno-#pragma-messages -llapack -lblas -lfftw3 -lhdf5" \
+      -DCMAKE_C_FLAGS="-llapack -lblas -lfftw3 -lhdf5 -L${HDF5_LIBRARY_DIRS}" \
+      -DCMAKE_CXX_FLAGS="-Wno-#warnings -Wno-deprecated -Wno-#pragma-messages -llapack -lblas -lfftw3 -lhdf5 -L${HDF5_LIBRARY_DIRS}" \
       -DCMAKE_LINKER:PATH=${LD_WRAPPER} \
       -DCMAKE_CXX_LINK_EXECUTABLE="<CMAKE_LINKER> -lfftw3 -lxml2 -llapack -lblas -lhdf5 <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>" \
       -DCMAKE_AR:PATH=${AR_WRAPPER} \

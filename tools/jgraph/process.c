@@ -318,7 +318,7 @@ Graph g;
     y = initial_y;
     while(c != nil(g->curves)) {
       if (c->l->label != CNULL) {
-        c->l->x = x + ((hdist + max_col_width) * col);
+        c->l->x = hdist + x + ((hdist + max_col_width) * col);
         c->l->y = y;
         fprintf(stderr, "Entry: %s\n", c->l->label);
         fprintf(stderr, "Entry x: %f\n", c->l->x);

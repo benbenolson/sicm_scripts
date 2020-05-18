@@ -11,11 +11,14 @@ static struct option long_options[] = {
   {"config",      required_argument, 0, 'c'},
   {"groupsize",   required_argument, 0, 'g'},
   {"groupname",   required_argument, 0, 'u'},
+  {"label",       required_argument, 0, 'l'},
   {"metric",      required_argument, 0, 'm'},
   {"node",        required_argument, 0, 'n'},
   {"site",        required_argument, 0, 's'},
   {"graph_title", required_argument, 0, 't'},
   {"filename",    required_argument, 0, 'o'},
+  {"x_label",     required_argument, 0, 'x'},
+  {"y_label",     required_argument, 0, 'y'},
   {"eps",         no_argument,       0, 'e'},
   {"single",      no_argument,       0, 'q'},
   {0,             0,                 0, 0}
@@ -88,10 +91,11 @@ int main(int argc, char **argv) {
   metrics *info;
   
   /* Array of configuration and benchmark strings */
-  char **config_strs, **bench_strs, **group_strs;
+  char **config_strs, **bench_strs, **group_strs, **label_strs, *x_label, *y_label;
   size_t num_configs, config, max_config_len,
          num_benches, bench, max_bench_len,
          num_groups, group,
+         num_labels, label,
          groupsize;
   
   /* Array of per-bench, per-config doubles */
@@ -106,11 +110,15 @@ int main(int argc, char **argv) {
   bench_strs = NULL;
   num_groups = 0;
   group_strs = NULL;
+  num_labels = 0;
+  label_strs = NULL;
+  x_label = NULL;
+  y_label = NULL;
   groupsize = 0;
   single = 0;
   while(1) {
     option_index = 0;
-    c = getopt_long(argc, argv, "m:n:s:t:eo:c:b:gz:",
+    c = getopt_long(argc, argv, "m:n:s:t:eo:c:b:gz:l:x:y:",
                     long_options, &option_index);
     if(c == -1) {
       break;
@@ -119,6 +127,15 @@ int main(int argc, char **argv) {
     switch(c) {
       case 0:
         printf("option %s\n", long_options[option_index].name);
+        break;
+      case 'x':
+        x_label = (char *) malloc(sizeof(char) * (strlen(optarg) + 1));
+        strcpy(x_label, optarg);
+        printf("X LABEL: %s\n", x_label);
+        break;
+      case 'y':
+        y_label = (char *) malloc(sizeof(char) * (strlen(optarg) + 1));
+        strcpy(y_label, optarg);
         break;
       case 'c':
         /* Configuration name. At least one required. */
@@ -138,6 +155,15 @@ int main(int argc, char **argv) {
         strcpy(group_strs[num_groups - 1], optarg);
         printf("%s\n", optarg);
         printf("%zu %s\n", num_groups, group_strs[num_groups - 1]);
+        break;
+      case 'l':
+        /* Label name. None are required, but are used for graphs. */
+        num_labels++;
+        label_strs = (char **) realloc(label_strs, sizeof(char *) * num_labels);
+        label_strs[num_labels - 1] = malloc(sizeof(char) * (strlen(optarg) + 1));
+        strcpy(label_strs[num_labels - 1], optarg);
+        printf("%s\n", optarg);
+        printf("%zu %s\n", num_labels, label_strs[num_labels - 1]);
         break;
       case 'q':
         /* Singleton mode. Only first config and first bench used. Single value prints out instead of a table. */
@@ -277,8 +303,12 @@ int main(int argc, char **argv) {
   }
   
   /* Now, if we're doing a multi-config graph of some kind, let's output that */
-  if(strcmp(metric_str, "graph_runtime") == 0) {
-    graph_metric_memreserve(bench_strs, num_benches, config_strs, num_configs, group_strs, num_groups, results, NULL, NULL);
+  if((strcmp(metric_str, "graph_runtime") == 0) ||
+     (strcmp(metric_str, "graph_first_phase_time") == 0) ||
+     (strcmp(metric_str, "graph_max_phase_time") == 0) ||
+     (strcmp(metric_str, "graph_min_phase_time") == 0) ||
+     (strcmp(metric_str, "graph_last_phase_time") == 0)) {
+    graph_metric_memreserve(bench_strs, num_benches, config_strs, num_configs, group_strs, num_groups, label_strs, num_labels, results, x_label, y_label);
   }
   
   /* Clean up */

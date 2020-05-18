@@ -1,7 +1,6 @@
 #!/bin/bash
 
 export DEFAULT_PROFILE_NODE="${SH_UPPER_NODE}"
-export DRAM_OR_PMM="DRAM"
 
 # First is the sampling rate
 function profile_latency {
@@ -18,11 +17,7 @@ function profile_latency {
   export SH_PROFILE_LATENCY="1"
   export SH_PROFILE_IMC="skx_unc_imc0,skx_unc_imc1,skx_unc_imc2,skx_unc_imc3,skx_unc_imc4,skx_unc_imc5"
   export SH_PROFILE_LATENCY_CLOCKTICK_EVENT="UNC_M_DCLOCKTICKS"
-  if [ "$DRAM_OR_PMM" = "DRAM" ]; then
-    export SH_PROFILE_LATENCY_EVENTS="UNC_M_RPQ_INSERTS,UNC_M_RPQ_OCCUPANCY,UNC_M_WPQ_INSERTS,UNC_M_WPQ_OCCUPANCY"
-  else
-    export SH_PROFILE_LATENCY_EVENTS="UNC_M_PMM_RPQ_INSERTS,UNC_M_PMM_RPQ_OCCUPANCY:DEFAULT,UNC_M_PMM_WPQ_INSERTS,UNC_M_PMM_WPQ_OCCUPANCY:DEFAULT"
-  fi
+  export SH_PROFILE_LATENCY_EVENTS="UNC_M_RPQ_INSERTS,UNC_M_RPQ_OCCUPANCY,UNC_M_WPQ_INSERTS,UNC_M_WPQ_OCCUPANCY,UNC_M_PMM_RPQ_INSERTS,UNC_M_PMM_RPQ_OCCUPANCY:DEFAULT,UNC_M_PMM_WPQ_INSERTS,UNC_M_PMM_WPQ_OCCUPANCY:DEFAULT"
   export SH_PROFILE_LATENCY_SKIP_INTERVALS="1"
   export SH_PRINT_PROFILE_INTERVALS="1"
 
@@ -46,17 +41,5 @@ function profile_latency_lower {
 
 function profile_latency_upper {
   export DEFAULT_PROFILE_NODE="${SH_UPPER_NODE}"
-  profile_latency "$@"
-}
-
-function profile_pmm_latency_lower {
-  export DEFAULT_PROFILE_NODE="${SH_LOWER_NODE}"
-  export DRAM_OR_PMM="PMM"
-  profile_latency $@
-}
-
-function profile_pmm_latency_upper {
-  export DEFAULT_PROFILE_NODE="${SH_UPPER_NODE}"
-  export DRAM_OR_PMM="PMM"
   profile_latency "$@"
 }

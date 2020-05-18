@@ -3,7 +3,7 @@
 source ./all/vars.sh
 
 # Arguments
-GETOPT_OUTPUT=`getopt -o bcsagumipnrt --long bench:,config:,size:,args:,groupsize:,groupname:,metric:,iters:,profile:,node:,baseconfig:,base_args: -n 'args.sh' -- "$@"`
+GETOPT_OUTPUT=`getopt -o ebcsagumipnrtlxyfG --long eps,bench:,config:,graph_title:,size:,args:,x_label:,y_label:,groupsize:,groupname:,label:,metric:,iters:,profile:,node:,baseconfig:,base_args:,filename: -n 'args.sh' -- "$@"`
 if [ $? != 0 ] ; then echo "'getopt' failed. Aborting." >&2 ; exit 1 ; fi
 eval set -- "$GETOPT_OUTPUT"
 
@@ -19,13 +19,22 @@ CONFIG_ARGS_STRS=()
 ITERS="3"
 METRIC=""
 PROFILE_DIR=""
+X_LABEL=""
+Y_LABEL=""
+FILENAME=""
+GRAPH_TITLE=""
 GROUPNAMES=()
+LABELS=()
+EPS=false
 while true; do
   case "$1" in
     -b | --bench ) BENCHES+=("$2"); shift 2;;
     -c | --config ) CONFIGS+=("$2"); shift 2;;
+    -x | --x_label ) X_LABEL="$2"; shift 2;;
+    -y | --y_label ) Y_LABEL="$2"; shift 2;;
     -g | --groupsize ) GROUPSIZE="$2"; shift 2;;
-    -u | --groupname ) echo "GROUPNAME: $2"; GROUPNAMES+=("$2"); shift 2;;
+    -u | --groupname ) GROUPNAMES+=("$2"); shift 2;;
+    -l | --label ) LABELS+=("$2"); shift 2;;
     -a | --args ) CONFIG_ARGS_STRS+=("$2"); shift 2;;
     -r | --baseconfig ) BASECONFIG="$2"; shift 2;;
     -t | --base_args ) BASECONFIG_ARGS_STR="$2"; shift 2;;
@@ -34,6 +43,9 @@ while true; do
     -i | --iters ) ITERS="$2"; shift 2;;
     -p | --profile ) PROFILE_DIR="$2"; shift 2;;
     -n | --node ) NODE="$2"; shift 2;;
+    -f | --filename ) FILENAME="$2"; shift 2;;
+    -G | --graph_title ) GRAPH_TITLE="$2"; shift 2;;
+    -e | --eps ) EPS=true; shift 1;;
     -- ) shift; break;;
     * ) break;;
   esac

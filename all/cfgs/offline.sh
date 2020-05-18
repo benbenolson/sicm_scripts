@@ -26,11 +26,11 @@ function offline_base {
   fi
 
   # Get the peak RSS of the canary run
-  PEAK_RSS_CANARY=`${SCRIPTS_DIR}/all/stat --metric=peak_rss_kbytes ${CANARY_DIR}`
+  PEAK_RSS_CANARY=`${SCRIPTS_DIR}/all/stat --single --metric=peak_rss_kbytes ${CANARY_DIR}`
   PEAK_RSS_CANARY_BYTES=$(echo "${PEAK_RSS_CANARY} * 1024" | bc)
 
   # Get the peak RSS of the profiling run
-  PEAK_RSS_PROFILING=`${SCRIPTS_DIR}/all/stat --metric=peak_rss_kbytes ${PEBS_DIR}`
+  PEAK_RSS_PROFILING=`${SCRIPTS_DIR}/all/stat --single --metric=peak_rss_kbytes ${PEBS_DIR}`
   PEAK_RSS_PROFILING_BYTES=$(echo "${PEAK_RSS_PROFILING} * 1024" | bc)
 
   if [ "$DO_SCALE" = true ]; then
@@ -98,7 +98,7 @@ function offline_mr {
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
 
   # This is in kilobytes
-  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --metric=peak_rss_kbytes ${CANARY_DIR}`
+  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single --metric=peak_rss_kbytes ${CANARY_DIR}`
   PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
 
   # How many pages we need to be free on upper tier

@@ -3,6 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
+#include <math.h>
 #include <sicm_parsing.h>
 #include <sicm_packing.h>
 #include "graph_helper.h"
@@ -26,6 +27,10 @@ char *sicm_metrics_list[] = {
   "prof_num_phases",
   "prof_avg_interval_time",
   "prof_last_phase_time",
+  "prof_geomean_hotset_peak_size",
+  "prof_geomean_device_peak_size",
+  "prof_geomean_hotset_current_size",
+  "prof_geomean_device_current_size",
   NULL
 };
 
@@ -34,7 +39,11 @@ typedef struct sicm_metrics {
          prof_total_interval_time,
          prof_avg_interval_time,
          prof_last_phase_time,
-         prof_avg_phase_time;
+         prof_avg_phase_time,
+         prof_geomean_hotset_peak_size,
+         prof_geomean_device_peak_size,
+         prof_geomean_hotset_current_size,
+         prof_geomean_device_current_size;
   size_t online_num_rebinds,
          online_total_rebind_estimate,
          prof_num_intervals,
@@ -54,6 +63,10 @@ sicm_metrics *init_sicm_metrics() {
   info->prof_avg_phase_time = 0;
   info->prof_num_intervals = 0;
   info->prof_num_phases = 0;
+  info->prof_geomean_hotset_peak_size = 0.0;
+  info->prof_geomean_device_peak_size = 0.0;
+  info->prof_geomean_hotset_current_size = 0.0;
+  info->prof_geomean_device_current_size = 0.0;
 
   return info;
 }
@@ -66,11 +79,12 @@ void parse_sicm(FILE *file, char *metric, sicm_metrics *info, int site) {
   size_t len, rebinds, i, n;
   ssize_t read;
   interval_profile *interval;
-  double sum;
+  double hotset_sum, device_sum,
+         hotset_cur_sum, device_cur_sum;
   
   size_t tmp_sizet;
   double tmp_dbl;
-
+  
   if(strcmp(metric, "graph_heatmap_weighted") == 0) {
     graph_heatmap(file, metric, 0, 0);
   } else if(strcmp(metric, "graph_hotset_diff_weighted") == 0) {
@@ -90,10 +104,56 @@ void parse_sicm(FILE *file, char *metric, sicm_metrics *info, int site) {
       interval = &(info->app_prof->intervals[i]);
       info->prof_total_interval_time += interval->time;
       info->prof_num_intervals++;
-      if(info->app_prof->has_profile_online && interval->profile_online.phase_change) {
-        info->prof_num_phases++;
+      if(info->app_prof->has_profile_online) {
+        if(interval->profile_online.phase_change) {
+          info->prof_num_phases++;
+        }
+        hotset_sum = 0.0;
+        device_sum = 0.0;
+        hotset_cur_sum = 0.0;
+        device_cur_sum = 0.0;
+        for(n = 0; n < interval->num_arenas; n++) {
+          if(info->app_prof->has_profile_rss) {
+            if(interval->arenas[n]->profile_online.hot &&
+               interval->arenas[n]->profile_rss.peak) {
+              hotset_sum += (((double) interval->arenas[n]->profile_rss.peak) / 1024 / 1024);
+            }
+            if(interval->arenas[n]->profile_online.hot &&
+               interval->arenas[n]->profile_rss.current) {
+              hotset_cur_sum += (((double) interval->arenas[n]->profile_rss.current) / 1024 / 1024);
+            }
+            if((interval->arenas[n]->profile_online.dev == 1) &&
+               interval->arenas[n]->profile_rss.peak) {
+              device_sum += (((double) interval->arenas[n]->profile_rss.peak) / 1024 / 1024);
+            }
+            if((interval->arenas[n]->profile_online.dev == 1) &&
+               interval->arenas[n]->profile_rss.current) {
+              device_cur_sum += (((double) interval->arenas[n]->profile_rss.current) / 1024 / 1024);
+            }
+          }
+        }
+        if(hotset_sum) {
+          info->prof_geomean_hotset_peak_size += log(hotset_sum);
+        }
+        if(device_sum) {
+          info->prof_geomean_device_peak_size += log(device_sum);
+        }
+        if(hotset_cur_sum) {
+          info->prof_geomean_hotset_current_size += log(hotset_cur_sum);
+        }
+        if(device_cur_sum) {
+          info->prof_geomean_device_current_size += log(device_cur_sum);
+        }
       }
     }
+    info->prof_geomean_hotset_peak_size /= info->app_prof->num_intervals;
+    info->prof_geomean_device_peak_size /= info->app_prof->num_intervals;
+    info->prof_geomean_hotset_peak_size = exp(info->prof_geomean_hotset_peak_size);
+    info->prof_geomean_device_peak_size = exp(info->prof_geomean_device_peak_size);
+    info->prof_geomean_hotset_current_size /= info->app_prof->num_intervals;
+    info->prof_geomean_device_current_size /= info->app_prof->num_intervals;
+    info->prof_geomean_hotset_current_size = exp(info->prof_geomean_hotset_current_size);
+    info->prof_geomean_device_current_size = exp(info->prof_geomean_device_current_size);
     info->prof_num_phases++;
     info->prof_avg_interval_time = info->prof_total_interval_time / info->prof_num_intervals;
   } else if(strncmp(metric, "online_", 7) == 0) {
@@ -117,6 +177,7 @@ char *is_sicm_metric(char *metric) {
   i = 0;
   while((ptr = sicm_metrics_list[i]) != NULL) {
     if(strcmp(metric, ptr) == 0) {
+      printf("Matched the metric %s\n", metric);
       if(strncmp(metric, "online_", 7) == 0) {
         filename = malloc(sizeof(char) * (strlen("online.txt") + 1));
         strcpy(filename, "online.txt");
@@ -148,6 +209,19 @@ void set_sicm_metric(char *metric_str, sicm_metrics *info, metric *m) {
   } else if(strcmp(metric_str, "prof_num_phases") == 0) {
     m->val.f = info->prof_num_phases;
     m->type = 0;
+  } else if(strcmp(metric_str, "prof_geomean_hotset_peak_size") == 0) {
+    m->val.f = info->prof_geomean_hotset_peak_size;
+    m->type = 0;
+  } else if(strcmp(metric_str, "prof_geomean_device_peak_size") == 0) {
+    m->val.f = info->prof_geomean_device_peak_size;
+    m->type = 0;
+  } else if(strcmp(metric_str, "prof_geomean_hotset_current_size") == 0) {
+    m->val.f = info->prof_geomean_hotset_current_size;
+    m->type = 0;
+  } else if(strcmp(metric_str, "prof_geomean_device_current_size") == 0) {
+    m->val.f = info->prof_geomean_device_current_size;
+    m->type = 0;
+    
   /* Specific to online approach */
   } else if(strcmp(metric_str, "online_total_rebind_time") == 0) {
     m->val.f = info->online_total_rebind_time;

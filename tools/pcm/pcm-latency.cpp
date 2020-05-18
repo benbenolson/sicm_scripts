@@ -130,6 +130,7 @@ void store_latency_uncore(PCM *m, bool ddr, int delay_ms)
         uncore_event[ddr].skt[i].socket_id = i;
         const double delay_seconds = double(delay_ms) / 1000.;
         DRAMSpeed = double(getDRAMClocks(0, BeforeState[i], AfterState[i]))/(double(1e9) * delay_seconds);
+        cout << "DRAMSpeed: " << DRAMSpeed << endl;
         uncore_event[ddr].skt[i].rinsert = 0;
         uncore_event[ddr].skt[i].roccupancy = 0;
         uncore_event[ddr].skt[i].winsert = 0;
@@ -259,6 +260,8 @@ void print_ddr(PCM *m, int ddr_ip)
             {
                 cout << "Socket" << n << ": " << double(uncore_event[PMM].skt[n].rlatency)/DRAMSpeed;
                 cout << endl;
+                cout << "Socket" << n << ": " << double(uncore_event[PMM].skt[n].wlatency)/DRAMSpeed;
+                cout << endl;
             }
         }
         else
@@ -273,6 +276,8 @@ void print_ddr(PCM *m, int ddr_ip)
         for (unsigned int n=0; n<m->getNumSockets(); n++)
         {
             cout << "Socket" << n << ": " << double(uncore_event[DDR].skt[n].rlatency)/DRAMSpeed;
+            cout << endl;
+            cout << "Socket" << n << ": " << double(uncore_event[DDR].skt[n].wlatency)/DRAMSpeed;
             cout << endl;
         }
     }

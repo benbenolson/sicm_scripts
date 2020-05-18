@@ -10,7 +10,7 @@ void jgraph_wrapper(char *metric_str, char *args) {
   char *command, *line;
   size_t nread, line_length;
   FILE *output;
-
+  
   /* Call the jgraph script */
   command = malloc(sizeof(char) * 400);
   if(output_filename) {
@@ -26,12 +26,12 @@ void jgraph_wrapper(char *metric_str, char *args) {
   } else {
     if(output_filetype) {
       snprintf(command, 400,
-        "${SCRIPTS_DIR}/all/bash/%s.sh %s | ${SCRIPTS_DIR}/tools/jgraph/jgraph",
-        metric_str, args);
+        "${SCRIPTS_DIR}/all/bash/%s.sh %s | ${SCRIPTS_DIR}/tools/jgraph/jgraph > %s",
+        metric_str, args, "test.eps");
     } else {
       snprintf(command, 400,
-        "${SCRIPTS_DIR}/all/bash/%s.sh %s | ${SCRIPTS_DIR}/tools/jgraph/jgraph | gs -dSAFER -dBATCH -dNOPAUSE -sDEVICE=png16m -dEPSCrop -r500 -dGraphicsAlphaBits=1 -dTextAlphaBits=4 -sOutputFile=test.png -",
-        metric_str, args);
+        "${SCRIPTS_DIR}/all/bash/%s.sh %s | ${SCRIPTS_DIR}/tools/jgraph/jgraph | gs -dSAFER -dBATCH -dNOPAUSE -sDEVICE=png16m -dEPSCrop -r500 -dGraphicsAlphaBits=1 -dTextAlphaBits=4 -sOutputFile=%s -",
+        metric_str, args, "test.png");
     }
   }
   output = popen(command, "r");

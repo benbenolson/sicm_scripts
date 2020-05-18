@@ -1,14 +1,20 @@
 #include <string.h>
 #include <ctype.h>
+#include <float.h>
 
 char *bench_metrics_list[] = {
   "fom",
   "avg_phase_time",
   "first_phase_time",
   "last_phase_time",
-  "max_phase_time",
   "total_phase_time",
   "num_phases",
+  "graph_last_phase_time",
+  "graph_first_phase_time",
+  "max_phase_time",
+  "min_phase_time",
+  "graph_min_phase_time",
+  "graph_max_phase_time",
   NULL
 };
 
@@ -18,6 +24,7 @@ typedef struct bench_metrics {
          first_phase_time,
          last_phase_time,
          max_phase_time,
+         min_phase_time,
          total_phase_time;
   size_t num_phases;
 
@@ -34,6 +41,7 @@ bench_metrics *init_bench_metrics() {
   info->first_phase_time = 0;
   info->last_phase_time = 0;
   info->max_phase_time = 0;
+  info->min_phase_time = DBL_MAX;
   info->total_phase_time = 0;
   info->num_phases = 0;
 
@@ -93,11 +101,29 @@ void parse_bench(FILE *file, bench_metrics *info) {
         exit(1);
       }
       info->fom = double_tmp;
+    /* This is for LULESH */
     } else if(sscanf(line, "cycle timer =     %lf (s)", &double_tmp) == 1) {
       info->total_phase_time += double_tmp;
       info->num_phases++;
       if(double_tmp > info->max_phase_time) {
         info->max_phase_time = double_tmp;
+      }
+      if(double_tmp < info->min_phase_time) {
+        info->min_phase_time = double_tmp;
+      }
+      if(info->num_phases == 1) {
+        info->first_phase_time = double_tmp;
+      }
+      info->last_phase_time = double_tmp;
+    /* This is for AMG timestep time */
+    } else if(sscanf(line, "Timestep time: %lf", &double_tmp) == 1) {
+      info->total_phase_time += double_tmp;
+      info->num_phases++;
+      if(double_tmp > info->max_phase_time) {
+        info->max_phase_time = double_tmp;
+      }
+      if(double_tmp < info->min_phase_time) {
+        info->min_phase_time = double_tmp;
       }
       if(info->num_phases == 1) {
         info->first_phase_time = double_tmp;
@@ -143,14 +169,21 @@ void set_bench_metric(char *metric_str, bench_metrics *info, metric *m) {
   } else if(strcmp(metric_str, "total_phase_time") == 0) {
     m->val.f = info->total_phase_time;
     m->type = 0;
-  } else if(strcmp(metric_str, "max_phase_time") == 0) {
-    m->val.f = info->max_phase_time;
-    m->type = 0;
-  } else if(strcmp(metric_str, "first_phase_time") == 0) {
+  } else if((strcmp(metric_str, "first_phase_time") == 0) || 
+            (strcmp(metric_str, "graph_first_phase_time") == 0)) {
     m->val.f = info->first_phase_time;
     m->type = 0;
-  } else if(strcmp(metric_str, "last_phase_time") == 0) {
+  } else if((strcmp(metric_str, "last_phase_time") == 0) ||
+            (strcmp(metric_str, "graph_last_phase_time") == 0)) {
     m->val.f = info->last_phase_time;
+    m->type = 0;
+  } else if((strcmp(metric_str, "min_phase_time") == 0) ||
+            (strcmp(metric_str, "graph_min_phase_time") == 0)) {
+    m->val.f = info->min_phase_time;
+    m->type = 0;
+  } else if((strcmp(metric_str, "max_phase_time") == 0) ||
+            (strcmp(metric_str, "graph_max_phase_time") == 0)) {
+    m->val.f = info->max_phase_time;
     m->type = 0;
   }
 }

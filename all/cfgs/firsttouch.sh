@@ -63,7 +63,7 @@ function firsttouch_memreserve_shared_site {
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
 
   # This is in kilobytes
-  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --metric=peak_rss_kbytes ${CANARY_DIR}`
+  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single --metric=peak_rss_kbytes ${CANARY_DIR}`
   PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
 
   # How many pages we need to be free on upper tier
@@ -85,7 +85,7 @@ function firsttouch_memreserve_exclusive_device {
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
 
   # This is in kilobytes
-  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --metric=peak_rss_kbytes ${CANARY_DIR}`
+  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single --metric=peak_rss_kbytes ${CANARY_DIR}`
   PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
 
   # How many pages we need to be free on upper tier
@@ -107,7 +107,7 @@ function firsttouch_memreserve_default {
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
 
   # This is in kilobytes
-  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --metric=peak_rss_kbytes ${CANARY_DIR}`
+  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single --metric=peak_rss_kbytes ${CANARY_DIR}`
   PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
 
   # How many pages we need to be free on upper tier

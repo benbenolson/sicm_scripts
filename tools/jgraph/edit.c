@@ -1178,6 +1178,8 @@ Graphs gs;
           the_g->bb[i] = j;
         }
       }
+    } else if (strcmp(inp_str, "pad") == 0) {
+      if (!getfloat(&f)) rejecttoken(); else the_g->pad = f;
     } else if (strcmp(inp_str, "preamble") == 0) {
       if (!getstring(inp_str)) return;
       if (strcmp(inp_str, ":") != 0) {
