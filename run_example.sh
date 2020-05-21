@@ -70,15 +70,18 @@
 #  --config=online_mr_ski_bw_relative_rss_tmp --args=thermos,16,100,10,100,40 \
 #  --config=online_mr_ski_bw_relative_rss_tmp --args=thermos,16,100,10,100,50
 
-./run.sh --bench=qmcpack --size=medium_aep --iters=1 \
-  --config=firsttouch_shared_site --args=-
-
-./run.sh --bench=qmcpack --size=medium_aep --iters=1 \
-  --config=firsttouch_memreserve_shared_site --args=10 \
-  --config=firsttouch_memreserve_shared_site --args=20 \
-  --config=firsttouch_memreserve_shared_site --args=30 \
-  --config=firsttouch_memreserve_shared_site --args=40 \
-  --config=firsttouch_memreserve_shared_site --args=50
+#./run.sh --bench=qmcpack --size=medium_aep --iters=1 \
+#  --config=profile_all_rss_es_int --args=16,10,100
+  
+#./run.sh --bench=snap --size=medium_aep --iters=1 \
+#  --config=profile_all_rss_es_int --args=16,10,100
+  
+./run.sh --bench=amg --size=medium_aep --iters=5 \
+  --config=online_mr_ski_bw_relative_lat_es_test --args=thermos,16,100,100,100,20  \
+  --config=profile_all_rss_int --args=16,10,100 \
+  --config=profile_all_rss_int --args=16,10,10 \
+  --config=profile_all_es_int --args=16,10,100 \
+  --config=profile_all_es_int --args=16,10,10
   
 #./run.sh --bench=amg --size=medium_aep --iters=5 \
 #  --config=offline_mr_all_rss --args=thermos,10 \

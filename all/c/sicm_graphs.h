@@ -100,3 +100,177 @@ void graph_online_bandwidth(FILE *input_file, char *metric) {
   free(reconfigure_name);
   free(phase_change_name);
 }
+
+void graph_online_hot_aep_acc(FILE *input_file, char *metric) {
+  char *hot_aep_acc_name,
+       *reconfigure_name,
+       *phase_change_name,
+       *interval_time_name,
+       *args;
+       
+  hot_aep_acc_name = generate_hot_aep_acc_table(input_file);
+  reconfigure_name = generate_reconfigure_table(input_file);
+  phase_change_name = generate_phase_change_table(input_file);
+  interval_time_name = generate_interval_time_table(input_file);
+  
+  /* Construct the string of arguments to pass to the jgraph script */
+  args = orig_malloc(sizeof(char) *
+                     (strlen(hot_aep_acc_name) +
+                      strlen(reconfigure_name) +
+                      strlen(phase_change_name) +
+                      strlen(interval_time_name) +
+                      4)); /* Three spaces and one NULL */
+  strcpy(args, hot_aep_acc_name);
+  strcat(args, " ");
+  strcat(args, reconfigure_name);
+  strcat(args, " ");
+  strcat(args, phase_change_name);
+  strcat(args, " ");
+  strcat(args, interval_time_name);
+  printf("args: '%s'\n", args);
+  jgraph_wrapper("graph_online_percentage", args);
+  
+  free(args);
+  free(hot_aep_acc_name);
+  free(reconfigure_name);
+  free(phase_change_name);
+}
+
+void graph_online_aep_acc(FILE *input_file, char *metric) {
+  char *aep_acc_name,
+       *reconfigure_name,
+       *phase_change_name,
+       *interval_time_name,
+       *args;
+       
+  aep_acc_name = generate_aep_acc_table(input_file);
+  reconfigure_name = generate_reconfigure_table(input_file);
+  phase_change_name = generate_phase_change_table(input_file);
+  interval_time_name = generate_interval_time_table(input_file);
+  
+  /* Construct the string of arguments to pass to the jgraph script */
+  args = orig_malloc(sizeof(char) *
+                     (strlen(aep_acc_name) +
+                      strlen(reconfigure_name) +
+                      strlen(phase_change_name) +
+                      strlen(interval_time_name) +
+                      4)); /* Three spaces and one NULL */
+  strcpy(args, aep_acc_name);
+  strcat(args, " ");
+  strcat(args, reconfigure_name);
+  strcat(args, " ");
+  strcat(args, phase_change_name);
+  strcat(args, " ");
+  strcat(args, interval_time_name);
+  printf("args: '%s'\n", args);
+  jgraph_wrapper("graph_online_percentage", args);
+  
+  free(args);
+  free(aep_acc_name);
+  free(reconfigure_name);
+  free(phase_change_name);
+}
+
+void graph_online_offhot_aep_acc(FILE *input_file, char *metric) {
+  char *offhot_aep_acc_name,
+       *reconfigure_name,
+       *phase_change_name,
+       *interval_time_name,
+       *args;
+       
+  offhot_aep_acc_name = generate_offhot_aep_acc_table(input_file);
+  reconfigure_name = generate_reconfigure_table(input_file);
+  phase_change_name = generate_phase_change_table(input_file);
+  interval_time_name = generate_interval_time_table(input_file);
+  
+  /* Construct the string of arguments to pass to the jgraph script */
+  args = orig_malloc(sizeof(char) *
+                     (strlen(offhot_aep_acc_name) +
+                      strlen(reconfigure_name) +
+                      strlen(phase_change_name) +
+                      strlen(interval_time_name) +
+                      4)); /* Three spaces and one NULL */
+  strcpy(args, offhot_aep_acc_name);
+  strcat(args, " ");
+  strcat(args, reconfigure_name);
+  strcat(args, " ");
+  strcat(args, phase_change_name);
+  strcat(args, " ");
+  strcat(args, interval_time_name);
+  printf("args: '%s'\n", args);
+  jgraph_wrapper("graph_online_percentage", args);
+  
+  free(args);
+  free(offhot_aep_acc_name);
+  free(reconfigure_name);
+  free(phase_change_name);
+}
+
+void graph_online_dev_aep_acc(FILE *input_file, char *metric) {
+  char *dev_aep_acc_name,
+       *reconfigure_name,
+       *phase_change_name,
+       *interval_time_name,
+       *args;
+       
+  dev_aep_acc_name = generate_dev_aep_acc_table(input_file);
+  reconfigure_name = generate_reconfigure_table(input_file);
+  phase_change_name = generate_phase_change_table(input_file);
+  interval_time_name = generate_interval_time_table(input_file);
+  
+  /* Construct the string of arguments to pass to the jgraph script */
+  args = orig_malloc(sizeof(char) *
+                     (strlen(dev_aep_acc_name) +
+                      strlen(reconfigure_name) +
+                      strlen(phase_change_name) +
+                      strlen(interval_time_name) +
+                      4)); /* Three spaces and one NULL */
+  strcpy(args, dev_aep_acc_name);
+  strcat(args, " ");
+  strcat(args, reconfigure_name);
+  strcat(args, " ");
+  strcat(args, phase_change_name);
+  strcat(args, " ");
+  strcat(args, interval_time_name);
+  jgraph_wrapper("graph_online_percentage", args);
+  
+  free(args);
+  free(dev_aep_acc_name);
+  free(reconfigure_name);
+  free(phase_change_name);
+}
+
+void graph_online_site_aep_acc(FILE *input_file, char *metric, int site) {
+  char *site_aep_acc_name,
+       *reconfigure_name,
+       *phase_change_name,
+       *interval_time_name,
+       *args;
+       
+  site_aep_acc_name = generate_site_aep_acc_table(input_file, site);
+  reconfigure_name = generate_reconfigure_table(input_file);
+  phase_change_name = generate_phase_change_table(input_file);
+  interval_time_name = generate_interval_time_table(input_file);
+  
+  /* Construct the string of arguments to pass to the jgraph script */
+  args = orig_malloc(sizeof(char) *
+                     (strlen(site_aep_acc_name) +
+                      strlen(reconfigure_name) +
+                      strlen(phase_change_name) +
+                      strlen(interval_time_name) +
+                      4)); /* Three spaces and one NULL */
+  strcpy(args, site_aep_acc_name);
+  strcat(args, " ");
+  strcat(args, reconfigure_name);
+  strcat(args, " ");
+  strcat(args, phase_change_name);
+  strcat(args, " ");
+  strcat(args, interval_time_name);
+  printf("args: '%s'\n", args);
+  jgraph_wrapper("graph_online_percentage", args);
+  
+  free(args);
+  free(site_aep_acc_name);
+  free(reconfigure_name);
+  free(phase_change_name);
+}

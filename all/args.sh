@@ -3,7 +3,7 @@
 source ./all/vars.sh
 
 # Arguments
-GETOPT_OUTPUT=`getopt -o ebcsagumipnrtlxyfG --long eps,bench:,config:,graph_title:,size:,args:,x_label:,y_label:,groupsize:,groupname:,label:,metric:,iters:,profile:,node:,baseconfig:,base_args:,filename: -n 'args.sh' -- "$@"`
+GETOPT_OUTPUT=`getopt -o ebcsagumipnrtlxyfG --long site:,eps,bench:,config:,graph_title:,size:,args:,x_label:,y_label:,groupsize:,groupname:,label:,metric:,iters:,profile:,node:,baseconfig:,base_args:,filename: -n 'args.sh' -- "$@"`
 if [ $? != 0 ] ; then echo "'getopt' failed. Aborting." >&2 ; exit 1 ; fi
 eval set -- "$GETOPT_OUTPUT"
 
@@ -25,6 +25,7 @@ FILENAME=""
 GRAPH_TITLE=""
 GROUPNAMES=()
 LABELS=()
+SITE=""
 EPS=false
 while true; do
   case "$1" in
@@ -46,6 +47,7 @@ while true; do
     -f | --filename ) FILENAME="$2"; shift 2;;
     -G | --graph_title ) GRAPH_TITLE="$2"; shift 2;;
     -e | --eps ) EPS=true; shift 1;;
+    -z | --site ) SITE="$2"; shift 2;;
     -- ) shift; break;;
     * ) break;;
   esac

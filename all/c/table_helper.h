@@ -13,6 +13,11 @@ char *generate_hotset_diff_table(FILE *input_file, char top100, int sort_arg);
 char *generate_weight_ratio_table(FILE *input_file, char top100, int sort_arg);
 char *generate_heatmap_table(FILE *input_file, char top100, int sort_arg);
 char *generate_bandwidth_table(FILE *input_file);
+char *generate_hot_aep_acc_table(FILE *input_file);
+char *generate_aep_acc_table(FILE *input_file);
+char *generate_dev_aep_acc_table(FILE *input_file);
+char *generate_offhot_aep_acc_table(FILE *input_file);
+char *generate_site_aep_acc_table(FILE *input_file, int site);
 char *generate_reconfigure_table(FILE *input_file);
 char *generate_phase_change_table(FILE *input_file);
 char *generate_interval_time_table(FILE *input_file);
@@ -124,6 +129,258 @@ char *generate_bandwidth_table(FILE *input_file) {
   fclose(bandwidth_table_f);
   
   return bandwidth_table_name;
+}
+
+char *generate_hot_aep_acc_table(FILE *input_file) {
+  char *hot_aep_acc_table_name;
+  FILE *hot_aep_acc_table_f;
+  size_t i, n, acc, bad;
+  double per;
+
+  open_tmp_file(&hot_aep_acc_table_name, &hot_aep_acc_table_f);
+
+  packing_init_wrapper(input_file, 0, 0, 0);
+  
+  /* Iterate over the intervals */
+  if(!(app_prof->has_profile_all)) {
+    fprintf(stderr, "This profiling doesn't have any profile_all profiling information. Aborting.\n");
+    exit(1);
+  }
+  if(!(app_prof->has_profile_online)) {
+    fprintf(stderr, "This profiling doesn't have any profile_online profiling information. Aborting.\n");
+    exit(1);
+  }
+  if(app_prof->num_profile_all_events < 2) {
+    fprintf(stderr, "This profiling doesn't have enough profile_all profiling information. Aborting.\n");
+    exit(1);
+  }
+  for(i = 0; i < app_prof->num_intervals; i++) {
+    acc = 0;
+    bad = 0;
+    for(n = 0; n < app_prof->intervals[i].num_arenas; n++) {
+      if(app_prof->intervals[i].arenas[n]->profile_online.hot) {
+        acc += app_prof->intervals[i].arenas[n]->profile_all.events[0].current;
+        acc += app_prof->intervals[i].arenas[n]->profile_all.events[1].current;
+        bad += app_prof->intervals[i].arenas[n]->profile_all.events[1].current;
+      }
+    }
+    per = 0.0;
+    if(bad && acc) {
+      per = ((double) bad / acc) * 100;
+    }
+    fprintf(hot_aep_acc_table_f, "%f ", per);
+  }
+  fprintf(hot_aep_acc_table_f, "\n");
+  fclose(hot_aep_acc_table_f);
+  
+  return hot_aep_acc_table_name;
+}
+
+char *generate_aep_acc_table(FILE *input_file) {
+  char *aep_acc_table_name;
+  FILE *aep_acc_table_f;
+  size_t i, n, acc, bad;
+  double per;
+
+  open_tmp_file(&aep_acc_table_name, &aep_acc_table_f);
+
+  packing_init_wrapper(input_file, 0, 0, 0);
+  
+  /* Iterate over the intervals */
+  if(!(app_prof->has_profile_all)) {
+    fprintf(stderr, "This profiling doesn't have any profile_all profiling information. Aborting.\n");
+    exit(1);
+  }
+  if(!(app_prof->has_profile_online)) {
+    fprintf(stderr, "This profiling doesn't have any profile_online profiling information. Aborting.\n");
+    exit(1);
+  }
+  if(app_prof->num_profile_all_events < 2) {
+    fprintf(stderr, "This profiling doesn't have enough profile_all profiling information. Aborting.\n");
+    exit(1);
+  }
+  for(i = 0; i < app_prof->num_intervals; i++) {
+    acc = 0;
+    bad = 0;
+    for(n = 0; n < app_prof->intervals[i].num_arenas; n++) {
+      acc += app_prof->intervals[i].arenas[n]->profile_all.events[0].current;
+      acc += app_prof->intervals[i].arenas[n]->profile_all.events[1].current;
+      bad += app_prof->intervals[i].arenas[n]->profile_all.events[1].current;
+    }
+    per = 0.0;
+    if(bad && acc) {
+      per = ((double) bad / acc) * 100;
+    }
+    fprintf(aep_acc_table_f, "%f ", per);
+  }
+  fprintf(aep_acc_table_f, "\n");
+  fclose(aep_acc_table_f);
+  
+  return aep_acc_table_name;
+}
+
+char *generate_dev_aep_acc_table(FILE *input_file) {
+  char *dev_aep_acc_table_name;
+  FILE *dev_aep_acc_table_f;
+  size_t i, n, acc, bad;
+  double per;
+
+  open_tmp_file(&dev_aep_acc_table_name, &dev_aep_acc_table_f);
+
+  packing_init_wrapper(input_file, 0, 0, 0);
+  
+  /* Iterate over the intervals */
+  if(!(app_prof->has_profile_all)) {
+    fprintf(stderr, "This profiling doesn't have any profile_all profiling information. Aborting.\n");
+    exit(1);
+  }
+  if(!(app_prof->has_profile_online)) {
+    fprintf(stderr, "This profiling doesn't have any profile_online profiling information. Aborting.\n");
+    exit(1);
+  }
+  if(app_prof->num_profile_all_events < 2) {
+    fprintf(stderr, "This profiling doesn't have enough profile_all profiling information. Aborting.\n");
+    exit(1);
+  }
+  for(i = 0; i < app_prof->num_intervals; i++) {
+    acc = 0;
+    bad = 0;
+    for(n = 0; n < app_prof->intervals[i].num_arenas; n++) {
+      if(app_prof->intervals[i].arenas[n]->profile_online.dev) {
+        acc += app_prof->intervals[i].arenas[n]->profile_all.events[0].current;
+        acc += app_prof->intervals[i].arenas[n]->profile_all.events[1].current;
+        bad += app_prof->intervals[i].arenas[n]->profile_all.events[1].current;
+      }
+    }
+    per = 0.0;
+    if(bad && acc) {
+      per = ((double) bad / acc) * 100;
+    }
+    fprintf(dev_aep_acc_table_f, "%f ", per);
+  }
+  fprintf(dev_aep_acc_table_f, "\n");
+  fclose(dev_aep_acc_table_f);
+  
+  return dev_aep_acc_table_name;
+}
+
+char *generate_site_aep_acc_table(FILE *input_file, int site) {
+  char *site_aep_acc_table_name;
+  FILE *site_aep_acc_table_f;
+  size_t i, n, acc, bad, last_interval, arena_index;
+  double per;
+
+  open_tmp_file(&site_aep_acc_table_name, &site_aep_acc_table_f);
+
+  packing_init_wrapper(input_file, 0, 0, 0);
+  
+  /* Iterate over the intervals */
+  if(!(app_prof->has_profile_all)) {
+    fprintf(stderr, "This profiling doesn't have any profile_all profiling information. Aborting.\n");
+    exit(1);
+  }
+  if(!(app_prof->has_profile_online)) {
+    fprintf(stderr, "This profiling doesn't have any profile_online profiling information. Aborting.\n");
+    exit(1);
+  }
+  if(app_prof->num_profile_all_events < 2) {
+    fprintf(stderr, "This profiling doesn't have enough profile_all profiling information. Aborting.\n");
+    exit(1);
+  }
+  
+  /* First, we need to figure out which arena the site is in */
+  last_interval = app_prof->num_intervals - 1;
+  arena_index = SIZE_MAX;
+  for(n = 0; n < app_prof->intervals[last_interval].num_arenas; n++) {
+    if(app_prof->intervals[last_interval].arenas[n]->alloc_sites[0] == site) {
+      arena_index = n;
+      break;
+    }
+  }
+  printf("Arena index: %zu\n", arena_index);
+  fflush(stdout);
+  if(arena_index == SIZE_MAX) {
+    fprintf(stderr, "Didn't find site in application profiling. Aborting.\n");
+    exit(1);
+  }
+  
+  for(i = 0; i < app_prof->num_intervals; i++) {
+    if((app_prof->intervals[i].num_arenas > arena_index) && app_prof->intervals[i].arenas[arena_index]) {
+      acc = 0;
+      bad = 0;
+      acc += app_prof->intervals[i].arenas[arena_index]->profile_all.events[0].current;
+      acc += app_prof->intervals[i].arenas[arena_index]->profile_all.events[1].current;
+      bad += app_prof->intervals[i].arenas[arena_index]->profile_all.events[1].current;
+      per = 0.0;
+      if(bad && acc) {
+        per = ((double) bad / acc) * 100;
+      }
+    } else {
+      per = 0;
+    }
+    fprintf(site_aep_acc_table_f, "%f ", per);
+  }
+  fprintf(site_aep_acc_table_f, "\n");
+  fclose(site_aep_acc_table_f);
+  
+  return site_aep_acc_table_name;
+}
+
+char *generate_offhot_aep_acc_table(FILE *input_file) {
+  char *offhot_aep_acc_table_name;
+  FILE *offhot_aep_acc_table_f;
+  size_t i, n, acc, bad;
+  double per;
+  int site;
+  tree(site_info_ptr, int) offline_sites;
+  tree(int, site_info_ptr) offline_hotset;
+  tree_it(site_info_ptr, int) sit;
+  tree_it(int, site_info_ptr) off;
+
+  open_tmp_file(&offhot_aep_acc_table_name, &offhot_aep_acc_table_f);
+
+  packing_init_wrapper(input_file, 0, 0, 0);
+  
+  /* Iterate over the intervals */
+  if(!(app_prof->has_profile_all)) {
+    fprintf(stderr, "This profiling doesn't have any profile_all profiling information. Aborting.\n");
+    exit(1);
+  }
+  if(!(app_prof->has_profile_online)) {
+    fprintf(stderr, "This profiling doesn't have any profile_online profiling information. Aborting.\n");
+    exit(1);
+  }
+  if(app_prof->num_profile_all_events < 2) {
+    fprintf(stderr, "This profiling doesn't have enough profile_all profiling information. Aborting.\n");
+    exit(1);
+  }
+  
+  packing_init_wrapper(input_file, PROFILE_ALL_TOTAL, 0, 0);
+  offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1);
+  offline_hotset = sh_get_hot_sites(offline_sites, app_prof->upper_capacity);
+  
+  for(i = 0; i < app_prof->num_intervals; i++) {
+    acc = 0;
+    bad = 0;
+    for(n = 0; n < app_prof->intervals[i].num_arenas; n++) {
+      site = app_prof->intervals[i].arenas[n]->alloc_sites[0];
+      off = tree_lookup(offline_hotset, site);
+      if(tree_it_good(off)) {
+        acc += app_prof->intervals[i].arenas[n]->profile_all.events[0].current;
+        acc += app_prof->intervals[i].arenas[n]->profile_all.events[1].current;
+        bad += app_prof->intervals[i].arenas[n]->profile_all.events[1].current;
+      }
+    }
+    per = 0.0;
+    if(bad && acc) {
+      per = ((double) bad / acc) * 100;
+    }
+    fprintf(offhot_aep_acc_table_f, "%f ", per);
+  }
+  fprintf(offhot_aep_acc_table_f, "\n");
+  fclose(offhot_aep_acc_table_f);
+  
+  return offhot_aep_acc_table_name;
 }
 
 char *generate_reconfigure_table(FILE *input_file) {

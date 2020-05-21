@@ -58,6 +58,9 @@ fi
 if [[ ! -z "${GROUPSIZE}" ]]; then
   STAT_ARGS="${STAT_ARGS} --groupsize=${GROUPSIZE}"
 fi
+if [[ ! -z "${SITE}" ]]; then
+  STAT_ARGS="${STAT_ARGS} --site=${SITE}"
+fi
 STAT_ARGS="${STAT_ARGS} ${RESULTS_DIR}/${BENCH}/${SIZE}"
 
 eval "${SCRIPTS_DIR}/all/stat ${STAT_ARGS}"

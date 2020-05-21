@@ -19,6 +19,11 @@ char *sicm_metrics_list[] = {
   "graph_heatmap_top100",
   "graph_heatmap_proposal",
   "graph_online_bandwidth",
+  "graph_online_dev_aep_acc",
+  "graph_online_hot_aep_acc",
+  "graph_online_offhot_aep_acc",
+  "graph_online_site_aep_acc",
+  "graph_online_aep_acc",
   "online_num_rebinds",
   "online_total_rebind_time",
   "online_total_rebind_estimate",
@@ -27,6 +32,7 @@ char *sicm_metrics_list[] = {
   "prof_num_phases",
   "prof_avg_interval_time",
   "prof_last_phase_time",
+  "prof_total_rss_time",
   "prof_geomean_hotset_peak_size",
   "prof_geomean_device_peak_size",
   "prof_geomean_hotset_current_size",
@@ -43,7 +49,8 @@ typedef struct sicm_metrics {
          prof_geomean_hotset_peak_size,
          prof_geomean_device_peak_size,
          prof_geomean_hotset_current_size,
-         prof_geomean_device_current_size;
+         prof_geomean_device_current_size,
+         prof_total_rss_time;
   size_t online_num_rebinds,
          online_total_rebind_estimate,
          prof_num_intervals,
@@ -63,6 +70,7 @@ sicm_metrics *init_sicm_metrics() {
   info->prof_avg_phase_time = 0;
   info->prof_num_intervals = 0;
   info->prof_num_phases = 0;
+  info->prof_total_rss_time = 0.0;
   info->prof_geomean_hotset_peak_size = 0.0;
   info->prof_geomean_device_peak_size = 0.0;
   info->prof_geomean_hotset_current_size = 0.0;
@@ -97,6 +105,16 @@ void parse_sicm(FILE *file, char *metric, sicm_metrics *info, int site) {
     graph_heatmap(file, metric, 1, WEIGHT);
   } else if(strcmp(metric, "graph_online_bandwidth") == 0) {
     graph_online_bandwidth(file, metric);
+  } else if(strcmp(metric, "graph_online_hot_aep_acc") == 0) {
+    graph_online_hot_aep_acc(file, metric);
+  } else if(strcmp(metric, "graph_online_aep_acc") == 0) {
+    graph_online_aep_acc(file, metric);
+  } else if(strcmp(metric, "graph_online_offhot_aep_acc") == 0) {
+    graph_online_offhot_aep_acc(file, metric);
+  } else if(strcmp(metric, "graph_online_dev_aep_acc") == 0) {
+    graph_online_dev_aep_acc(file, metric);
+  } else if(strcmp(metric, "graph_online_site_aep_acc") == 0) {
+    graph_online_site_aep_acc(file, metric, site);
   } else if(strncmp(metric, "prof_", 5) == 0) {
     info->app_prof = sh_parse_profiling(file);
     fseek(file, 0, SEEK_SET);
@@ -104,6 +122,9 @@ void parse_sicm(FILE *file, char *metric, sicm_metrics *info, int site) {
       interval = &(info->app_prof->intervals[i]);
       info->prof_total_interval_time += interval->time;
       info->prof_num_intervals++;
+      if(info->app_prof->has_profile_rss) {
+        info->prof_total_rss_time += interval->profile_rss.time;
+      }
       if(info->app_prof->has_profile_online) {
         if(interval->profile_online.phase_change) {
           info->prof_num_phases++;
@@ -177,7 +198,6 @@ char *is_sicm_metric(char *metric) {
   i = 0;
   while((ptr = sicm_metrics_list[i]) != NULL) {
     if(strcmp(metric, ptr) == 0) {
-      printf("Matched the metric %s\n", metric);
       if(strncmp(metric, "online_", 7) == 0) {
         filename = malloc(sizeof(char) * (strlen("online.txt") + 1));
         strcpy(filename, "online.txt");
@@ -208,6 +228,9 @@ void set_sicm_metric(char *metric_str, sicm_metrics *info, metric *m) {
     m->type = 0;
   } else if(strcmp(metric_str, "prof_num_phases") == 0) {
     m->val.f = info->prof_num_phases;
+    m->type = 0;
+  } else if(strcmp(metric_str, "prof_total_rss_time") == 0) {
+    m->val.f = info->prof_total_rss_time;
     m->type = 0;
   } else if(strcmp(metric_str, "prof_geomean_hotset_peak_size") == 0) {
     m->val.f = info->prof_geomean_hotset_peak_size;

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-export DEFAULT_PROFILE_NODE="${SH_UPPER_NODE}"
-
 # First argument is the PEBS frequency
 # Second is the sampling rate
 function profile_all {
@@ -10,7 +8,7 @@ function profile_all {
 
   export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
-  export SH_DEFAULT_NODE="${DEFAULT_PROFILE_NODE}"
+  export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
   
   export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
 
@@ -21,12 +19,6 @@ function profile_all {
   export SH_PROFILE_RATE_NSECONDS=$(echo "${RATE} * 1000000" | bc)
   export SH_PROFILE_ALL_EVENTS="MEM_LOAD_UOPS_LLC_MISS_RETIRED:LOCAL_DRAM,MEM_LOAD_UOPS_RETIRED:LOCAL_PMM"
   
-  export SH_PROFILE_BW="1"
-  export SH_PROFILE_IMC="skx_unc_imc0,skx_unc_imc1,skx_unc_imc2,skx_unc_imc3,skx_unc_imc4,skx_unc_imc5"
-  export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
-  export SH_PROFILE_BW_SKIP_INTERVALS="1"
-  export SH_PROFILE_BW_RELATIVE="1"
-
   eval "${PRERUN}"
 
   for i in $(seq 0 $MAX_ITER); do
@@ -47,7 +39,7 @@ function profile_all_es {
 }
 
 function profile_all_es_int {
-  export SH_PROFILE_INTERVALS="1"
+  export SH_PRINT_PROFILE_INTERVALS="1"
   profile_all_es $@
 }
 
@@ -58,7 +50,7 @@ function profile_all_rss {
 }
 
 function profile_all_rss_int {
-  export SH_PROFILE_INTERVALS="1"
+  export SH_PRINT_PROFILE_INTERVALS="1"
   profile_all_rss $@
 }
 
@@ -71,6 +63,6 @@ function profile_all_rss_es {
 }
 
 function profile_all_rss_es_int {
-  export SH_PROFILE_INTERVALS="1"
+  export SH_PRINT_PROFILE_INTERVALS="1"
   profile_all_rss_es $@
 }

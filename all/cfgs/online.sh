@@ -44,13 +44,6 @@ function online_base {
   export SH_SAMPLE_FREQ="${FREQ}"
   export SH_PROFILE_RATE_NSECONDS=$(echo "${RATE} * 1000000" | bc)
   export SH_PROFILE_ALL_EVENTS="MEM_LOAD_UOPS_LLC_MISS_RETIRED:LOCAL_DRAM,MEM_LOAD_UOPS_RETIRED:LOCAL_PMM"
-  export SH_PROFILE_ALL_MULTIPLIERS="1,5"
-  
-  # Bandwidth profiling
-  export SH_PROFILE_BW="1"
-  export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
-  export SH_PROFILE_BW_SKIP_INTERVALS="1"
-  export SH_PROFILE_BW_RELATIVE="1"
   
   export SH_PROFILE_LATENCY="1"
   export SH_PROFILE_IMC="skx_unc_imc0,skx_unc_imc1,skx_unc_imc2,skx_unc_imc3,skx_unc_imc4,skx_unc_imc5"
@@ -178,9 +171,26 @@ function online_mr_ski_bw_relative_rss_tmp {
   online_mr_ski_bw_relative_rss $@
 }
 function online_mr_ski_bw_relative_lat_rss_test {
+  export SH_PROFILE_BW="1"
+  export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
+  export SH_PROFILE_BW_SKIP_INTERVALS="1"
+  export SH_PROFILE_BW_RELATIVE="1"
+  
   export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
   export SH_PROFILE_ONLINE_WEIGHT="profile_rss_current"
   export SH_PROFILE_RSS="1"
+  export SH_PROFILE_LATENCY_SET_MULTIPLIERS="1"
+  online_mr_ski $@
+}
+function online_mr_ski_bw_relative_lat_es_test {
+  export SH_PROFILE_BW="1"
+  export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
+  export SH_PROFILE_BW_SKIP_INTERVALS="1"
+  export SH_PROFILE_BW_RELATIVE="1"
+  
+  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_extent_size_current"
+  export SH_PROFILE_EXTENT_SIZE="1"
   export SH_PROFILE_LATENCY_SET_MULTIPLIERS="1"
   online_mr_ski $@
 }

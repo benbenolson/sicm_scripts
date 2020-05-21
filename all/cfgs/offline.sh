@@ -126,12 +126,24 @@ function offline_mr_all_rss {
   offline_mr_all $@
 }
 
+function offline_mr_all_rss_test {
+  DO_SCALE=false
+  CAPACITY_PROF_TYPE="profile_rss_peak"
+  offline_mr_all $@
+}
+
 function offline_mr_all_es {
   CAPACITY_PROF_TYPE="profile_extent_size_peak"
   offline_mr_all $@
 }
 
 function offline_mr_bw_relative_rss {
+  DO_SCALE=false
+  CAPACITY_PROF_TYPE="profile_rss_peak"
+  offline_mr_bw_relative $@
+}
+
+function offline_mr_bw_relative_rss_test {
   DO_SCALE=false
   CAPACITY_PROF_TYPE="profile_rss_peak"
   offline_mr_bw_relative $@

@@ -27,8 +27,4 @@ bench="lulesh"
 #./all/stat --eps --graph_title='' --metric=graph_heatmap_top100 --filename=graphs/${bench}/${bench}_medium_heatmap_top100_ski20.eps ~/results/${bench}/medium_aep/online_memreserve_ski_debug\:share_16_1000_20/i0/
 #./all/stat --graph_title='' --metric=graph_heatmap_top100 --filename=graphs/${bench}/${bench}_medium_heatmap_top100_ski20.png ~/results/${bench}/medium_aep/online_memreserve_ski_debug\:share_16_1000_20/i0/
 
-./all/stat --graph_title='' --metric=graph_online_bandwidth --filename=graphs/${bench}/${bench}_online_bandwidth_i0.png ~/results/${bench}/medium_aep/online_mr_ski_bw_relative_rss_tmp:thermos_16_100_10_100_40/i0/
-./all/stat --graph_title='' --metric=graph_online_bandwidth --filename=graphs/${bench}/${bench}_online_bandwidth_i1.png ~/results/${bench}/medium_aep/online_mr_ski_bw_relative_rss_tmp:thermos_16_100_10_100_40/i1/
-./all/stat --graph_title='' --metric=graph_online_bandwidth --filename=graphs/${bench}/${bench}_online_bandwidth_i2.png ~/results/${bench}/medium_aep/online_mr_ski_bw_relative_rss_tmp:thermos_16_100_10_100_40/i2/
-./all/stat --graph_title='' --metric=graph_online_bandwidth --filename=graphs/${bench}/${bench}_online_bandwidth_i3.png ~/results/${bench}/medium_aep/online_mr_ski_bw_relative_rss_tmp:thermos_16_100_10_100_40/i3/
-./all/stat --graph_title='' --metric=graph_online_bandwidth --filename=graphs/${bench}/${bench}_online_bandwidth_i4.png ~/results/${bench}/medium_aep/online_mr_ski_bw_relative_rss_tmp:thermos_16_100_10_100_40/i4/
+./all/stat --graph_title='' --metric=graph_online_bandwidth --filename=graphs/${bench}/${bench}_online_bandwidth_i0.png ~/results/${bench}/medium_aep/online_mr_ski_bw_relative_lat_rss_test:thermos_16_100_10_100_20/i0/
