@@ -9,4 +9,5 @@ cd $BENCH_DIR/nab/src
 make clean
 make -j $(nproc --all)
 mkdir -p ../run
-cp nab_s nab.exe
+mv nab_s nab.exe
+cp nab.exe ../run/

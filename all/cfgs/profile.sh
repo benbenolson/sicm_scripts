@@ -2,11 +2,10 @@
 
 # First argument is the PEBS frequency
 # Second is the sampling rate
-function profile_all {
+function prof_all_base {
   FREQ="$1"
   RATE="$2"
 
-  export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
   export SH_MAX_SITES_PER_ARENA="5000"
   export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
   
@@ -32,37 +31,105 @@ function profile_all {
   done
 }
 
-function profile_all_es {
+function prof_all_es {
+  export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
   export SH_PROFILE_EXTENT_SIZE="1"
   export SH_PROFILE_EXTENT_SIZE_SKIP_INTERVALS="$3"
-  profile_all $@
+  prof_all_base $@
 }
 
-function profile_all_es_int {
+function prof_all_es_debug {
   export SH_PRINT_PROFILE_INTERVALS="1"
-  profile_all_es $@
+  prof_all_es $@
 }
 
-function profile_all_rss {
+function prof_all_rss {
+  export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
   export SH_PROFILE_RSS="1"
   export SH_PROFILE_RSS_SKIP_INTERVALS="$3"
-  profile_all $@
+  prof_all_base $@
 }
 
-function profile_all_rss_int {
+function prof_all_rss_debug {
   export SH_PRINT_PROFILE_INTERVALS="1"
-  profile_all_rss $@
+  prof_all_rss $@
 }
 
-function profile_all_rss_es {
+function prof_all_rss_es {
+  export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
   export SH_PROFILE_RSS="1"
   export SH_PROFILE_RSS_SKIP_INTERVALS="$3"
   export SH_PROFILE_EXTENT_SIZE="1"
   export SH_PROFILE_EXTENT_SIZE_SKIP_INTERVALS="$3"
-  profile_all $@
+  prof_all_base $@
 }
 
-function profile_all_rss_es_int {
+function prof_all_rss_es_debug {
   export SH_PRINT_PROFILE_INTERVALS="1"
-  profile_all_rss_es $@
+  prof_all_rss_es $@
+}
+
+function prof_all_bss_rss {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4096"
+  export SH_PROFILE_RSS="1"
+  export SH_PROFILE_RSS_SKIP_INTERVALS="$3"
+  prof_all_base $@
+}
+
+function prof_all_bsl_rss {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  export SH_PROFILE_RSS="1"
+  export SH_PROFILE_RSS_SKIP_INTERVALS="$3"
+  
+  prof_all_base $@
+}
+
+function prof_all_bsl_rss_debug {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  export SH_PROFILE_RSS="1"
+  export SH_PROFILE_RSS_SKIP_INTERVALS="$3"
+  export SH_PRINT_PROFILE_INTERVALS="1"
+  
+  prof_all_base $@
+}
+
+function prof_all_bss_es {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4096"
+  export SH_PROFILE_EXTENT_SIZE="1"
+  export SH_PROFILE_EXTENT_SIZE_SKIP_INTERVALS="$3"
+  
+  prof_all_base $@
+}
+
+function prof_all_bsl_es {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  export SH_PROFILE_EXTENT_SIZE="1"
+  export SH_PROFILE_EXTENT_SIZE_SKIP_INTERVALS="$3"
+  
+  prof_all_base $@
+}
+
+function prof_all {
+  export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
+  
+  prof_all_base $@
+}
+
+function prof_all_bss {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4096"
+  
+  prof_all_base $@
+}
+
+function prof_all_bsl {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  
+  prof_all_base $@
 }

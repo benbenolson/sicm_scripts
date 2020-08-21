@@ -1,12 +1,12 @@
 #!/bin/bash
 
-export REF="${SICM_ENV} valgrind --tool=exp-sgcheck ./pop2.exe"
-#export REF="${SICM_ENV} valgrind --tool=drd --exclusive-threshold=1 ./pop2.exe"
-#export REF="${SICM_ENV} ./pop2.exe"
-export TEST="${SICM_ENV} ./pop2.exe"
-export TRAIN="${SICM_ENV} ./pop2.exe"
+#export REF="sh -c '${SICM_ENV} valgrind --tool=callgrind --main-stacksize=134217728 ./cam4.exe'"
+export REF="sh -c '${SICM_ENV} ./cam4.exe'"
+#export REF="sh -c '${SICM_ENV} valgrind --tool=drd --exclusive-threshold=1 ./cam4.exe'"
+export TEST="sh -c '${SICM_ENV} ./cam4.exe'"
+export TRAIN="sh -c '${SICM_ENV} ./cam4.exe'"
 
-function pop2_prerun {
+function cam4_prerun {
   if [[ $SH_ARENA_LAYOUT = "SHARED_SITE_ARENAS" ]]; then
     export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:1"
   elif [[ $SH_ARENA_LAYOUT = "BIG_SMALL_ARENAS" ]]; then
@@ -14,9 +14,11 @@ function pop2_prerun {
   else
     export JE_MALLOC_CONF="oversize_threshold:0"
   fi
+  export OMP_STACKSIZE="256M"
+  export SH_MAX_SITES="6000"
 }
 
-function pop2_setup {
+function cam4_setup {
   if [[ $SIZE = "ref" ]]; then
     rm -rf run
     cp -r run-ref run
@@ -27,5 +29,5 @@ function pop2_setup {
     rm -rf run
     cp -r run-test run
   fi
-  cp src/pop2.exe run/
+  cp src/cam4.exe run/
 }

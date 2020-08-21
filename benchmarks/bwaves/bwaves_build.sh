@@ -11,4 +11,5 @@ cd $BENCH_DIR/bwaves/src
 make clean
 make -j $(nproc --all)
 mkdir -p ../run
-cp speed_bwaves bwaves.exe
+mv speed_bwaves bwaves.exe
+cp bwaves.exe ../run/

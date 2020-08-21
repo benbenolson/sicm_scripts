@@ -4,11 +4,12 @@ DO_MEMRESERVE=false
 DO_SCALE=true
 CAPACITY_PROF_TYPE=""
 VALUE_PROF_TYPE=""
+ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
 
-function offline_base {
+function off_base {
   PACKING_ALGO="$1"
 
-  CANARY_CFG="firsttouch_exclusive_device:"
+  CANARY_CFG="ft_ed:"
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
   PEBS_DIR="${PROFILE_DIR}/"
   PEBS_FILE="${PEBS_DIR}/profile.txt"
@@ -26,11 +27,11 @@ function offline_base {
   fi
 
   # Get the peak RSS of the canary run
-  PEAK_RSS_CANARY=`${SCRIPTS_DIR}/all/stat --single --metric=peak_rss_kbytes ${CANARY_DIR}`
+  PEAK_RSS_CANARY=`${SCRIPTS_DIR}/all/stat --single="${CANARY_DIR}" --metric=peak_rss_kbytes`
   PEAK_RSS_CANARY_BYTES=$(echo "${PEAK_RSS_CANARY} * 1024" | bc)
 
   # Get the peak RSS of the profiling run
-  PEAK_RSS_PROFILING=`${SCRIPTS_DIR}/all/stat --single --metric=peak_rss_kbytes ${PEBS_DIR}`
+  PEAK_RSS_PROFILING=`${SCRIPTS_DIR}/all/stat --single="${PEBS_DIR}" --metric=peak_rss_kbytes`
   PEAK_RSS_PROFILING_BYTES=$(echo "${PEAK_RSS_PROFILING} * 1024" | bc)
 
   if [ "$DO_SCALE" = true ]; then
@@ -38,7 +39,7 @@ function offline_base {
     SCALE=$(echo "${PEAK_RSS_CANARY_BYTES} / ${PEAK_RSS_PROFILING_BYTES}" | bc -l)
   fi
 
-  export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
+  export SH_ARENA_LAYOUT="${ARENA_LAYOUT}"
   export SH_MAX_SITES_PER_ARENA="4096"
   export SH_DEFAULT_NODE="${SH_LOWER_NODE}"
   export SH_GUIDANCE_FILE="${BASEDIR}/guidance.txt"
@@ -83,18 +84,18 @@ function offline_base {
   done
 }
 
-function offline {
+function off {
   # Get the amount of free memory in the upper tier right now
   COLUMN_NUMBER=$(echo ${SH_UPPER_NODE} + 2 | bc)
   UPPER_SIZE="$(numastat -m | awk -v column_number=${COLUMN_NUMBER} '/MemFree/ {printf "%d * 1024 * 1024\n", $column_number}' | bc)"
   NUM_BYTES=${UPPER_SIZE}
 
-  offline_base $@
+  off_base $@
 }
 
-function offline_mr {
+function off_mr {
   RATIO=$(echo "${2}/100" | bc -l)
-  CANARY_CFG="firsttouch_exclusive_device:"
+  CANARY_CFG="ft_ed:"
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
 
   # This is in kilobytes
@@ -107,49 +108,37 @@ function offline_mr {
   NUM_BYTES=${NUM_BYTES_FLOAT%.*}
 
   DO_MEMRESERVE=true
-  offline_base "$@"
+  off_base "$@"
 }
 
-function offline_mr_all {
+function off_mr_all {
   VALUE_PROF_TYPE="profile_all_total"
-  offline_mr $@
+  off_mr $@
 }
 
-function offline_mr_bw_relative {
+function off_mr_bw_relative {
   VALUE_PROF_TYPE="profile_bw_relative_total"
-  offline_mr $@
+  off_mr $@
 }
 
-function offline_mr_all_rss {
+function off_mr_all_rss {
   DO_SCALE=false
   CAPACITY_PROF_TYPE="profile_rss_peak"
-  offline_mr_all $@
+  off_mr_all $@
 }
 
-function offline_mr_all_rss_test {
-  DO_SCALE=false
-  CAPACITY_PROF_TYPE="profile_rss_peak"
-  offline_mr_all $@
-}
-
-function offline_mr_all_es {
+function off_mr_all_es {
   CAPACITY_PROF_TYPE="profile_extent_size_peak"
-  offline_mr_all $@
+  off_mr_all $@
 }
 
-function offline_mr_bw_relative_rss {
+function off_mr_bw_relative_rss {
   DO_SCALE=false
   CAPACITY_PROF_TYPE="profile_rss_peak"
-  offline_mr_bw_relative $@
+  off_mr_bw_relative $@
 }
 
-function offline_mr_bw_relative_rss_test {
-  DO_SCALE=false
-  CAPACITY_PROF_TYPE="profile_rss_peak"
-  offline_mr_bw_relative $@
-}
-
-function offline_mr_bw_relative_es {
+function off_mr_bw_relative_es {
   CAPACITY_PROF_TYPE="profile_extent_size_peak"
-  offline_mr_bw_relative $@
+  off_mr_bw_relative $@
 }

@@ -17,5 +17,4 @@ function snap_prerun {
   else
     export JE_MALLOC_CONF="oversize_threshold:0"
   fi
-  echo "Using JE_MALLOC_CONF='$JE_MALLOC_CONF'."
 }

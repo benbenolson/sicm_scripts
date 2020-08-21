@@ -53,7 +53,7 @@ function numastat_kill {
 # First arg is directory to write to
 function pcm_background {
   rm -f $1/pcm-memory.txt
-  sudo ${SCRIPTS_DIR}/tools/pcm/pcm-memory.x &> $1/pcm-memory.txt &
+  sudo ${SCRIPTS_DIR}/tools/pcm/pcm-memory.x -pmm &> $1/pcm-memory.txt &
   pcm_pid=$!
 }
 function pcm_kill {
@@ -74,7 +74,7 @@ function memreserve {
     memreserve_pid="$!"
 
     sleep 60
-    export RESERVED_BYTES=`${SCRIPTS_DIR}/all/stat --single --metric=num_reserved_bytes ${1}`
+    export RESERVED_BYTES=`${SCRIPTS_DIR}/all/stat --single="${1}" --metric=num_reserved_bytes`
     echo "RESERVED_BYTES=${RESERVED_BYTES}"
 }
 

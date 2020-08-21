@@ -1,6 +1,6 @@
 #!/bin/bash -l
 # Builds SICM
-
+. /opt/rh/devtoolset-7/enable
 source ./all/vars.sh
 source ${SCRIPTS_DIR}/all/args.sh
 

@@ -4,11 +4,15 @@
 #include <dirent.h>
 #include "stat.h"
 
-/* USAGE: ./stat --metric=X --config=Y [--node=X] results_path */
+/* USAGE: ./stat --metric=X --config=Y [--node=X] */
+
+/* We use the environment variable RESULTS_DIR to
+   figure out where to look for results. */
 
 static struct option long_options[] = {
   {"bench",       required_argument, 0, 'b'},
   {"config",      required_argument, 0, 'c'},
+  {"size",        required_argument, 0, 'i'},
   {"groupsize",   required_argument, 0, 'g'},
   {"groupname",   required_argument, 0, 'u'},
   {"label",       required_argument, 0, 'l'},
@@ -20,23 +24,29 @@ static struct option long_options[] = {
   {"x_label",     required_argument, 0, 'x'},
   {"y_label",     required_argument, 0, 'y'},
   {"eps",         no_argument,       0, 'e'},
-  {"single",      no_argument,       0, 'q'},
+  {"single",      required_argument, 0, 'q'},
+  {"relative",    no_argument,       0, 'r'},
+  {"debug",       no_argument,       0, 'd'},
   {0,             0,                 0, 0}
 };
 
-double get_geomean_result(DIR *dir, char *path, char *metric_str, unsigned long node, int site) {
-  double geomean;
+/* This function returns a `result` struct */
+result *get_geomean_result(DIR *dir, char *path, char *metric_str, unsigned long node, int site) {
+  double geomean, diff;
   size_t num_iters;
   int iter;
   char *iterpath;
   metric *m;
   metrics *info;
+  result *res;
   
   /* Used for detecting iteration directories */
   struct dirent *de;
   
   /* We're going to take the geomean across iterations */
-  geomean = 0.0;
+  res = malloc(sizeof(result));
+  res->geomean = 0.0;
+  res->variance = 0.0;
   num_iters = 0;
   while ((de = readdir(dir)) != NULL) {
     if(sscanf(de->d_name, "i%d", &iter) == 1) {
@@ -45,11 +55,23 @@ double get_geomean_result(DIR *dir, char *path, char *metric_str, unsigned long 
       sprintf(iterpath, "%s/%s", path, de->d_name);
       info = init_metrics();
       m = parse_metrics(info, iterpath, metric_str, node, site);
+      
+      /* Add up the values in the `geomean` variable */
       if(m->type == 0) {
-        geomean += log(m->val.f);
+        res->geomean += log(m->val.f);
       } else if(m->type == 1) {
-        geomean += log(m->val.s);
+        res->geomean += log(m->val.s);
       }
+      
+      #if 0
+      /* Calculate the variance */
+      if(m->type == 0) {
+        diff = m->val.f
+      } else if(m->type == 1) {
+        diff = m->val.s
+      }
+      #endif
+      
       free_metrics(info);
       free(m);
       free(iterpath);
@@ -59,15 +81,19 @@ double get_geomean_result(DIR *dir, char *path, char *metric_str, unsigned long 
     fprintf(stderr, "Failed to find any iterations. Aborting.\n");
     exit(1);
   }
-  geomean /= num_iters;
-  geomean = exp(geomean);
+  res->geomean /= num_iters;
+  res->geomean = exp(res->geomean);
   
-  return geomean;
+  return res;
 }
 
-char check_args(char *metric_str, char **config_strs, char **bench_strs) {
+char check_args(char *metric_str, char *size_str, char **config_strs, char **bench_strs) {
   if(!metric_str) {
     fprintf(stderr, "No metric given. Aborting.\n");
+    exit(1);
+  }
+  if(!size_str) {
+    fprintf(stderr, "No size given. Aborting.\n");
     exit(1);
   }
   if(!config_strs) {
@@ -82,28 +108,30 @@ char check_args(char *metric_str, char **config_strs, char **bench_strs) {
 
 int main(int argc, char **argv) {
   int option_index, site, arg, iter, num_iters;
-  char *metric_str, c, *iterpath, *path;
+  char *metric_str, c, *iterpath, *path, *size_str, relative;
   unsigned long node;
   metric *m;
   double geomean;
-  char single;
+  char *single_path, debug;
   DIR *dir;
   metrics *info;
   
   /* Array of configuration and benchmark strings */
   char **config_strs, **bench_strs, **group_strs, **label_strs, *x_label, *y_label;
   size_t num_configs, config, max_config_len,
-         num_benches, bench, max_bench_len,
+         num_benches, bench,
          num_groups, group,
          num_labels, label,
          groupsize;
+  ssize_t max_column_len, column_len;
   
-  /* Array of per-bench, per-config doubles */
-  double **results;
+  /* Array of per-bench, per-config result pointers */
+  result ***results;
   
   /* Handle options and arguments */
   node = UINT_MAX;
   metric_str = NULL;
+  size_str = NULL;
   num_configs = 0;
   config_strs = NULL;
   num_benches = 0;
@@ -115,10 +143,12 @@ int main(int argc, char **argv) {
   x_label = NULL;
   y_label = NULL;
   groupsize = 0;
-  single = 0;
+  single_path = NULL;
+  relative = 0;
+  debug = 0;
   while(1) {
     option_index = 0;
-    c = getopt_long(argc, argv, "m:n:s:t:eo:c:b:gz:l:x:y:",
+    c = getopt_long(argc, argv, "m:n:s:t:eo:c:b:gz:l:x:y:i:",
                     long_options, &option_index);
     if(c == -1) {
       break;
@@ -127,6 +157,9 @@ int main(int argc, char **argv) {
     switch(c) {
       case 0:
         printf("option %s\n", long_options[option_index].name);
+        break;
+      case 'd':
+        debug = 1;
         break;
       case 'x':
         x_label = (char *) malloc(sizeof(char) * (strlen(optarg) + 1));
@@ -167,7 +200,8 @@ int main(int argc, char **argv) {
         break;
       case 'q':
         /* Singleton mode. Only first config and first bench used. Single value prints out instead of a table. */
-        single = 1;
+        single_path = malloc(sizeof(char) * (strlen(optarg) + 1));
+        strcpy(single_path, optarg);
         break;
       case 'b':
         /* Benchmark name. At least one required. */
@@ -180,6 +214,11 @@ int main(int argc, char **argv) {
         /* Metric name. Required. */
         metric_str = (char *) malloc(sizeof(char) * (strlen(optarg) + 1));
         strcpy(metric_str, optarg);
+        break;
+      case 'i':
+        /* Size name. Required. */
+        size_str = (char *) malloc(sizeof(char) * (strlen(optarg) + 1));
+        strcpy(size_str, optarg);
         break;
       case 'n':
         /* A NUMA node ID. */
@@ -214,6 +253,9 @@ int main(int argc, char **argv) {
         /* If this is specified, we're going to output to an EPS. */
         output_filetype = 1;
         break;
+      case 'r':
+        relative = 1;
+        break;
       case '?':
         exit(1);
       default:
@@ -221,25 +263,14 @@ int main(int argc, char **argv) {
     }
   }
   
-  if(!single) {
-    check_args(metric_str, config_strs, bench_strs);
-    if(groupsize && num_groups) {
-      if((num_configs % groupsize != 0) || ((num_configs / groupsize != num_groups))) {
-        fprintf(stderr, "The number of group names that you've specified doesn't align with the number of groups. Aborting.\n");
-        exit(1);
-      }
+  if(single_path) {
+    if(!metric_str) {
+      fprintf(stderr, "No metric given. Aborting.\n");
+      exit(1);
     }
-  }
-  
-  if(optind != argc - 1) {
-    fprintf(stderr, "Incorrect number of arguments. The last argument should be the path name.\n");
-    exit(1);
-  }
-  
-  if(single) {
     num_iters = 0;
     info = init_metrics();
-    m = parse_metrics(info, argv[optind], metric_str, node, site);
+    m = parse_metrics(info, single_path, metric_str, node, site);
     if(m->type == 0) {
       printf("%f", m->val.f);
     } else if(m->type == 1) {
@@ -250,51 +281,94 @@ int main(int argc, char **argv) {
     goto cleanup;
   }
   
+  check_args(metric_str, size_str, config_strs, bench_strs);
+  if(groupsize && num_groups) {
+    if((num_configs % groupsize != 0) || ((num_configs / groupsize != num_groups))) {
+      fprintf(stderr, "The number of group names that you've specified doesn't align with the number of groups. Aborting.\n");
+      exit(1);
+    }
+  }
+  
   /* This loop iterates over the configs, gets a `metric` struct per config */
-  results = calloc(num_benches, sizeof(double *));
+  results = calloc(num_benches, sizeof(result **));
   for(bench = 0; bench < num_benches; bench++) {
-    results[bench] = calloc(num_configs, sizeof(double));
+    results[bench] = calloc(num_configs, sizeof(result *));
     for(config = 0; config < num_configs; config++) {
-      /* We need to start by opening the directory and figuring out how
-        many iterations there are */
-      path = malloc(sizeof(char) * (strlen(argv[optind]) + strlen(config_strs[config]) + 2));
-      sprintf(path, "%s/%s", argv[optind], config_strs[config]);
+      if(debug) {
+        printf("Parsing '%s', '%s'\n", bench_strs[bench], config_strs[config]);
+      }
+      /* First, construct a string of the path that we're looking at, consisting of:
+         1. The RESULTS_DIR environment variable
+         2. The benchmark name
+         3. The benchmark size
+         4. The configuration name
+      */
+      path = malloc(sizeof(char) *
+                   (strlen(getenv("RESULTS_DIR")) +
+                    strlen(bench_strs[bench]) +
+                    strlen(size_str) +
+                    strlen(config_strs[config]) +
+                    4)); /* Three slashes and a NULL terminator */
+      sprintf(path, "%s/%s/%s/%s", getenv("RESULTS_DIR"), bench_strs[bench], size_str, config_strs[config]);
       dir = opendir(path);
       if(dir == NULL) {
-        fprintf(stderr, "Unable to open directory: '%s'. Aborting.\n", path);
-        exit(1);
+        fprintf(stderr, "Unable to open directory: '%s'. Filling with zeroes.\n", path);
+        results[bench][config] = malloc(sizeof(result));
+        results[bench][config]->geomean = 0.0;
+        results[bench][config]->variance = 0.0;
+      } else {
+        results[bench][config] = get_geomean_result(dir, path, metric_str, node, site);
+        closedir(dir);
       }
-      geomean = get_geomean_result(dir, path, metric_str, node, site);
-      results[bench][config] = geomean;
-      closedir(dir);
       free(path);
     }
   }
   
-  /* Prepare to print the table */
+  /* The first column should be the width of the longest config name. */
   max_config_len = 0;
   for(config = 0; config < num_configs; config++) {
     if(max_config_len < strlen(config_strs[config])) {
       max_config_len = strlen(config_strs[config]);
     }
   }
-  max_bench_len = 0;
-  for(bench = 0; bench < num_benches; bench++) {
-    if(max_bench_len < strlen(bench_strs[bench])) {
-      max_bench_len = strlen(bench_strs[bench]);
+  max_config_len += 2;
+  
+  /* Subsequent columns should be as wide as the longest result or benchmark name. */
+  max_column_len = 0;
+  for(config = 0; config < num_configs; config++) {
+    for(bench = 0; bench < num_benches; bench++) {
+      if(relative) {
+        column_len = snprintf(NULL, 0, "%.2f", results[bench][config]->geomean / results[bench][0]->geomean);
+      } else {
+        column_len = snprintf(NULL, 0, "%.2f", results[bench][config]->geomean);
+      }
+      if(max_column_len < column_len) {
+        max_column_len = column_len;
+      }
     }
   }
+  for(bench = 0; bench < num_benches; bench++) {
+    column_len = strlen(bench_strs[bench]);
+    if(max_column_len < column_len) {
+      max_column_len = column_len;
+    }
+  }
+  max_column_len += 2;
   
   /* Print the table of results */
-  printf("%-*s  ", max_config_len, " ");
+  printf("%-*s", max_config_len, " ");
   for(bench = 0; bench < num_benches; bench++) {
-    printf("%-*s  ", max_bench_len, bench_strs[bench]);
+    printf("%-*s", max_column_len, bench_strs[bench]);
   }
   printf("\n");
   for(config = 0; config < num_configs; config++) {
-    printf("%-*s  ", max_config_len, config_strs[config]);
+    printf("%-*s", max_config_len, config_strs[config]);
     for(bench = 0; bench < num_benches; bench++) {
-      printf("%-*f  ", max_bench_len, results[bench][config]);
+      if(relative) {
+        printf("%-*.2f", max_column_len, results[bench][config]->geomean / results[bench][0]->geomean);
+      } else {
+        printf("%-*.2f", max_column_len, results[bench][config]->geomean);
+      }
     }
     printf("\n");
     if(groupsize && ((config + 1) % groupsize == 0)) {

@@ -1,4 +1,5 @@
 #!/bin/bash
+. /opt/rh/devtoolset-7/enable
 source ./all/vars.sh
 
 # SYSTEM_C_COMPILER and SYSTEM_CXX_COMPILER needs to be at least GCC 7.2 to work.

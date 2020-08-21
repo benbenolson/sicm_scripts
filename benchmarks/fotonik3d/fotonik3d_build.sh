@@ -10,4 +10,5 @@ cd $BENCH_DIR/fotonik3d/src
 make clean
 make -j $(nproc --all)
 mkdir -p $BENCH_DIR/fotonik3d/run
-cp fotonik3d_s fotonik3d.exe
+mv fotonik3d_s fotonik3d.exe
+cp fotonik3d.exe ../run/

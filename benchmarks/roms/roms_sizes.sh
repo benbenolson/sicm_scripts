@@ -12,6 +12,7 @@ function roms_prerun {
   else
     export JE_MALLOC_CONF="oversize_threshold:0"
   fi
+  export SH_MAX_SITES="16000"
 }
 
 function roms_setup {

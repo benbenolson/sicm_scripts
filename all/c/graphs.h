@@ -1,8 +1,10 @@
+#include "stat.h"
+
 void graph_metric_memreserve(char **bench_strs, size_t num_benches,
                              char **config_strs, size_t num_configs,
                              char **group_strs, size_t num_groups,
                              char **label_strs, size_t num_labels,
-                             double **results,
+                             result ***results,
                              char *x_axis_title,
                              char *y_axis_title) {
   char *first_file_name, *args, **file_names;
@@ -27,8 +29,8 @@ void graph_metric_memreserve(char **bench_strs, size_t num_benches,
   /* The maximum value on the Y-axis will be the largest value in the results */
   max_y_value = 0;
   for(config = 0; config < num_configs; config++) {
-    if(max_y_value < results[0][config]) {
-      max_y_value = results[0][config];
+    if(max_y_value < results[0][config]->geomean) {
+      max_y_value = results[0][config]->geomean;
     }
   }
   
@@ -68,7 +70,7 @@ void graph_metric_memreserve(char **bench_strs, size_t num_benches,
     fprintf(file_fs[group], "\n");
     i = 0;
     for(config = group * configs_per_group; config < ((group * configs_per_group) + configs_per_group); config++) {
-      fprintf(file_fs[group], "%zu %f\n", i, results[0][config]);
+      fprintf(file_fs[group], "%zu %f\n", i, results[0][config]->geomean);
       i++;
     }
     fclose(file_fs[group]);

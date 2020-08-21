@@ -81,7 +81,7 @@ elif [[ "$(hostname)" = "canata" ]]; then
     echo "COULDN'T DETECT HARDWARE CONFIGURATION. ABORTING."
     exit
   fi
-  
+
 elif [[ "$(hostname)" = "SystemID-817" ]]; then
 
   # Intel's CLX SDP machine
@@ -166,6 +166,7 @@ for BENCH_INDEX in ${!BENCHES[*]}; do
     # We want SICM to output its configuration for debugging
     export SH_LOG_FILE="${DIRECTORY}/config.txt"
     ulimit -c unlimited
+    ulimit -s unlimited
 
     # Print out information about this run
     echo "Running experiment:"

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <getopt.h>
 #include <string.h>
 #include <ctype.h>
@@ -7,6 +9,12 @@
 static char *graph_title = NULL;
 static char *output_filename = NULL;
 static char output_filetype = 0;
+
+/* This is just a struct that includes a variance and geomean over the iterations that we ran. */
+typedef struct result {
+  double geomean;
+  double variance;
+} result;
 
 typedef struct metric {
   union {
@@ -19,6 +27,7 @@ typedef struct metric {
 
 #include "parse_gnu_time.h"
 #include "parse_numastat.h"
+#include "parse_pcm_memory.h"
 #include "parse_sicm.h"
 #include "parse_memreserve.h"
 #include "parse_bench.h"
@@ -29,6 +38,7 @@ typedef struct metric {
 typedef struct metrics {
   gnu_time_metrics *gnu_time;
   numastat_metrics *numastat;
+  pcm_memory_metrics *pcm_memory;
   sicm_metrics *sicm;
   memreserve_metrics *memreserve;
   bench_metrics *bench;
@@ -40,6 +50,7 @@ metrics *init_metrics() {
 
   info->gnu_time = init_gnu_time_metrics();
   info->numastat = init_numastat_metrics();
+  info->pcm_memory = init_pcm_memory_metrics();
   info->sicm = init_sicm_metrics();
   info->memreserve = init_memreserve_metrics();
   info->bench = init_bench_metrics();
@@ -50,6 +61,7 @@ metrics *init_metrics() {
 void free_metrics(metrics *info) {
   free(info->gnu_time);
   free(info->numastat);
+  free(info->pcm_memory);
   free(info->sicm);
   free(info->memreserve);
   free(info->bench);
@@ -102,6 +114,15 @@ metric *parse_metrics(metrics *info, char *path, char *metric_str, unsigned long
     }
     parse_numastat(file, info->numastat);
     set_numastat_metric(metric_str, info->numastat, node, m);
+  } else if((filename = is_pcm_memory_metric(metric_str)) != NULL) {
+    fullpath = construct_path(path, filename);
+    file = fopen(fullpath, "r");
+    if(!file) {
+      fprintf(stderr, "Failed to open file '%s'. Aborting.\n", fullpath);
+      exit(1);
+    }
+    parse_pcm_memory(file, info->pcm_memory);
+    set_pcm_memory_metric(metric_str, info->pcm_memory, node, m);
   } else if((filename = is_sicm_metric(metric_str)) != NULL) {
     fullpath = construct_path(path, filename);
     file = fopen(fullpath, "r");
@@ -130,7 +151,7 @@ metric *parse_metrics(metrics *info, char *path, char *metric_str, unsigned long
     parse_bench(file, info->bench);
     set_bench_metric(metric_str, info->bench, m);
   } else {
-    fprintf(stderr, "Metric not yet implemented.\n");
+    fprintf(stderr, "Metric not yet implemented: '%s'\n", metric_str);
     exit(1);
   }
 

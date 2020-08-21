@@ -1,12 +1,11 @@
 #!/bin/bash
+# Is untarring this many files really necessary?
 
-export REF="${SICM_ENV} valgrind --tool=exp-sgcheck ./pop2.exe"
-#export REF="${SICM_ENV} valgrind --tool=drd --exclusive-threshold=1 ./pop2.exe"
-#export REF="${SICM_ENV} ./pop2.exe"
-export TEST="${SICM_ENV} ./pop2.exe"
-export TRAIN="${SICM_ENV} ./pop2.exe"
+export REF="sh -c '${SICM_ENV} ./wrf.exe'"
+export TEST="sh -c '${SICM_ENV} ./wrf.exe'"
+export TRAIN="sh -c '${SICM_ENV} ./wrf.exe'"
 
-function pop2_prerun {
+function wrf_prerun {
   if [[ $SH_ARENA_LAYOUT = "SHARED_SITE_ARENAS" ]]; then
     export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:1"
   elif [[ $SH_ARENA_LAYOUT = "BIG_SMALL_ARENAS" ]]; then
@@ -14,9 +13,10 @@ function pop2_prerun {
   else
     export JE_MALLOC_CONF="oversize_threshold:0"
   fi
+  export SH_MAX_SITES="18100"
 }
 
-function pop2_setup {
+function wrf_setup {
   if [[ $SIZE = "ref" ]]; then
     rm -rf run
     cp -r run-ref run
@@ -27,5 +27,5 @@ function pop2_setup {
     rm -rf run
     cp -r run-test run
   fi
-  cp src/pop2.exe run/
+  cp src/wrf.exe run/
 }

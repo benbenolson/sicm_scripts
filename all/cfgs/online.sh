@@ -4,7 +4,7 @@ DO_MEMRESERVE=false
 DO_DEBUG=false
 MEMRESERVE_RATIO=""
 
-function online_base {
+function on_base {
   PACKING_ALGO="$1"
   FREQ="$2"
   RATE="$3"
@@ -45,12 +45,7 @@ function online_base {
   export SH_PROFILE_RATE_NSECONDS=$(echo "${RATE} * 1000000" | bc)
   export SH_PROFILE_ALL_EVENTS="MEM_LOAD_UOPS_LLC_MISS_RETIRED:LOCAL_DRAM,MEM_LOAD_UOPS_RETIRED:LOCAL_PMM"
   
-  export SH_PROFILE_LATENCY="1"
   export SH_PROFILE_IMC="skx_unc_imc0,skx_unc_imc1,skx_unc_imc2,skx_unc_imc3,skx_unc_imc4,skx_unc_imc5"
-  export SH_PROFILE_LATENCY_CLOCKTICK_EVENT="UNC_M_DCLOCKTICKS"
-  export SH_PROFILE_LATENCY_EVENTS="UNC_M_RPQ_INSERTS,UNC_M_RPQ_OCCUPANCY,UNC_M_WPQ_INSERTS,UNC_M_WPQ_OCCUPANCY,UNC_M_PMM_RPQ_INSERTS,UNC_M_PMM_RPQ_OCCUPANCY:DEFAULT,UNC_M_PMM_WPQ_INSERTS,UNC_M_PMM_WPQ_OCCUPANCY:DEFAULT"
-  export SH_PROFILE_LATENCY_SKIP_INTERVALS="1"
-  
   export SH_PROFILE_EXTENT_SIZE_SKIP_INTERVALS="${CAPACITY_SKIP_INTERVALS}"
   export SH_PROFILE_RSS_SKIP_INTERVALS="${CAPACITY_SKIP_INTERVALS}"
 
@@ -94,103 +89,158 @@ function online_base {
 #
 # MEMRESERVE
 #
-function online_mr {
-  DO_MEMRESERVE=true
+function on_mr {
   MEMRESERVE_RATIO="$6"
-  online_base $@
+  on_base $@
 }
 
 #
 # ONLINE ALGO
 #
-function online_mr_ski {
-  DO_DEBUG=true
+function on_mr_ski {
   export SH_PROFILE_ONLINE_STRAT_SKI="1"
-  online_mr $@
+  on_mr $@
 }
 
-function online_mr_ski_all_rss {
+# PROFILE_ALL with RSS
+function on_mr_ski_all_rss {
   export SH_PROFILE_ONLINE_VALUE="profile_all_total"
   export SH_PROFILE_ONLINE_WEIGHT="profile_rss_peak"
   export SH_PROFILE_RSS="1"
-  online_mr_ski $@
+  on_mr_ski $@
 }
-function online_mr_ski_bw_relative_rss {
-  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
-  export SH_PROFILE_ONLINE_WEIGHT="profile_rss_peak"
-  export SH_PROFILE_RSS="1"
-  online_mr_ski $@
+function on_mr_ski_all_rss_debug {
+  DO_DEBUG=true
+  on_mr_ski_all_rss_debug $@
 }
-function online_mr_ski_all_es {
+
+# PROFILE_ALL with ES
+function on_mr_ski_all_es {
   export SH_PROFILE_ONLINE_VALUE="profile_all_total"
   export SH_PROFILE_ONLINE_WEIGHT="profile_extent_size_peak"
   export SH_PROFILE_EXTENT_SIZE="1"
-  online_mr_ski $@
+  on_mr_ski $@
 }
-function online_mr_ski_bw_relative_es {
-  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
-  export SH_PROFILE_ONLINE_WEIGHT="profile_extent_size_peak"
-  export SH_PROFILE_EXTENT_SIZE="1"
-  online_mr_ski $@
+function on_mr_ski_all_es_debug {
+  DO_DEBUG=true
+  on_mr_ski_all_es $@
 }
 
-function online_mr_ski_all_lat_rss {
+# PROFILE_ALL with latency and RSS
+function on_mr_ski_all_lat_rss {
   export SH_PROFILE_ONLINE_VALUE="profile_all_total"
   export SH_PROFILE_ONLINE_WEIGHT="profile_rss_peak"
   export SH_PROFILE_RSS="1"
+  
+  # Use latency
   export SH_PROFILE_LATENCY_SET_MULTIPLIERS="1"
-  online_mr_ski $@
+  export SH_PROFILE_LATENCY="1"
+  export SH_PROFILE_LATENCY_CLOCKTICK_EVENT="UNC_M_DCLOCKTICKS"
+  export SH_PROFILE_LATENCY_EVENTS="UNC_M_RPQ_INSERTS,UNC_M_RPQ_OCCUPANCY,UNC_M_WPQ_INSERTS,UNC_M_WPQ_OCCUPANCY,UNC_M_PMM_RPQ_INSERTS,UNC_M_PMM_RPQ_OCCUPANCY:DEFAULT,UNC_M_PMM_WPQ_INSERTS,UNC_M_PMM_WPQ_OCCUPANCY:DEFAULT"
+  export SH_PROFILE_LATENCY_SKIP_INTERVALS="1"
+  
+  on_mr_ski $@
+}
+function on_mr_ski_all_lat_rss_debug {
+  DO_DEBUG=true
+  on_mr_ski_all_lat_rss $@
 }
 
-function online_mr_ski_all_lat_es {
+# PROFILE_ALL with latency and ES
+function on_mr_ski_all_lat_es {
   export SH_PROFILE_ONLINE_VALUE="profile_all_total"
   export SH_PROFILE_ONLINE_WEIGHT="profile_extent_size_peak"
   export SH_PROFILE_EXTENT_SIZE="1"
+  
+  # Use latency
   export SH_PROFILE_LATENCY_SET_MULTIPLIERS="1"
-  online_mr_ski $@
+  export SH_PROFILE_LATENCY="1"
+  export SH_PROFILE_LATENCY_CLOCKTICK_EVENT="UNC_M_DCLOCKTICKS"
+  export SH_PROFILE_LATENCY_EVENTS="UNC_M_RPQ_INSERTS,UNC_M_RPQ_OCCUPANCY,UNC_M_WPQ_INSERTS,UNC_M_WPQ_OCCUPANCY,UNC_M_PMM_RPQ_INSERTS,UNC_M_PMM_RPQ_OCCUPANCY:DEFAULT,UNC_M_PMM_WPQ_INSERTS,UNC_M_PMM_WPQ_OCCUPANCY:DEFAULT"
+  export SH_PROFILE_LATENCY_SKIP_INTERVALS="1"
+  on_mr_ski $@
+}
+function on_mr_ski_all_lat_es_debug {
+  DO_DEBUG=true
+  on_mr_ski_all_lat_es $@
 }
 
-function online_mr_ski_bw_relative_lat_rss {
-  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
-  export SH_PROFILE_ONLINE_WEIGHT="profile_rss_peak"
-  export SH_PROFILE_RSS="1"
-  export SH_PROFILE_LATENCY_SET_MULTIPLIERS="1"
-  online_mr_ski $@
-}
-
-function online_mr_ski_bw_relative_lat_es {
-  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
-  export SH_PROFILE_ONLINE_WEIGHT="profile_extent_size_peak"
-  export SH_PROFILE_EXTENT_SIZE="1"
-  export SH_PROFILE_LATENCY_SET_MULTIPLIERS="1"
-  online_mr_ski $@
-}
-
-# Temporary function for debugging
-function online_mr_ski_bw_relative_rss_tmp {
-  online_mr_ski_bw_relative_rss $@
-}
-function online_mr_ski_bw_relative_lat_rss_test {
+# BWREL with RSS
+function on_mr_ski_bwrel_rss {
   export SH_PROFILE_BW="1"
   export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
   export SH_PROFILE_BW_SKIP_INTERVALS="1"
   export SH_PROFILE_BW_RELATIVE="1"
-  
   export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
-  export SH_PROFILE_ONLINE_WEIGHT="profile_rss_current"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_rss_peak"
   export SH_PROFILE_RSS="1"
-  export SH_PROFILE_LATENCY_SET_MULTIPLIERS="1"
-  online_mr_ski $@
+  on_mr_ski $@
 }
-function online_mr_ski_bw_relative_lat_es_test {
+function on_mr_ski_bwrel_rss_debug {
+  DO_DEBUG=true
+  on_mr_ski_bwrel_rss $@
+}
+
+# BWREL with ES
+function on_mr_ski_bwrel_es {
   export SH_PROFILE_BW="1"
   export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
   export SH_PROFILE_BW_SKIP_INTERVALS="1"
   export SH_PROFILE_BW_RELATIVE="1"
-  
   export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
-  export SH_PROFILE_ONLINE_WEIGHT="profile_extent_size_current"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_extent_size_peak"
   export SH_PROFILE_EXTENT_SIZE="1"
+  on_mr_ski $@
+}
+function on_mr_ski_bwrel_es_debug {
+  DO_DEBUG=true
+  on_mr_ski_bwrel_es $@
+}
+
+# BWREL with lat and RSS
+function on_mr_ski_bwrel_lat_rss {
+  export SH_PROFILE_BW="1"
+  export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
+  export SH_PROFILE_BW_SKIP_INTERVALS="1"
+  export SH_PROFILE_BW_RELATIVE="1"
+  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_rss_peak"
+  export SH_PROFILE_RSS="1"
+  
+  # Use latency
   export SH_PROFILE_LATENCY_SET_MULTIPLIERS="1"
-  online_mr_ski $@
+  export SH_PROFILE_LATENCY="1"
+  export SH_PROFILE_LATENCY_CLOCKTICK_EVENT="UNC_M_DCLOCKTICKS"
+  export SH_PROFILE_LATENCY_EVENTS="UNC_M_RPQ_INSERTS,UNC_M_RPQ_OCCUPANCY,UNC_M_WPQ_INSERTS,UNC_M_WPQ_OCCUPANCY,UNC_M_PMM_RPQ_INSERTS,UNC_M_PMM_RPQ_OCCUPANCY:DEFAULT,UNC_M_PMM_WPQ_INSERTS,UNC_M_PMM_WPQ_OCCUPANCY:DEFAULT"
+  export SH_PROFILE_LATENCY_SKIP_INTERVALS="1"
+  
+  on_mr_ski $@
+}
+function on_mr_ski_bwrel_lat_rss_debug {
+  DO_DEBUG=true
+  on_mr_ski_bwrel_lat_rss $@
+}
+  
+# BWREL with lat and ES
+function on_mr_ski_bwrel_lat_es {
+  export SH_PROFILE_BW="1"
+  export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
+  export SH_PROFILE_BW_SKIP_INTERVALS="1"
+  export SH_PROFILE_BW_RELATIVE="1"
+  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_extent_size_peak"
+  export SH_PROFILE_EXTENT_SIZE="1"
+  
+  # Use latency
+  export SH_PROFILE_LATENCY_SET_MULTIPLIERS="1"
+  export SH_PROFILE_LATENCY="1"
+  export SH_PROFILE_LATENCY_CLOCKTICK_EVENT="UNC_M_DCLOCKTICKS"
+  export SH_PROFILE_LATENCY_EVENTS="UNC_M_RPQ_INSERTS,UNC_M_RPQ_OCCUPANCY,UNC_M_WPQ_INSERTS,UNC_M_WPQ_OCCUPANCY,UNC_M_PMM_RPQ_INSERTS,UNC_M_PMM_RPQ_OCCUPANCY:DEFAULT,UNC_M_PMM_WPQ_INSERTS,UNC_M_PMM_WPQ_OCCUPANCY:DEFAULT"
+  export SH_PROFILE_LATENCY_SKIP_INTERVALS="1"
+  
+  on_mr_ski $@
+}
+function on_mr_ski_bwrel_lat_es_debug {
+  DO_DEBUG=true
+  on_mr_ski_bwrel_lat_es $@
 }

@@ -11,4 +11,5 @@ cd $BENCH_DIR/cactubssn/src
 make clean
 make -j $(nproc --all)
 mkdir -p ../run
-cp cactuBSSN_s cactubssn.exe
+mv cactuBSSN_s cactubssn.exe
+cp cactubssn.exe ../run/

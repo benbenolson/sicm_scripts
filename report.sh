@@ -18,15 +18,18 @@ if [[ ${#BENCHES[@]} = 0 ]]; then
   exit 1
 fi
 
-STAT_ARGS="--metric=${METRIC}"
+if [[ ! -z "${METRIC}" ]]; then
+  STAT_ARGS="${STAT_ARGS} --metric=${METRIC}"
+fi
+if [[ ! -z "${SIZE}" ]]; then
+  STAT_ARGS="${STAT_ARGS} --size=${SIZE}"
+fi
 if [[ ! -z "${NODE}" ]]; then
   STAT_ARGS="${STAT_ARGS} --node=${NODE}"
 fi
-
 for BENCH in ${BENCHES[@]}; do
   STAT_ARGS="${STAT_ARGS} --bench=\"${BENCH}\""
 done
-
 for FULL_CONFIG in ${FULL_CONFIGS[@]}; do
   STAT_ARGS="${STAT_ARGS} --config=${FULL_CONFIG}"
 done

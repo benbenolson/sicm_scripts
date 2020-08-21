@@ -33,6 +33,7 @@ char *sicm_metrics_list[] = {
   "prof_avg_interval_time",
   "prof_last_phase_time",
   "prof_total_rss_time",
+  "prof_total_acc",
   "prof_geomean_hotset_peak_size",
   "prof_geomean_device_peak_size",
   "prof_geomean_hotset_current_size",
@@ -54,7 +55,8 @@ typedef struct sicm_metrics {
   size_t online_num_rebinds,
          online_total_rebind_estimate,
          prof_num_intervals,
-         prof_num_phases;
+         prof_num_phases,
+         prof_total_acc;
   application_profile *app_prof;
 } sicm_metrics;
 
@@ -71,6 +73,7 @@ sicm_metrics *init_sicm_metrics() {
   info->prof_num_intervals = 0;
   info->prof_num_phases = 0;
   info->prof_total_rss_time = 0.0;
+  info->prof_total_acc = 0;
   info->prof_geomean_hotset_peak_size = 0.0;
   info->prof_geomean_device_peak_size = 0.0;
   info->prof_geomean_hotset_current_size = 0.0;
@@ -84,7 +87,7 @@ sicm_metrics *init_sicm_metrics() {
 void parse_sicm(FILE *file, char *metric, sicm_metrics *info, int site) {
   char retval = 0;
   char *line;
-  size_t len, rebinds, i, n;
+  size_t len, rebinds, i, n, x;
   ssize_t read;
   interval_profile *interval;
   double hotset_sum, device_sum,
@@ -124,6 +127,16 @@ void parse_sicm(FILE *file, char *metric, sicm_metrics *info, int site) {
       info->prof_num_intervals++;
       if(info->app_prof->has_profile_rss) {
         info->prof_total_rss_time += interval->profile_rss.time;
+      }
+      if(info->app_prof->has_profile_all) {
+        for(n = 0; n < interval->max_index; n++) {
+          if(!interval->arenas[n]) {
+            continue;
+          }
+          for(x = 0; x < info->app_prof->num_profile_all_events; x++) {
+            info->prof_total_acc += interval->arenas[n]->profile_all.events[x].current;
+          }
+        }
       }
       if(info->app_prof->has_profile_online) {
         if(interval->profile_online.phase_change) {
@@ -229,6 +242,12 @@ void set_sicm_metric(char *metric_str, sicm_metrics *info, metric *m) {
   } else if(strcmp(metric_str, "prof_num_phases") == 0) {
     m->val.f = info->prof_num_phases;
     m->type = 0;
+  } else if(strcmp(metric_str, "prof_num_intervals") == 0) {
+    m->val.s = info->prof_num_intervals;
+    m->type = 1;
+  } else if(strcmp(metric_str, "prof_total_acc") == 0) {
+    m->val.s = info->prof_total_acc;
+    m->type = 1;
   } else if(strcmp(metric_str, "prof_total_rss_time") == 0) {
     m->val.f = info->prof_total_rss_time;
     m->type = 0;

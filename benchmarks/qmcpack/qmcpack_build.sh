@@ -7,16 +7,17 @@
 # lapack lapack-devel blas blas-devel centos-release-scl devtoolset-7-gcc* boost169 boost169-devel
 # then had to do: . /opt/rh/devtoolset-7/enable
 
+. /opt/rh/devtoolset-7/enable
 source $SCRIPTS_DIR/all/bench_build.sh
 bench_build c "" ""
 
 export FFTW_INCLUDE_DIRS="/usr/include"
-export FFTW_LIBRARY_DIRS="/usr/lib/x86_64-linux-gnu"
-export HDF5_INCLUDE_DIRS="/usr/include/hdf5/serial"
-export HDF5_LIBRARY_DIRS="/usr/lib/x86_64-linux-gnu/hdf5/serial"
-export CFLAGS="-I${HDF5_INCLUDE_DIRS} -L${HDF5_LIBRARY_DIRS}"
-export CXXFLAGS="-I${HDF5_INCLUDE_DIRS} -L${HDF5_LIBRARY_DIRS}"
-export LDFLAGS="-L${HDF5_LIBRARY_DIRS}"
+export FFTW_LIBRARY_DIRS="/usr/lib64/"
+export HDF5_INCLUDE_DIRS="/usr/include/"
+export HDF5_LIBRARY_DIRS="/usr/lib64/"
+export BOOST_INCLUDE_DIRS="/usr/include/boost169/"
+export SICM_COMPILER_ARGS="--gcc-toolchain=/opt/rh/devtoolset-7/root/usr/ -L/opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/ -lstdc++_nonshared"
+export CXXFLAGS="-lm ${SICM_COMPILER_ARGS}"
 
 # Compile QMCPACK
 cd $BENCH_DIR/qmcpack/src
@@ -31,20 +32,22 @@ cmake -DBUILD_UNIT_TESTS=False \
       -DQMC_ADIOS=False \
       -DENABLE_PHDF5=False \
       -DENABLE_SOA=1 \
+      -DENABLE_TIMERS=1 \
       -DQMC_CUDA=0 \
       -DCMAKE_CXX_COMPILER:PATH=${COMPILER_WRAPPER} \
       -DCMAKE_C_COMPILER:PATH=${COMPILER_WRAPPER} \
-      -DCMAKE_C_FLAGS="-llapack -lblas -lfftw3 -lhdf5 -L${HDF5_LIBRARY_DIRS}" \
-      -DCMAKE_CXX_FLAGS="-Wno-#warnings -Wno-deprecated -Wno-#pragma-messages -llapack -lblas -lfftw3 -lhdf5 -L${HDF5_LIBRARY_DIRS}" \
+      -DCMAKE_C_FLAGS="-llapack -lblas -lfftw3 -lhdf5" \
+      -DCMAKE_CXX_FLAGS="-Wno-#warnings -Wno-deprecated -Wno-#pragma-messages -llapack -lblas -lfftw3 -lhdf5 ${CXXFLAGS}" \
       -DCMAKE_LINKER:PATH=${LD_WRAPPER} \
-      -DCMAKE_CXX_LINK_EXECUTABLE="<CMAKE_LINKER> -lfftw3 -lxml2 -llapack -lblas -lhdf5 <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>" \
+      -DCMAKE_CXX_LINK_EXECUTABLE="<CMAKE_LINKER> -lfftw3 -lxml2 -llapack -lblas -lhdf5 <CMAKE_CXX_FLAGS> <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> ${SICM_COMPILER_ARGS} <OBJECTS> -o <TARGET> <LINK_LIBRARIES>" \
       -DCMAKE_AR:PATH=${AR_WRAPPER} \
       -DCMAKE_RANLIB:PATH="${RANLIB_WRAPPER}" \
       -DCMAKE_BUILD_WITH_INSTALL_RPATH=True \
       -DCMAKE_INSTALL_RPATH_USE_LINK_PATH=True \
-      -DHDF5_FIND_DEBUG=True \
-      -DHDF5_FOUND=True \
-      -DHDF5_INCLUDE_DIR="${HDF5_INCLUDE_DIRS}" \
+      -DHDF5_INCLUDE_DIRS="${HDF5_INCLUDE_DIRS}" \
+      -DFFTW_INCLUDE_DIRS="${FFTW_INCLUDE_DIRS}" \
+      -DFFTW_LIBRARY_DIRS="${FFTW_LIBRARY_DIRS}" \
+      -DBoost_INCLUDE_DIR="${BOOST_INCLUDE_DIRS}" \
       ..
 make -j $(nproc --all)
 mkdir -p ../../run
