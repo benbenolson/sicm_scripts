@@ -1,5 +1,5 @@
 #!/bin/bash
-. /opt/rh/devtoolset-7/enable
+#. /opt/rh/devtoolset-7/enable
 source ./all/vars.sh
 
 # SYSTEM_C_COMPILER and SYSTEM_CXX_COMPILER needs to be at least GCC 7.2 to work.
@@ -49,6 +49,7 @@ CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX \
 export PATH="${INSTALL_PREFIX}:${PATH}"
 
 # Start with an easy one: libpfm4
+mkdir -p ${INSTALL_PREFIX}
 cd libpfm4
 make -j$(nproc)
 cp -r include/* ${INSTALL_PREFIX}/include/
