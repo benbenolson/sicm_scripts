@@ -1,20 +1,12 @@
 #!/bin/bash
 
-export REF="${SICM_ENV} valgrind --tool=exp-sgcheck ./pop2.exe"
-#export REF="${SICM_ENV} valgrind --tool=drd --exclusive-threshold=1 ./pop2.exe"
-#export REF="${SICM_ENV} ./pop2.exe"
+#export REF="${SICM_ENV} valgrind --soname-synonyms=somalloc=NONE ./pop2.exe"
+#export REF="${SICM_ENV} valgrind --tool=exp-sgcheck ./pop2.exe"
+#export REF="${SICM_ENV} valgrind --tool=drd --read-var-info=yes ./pop2.exe"
+#export REF="${SICM_ENV} valgrind --tool=helgrind --read-var-info=yes ./pop2.exe"
+export REF="${SICM_ENV} ./pop2.exe"
 export TEST="${SICM_ENV} ./pop2.exe"
 export TRAIN="${SICM_ENV} ./pop2.exe"
-
-function pop2_prerun {
-  if [[ $SH_ARENA_LAYOUT = "SHARED_SITE_ARENAS" ]]; then
-    export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:1"
-  elif [[ $SH_ARENA_LAYOUT = "BIG_SMALL_ARENAS" ]]; then
-    export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:1"
-  else
-    export JE_MALLOC_CONF="oversize_threshold:0"
-  fi
-}
 
 function pop2_setup {
   if [[ $SIZE = "ref" ]]; then

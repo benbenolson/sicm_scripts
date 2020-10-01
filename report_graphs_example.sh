@@ -27,4 +27,4 @@ bench="lulesh"
 #./all/stat --eps --graph_title='' --metric=graph_heatmap_top100 --filename=graphs/${bench}/${bench}_medium_heatmap_top100_ski20.eps ~/results/${bench}/medium_aep/online_memreserve_ski_debug\:share_16_1000_20/i0/
 #./all/stat --graph_title='' --metric=graph_heatmap_top100 --filename=graphs/${bench}/${bench}_medium_heatmap_top100_ski20.png ~/results/${bench}/medium_aep/online_memreserve_ski_debug\:share_16_1000_20/i0/
 
-./all/stat --graph_title='' --metric=graph_online_bandwidth --filename=graphs/${bench}/${bench}_online_bandwidth_i0.png ~/results/${bench}/medium_aep/online_mr_ski_bw_relative_lat_rss_test:thermos_16_100_10_100_20/i0/
+./all/stat --bench=lulesh --size=medium_aep --graph_title='' --metric=graph_hotset_diff_weighted --filename=graphs/${bench}/${bench}_hotset_diff_weighted.png --config=on_mr_ski_all_rss_bsl_debug:128_100_100_100_hotset_50

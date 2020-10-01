@@ -113,6 +113,22 @@ function ft_bsl {
   ft $@
 }
 
+function ft_bsh {
+  export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="536870912" # 16MB threshold
+  export SH_MAX_SITES_PER_ARENA="5000"
+  ft $@
+}
+
+function ft_bshh {
+  export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="1073741824" # 16MB threshold
+  export SH_MAX_SITES_PER_ARENA="5000"
+  ft $@
+}
+
 function ft_bsl_debug {
   export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
   export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
@@ -124,7 +140,7 @@ function ft_bsl_debug {
 function ft_bss {
   export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
   export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
-  export SH_BIG_SMALL_THRESHOLD="4096" # 4KB threshold
+  export SH_BIG_SMALL_THRESHOLD="1048576" # 4KB threshold
   export SH_MAX_SITES_PER_ARENA="5000"
   ft $@
 }
@@ -132,7 +148,7 @@ function ft_bss {
 function ft_bss_debug {
   export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
   export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
-  export SH_BIG_SMALL_THRESHOLD="4096" # 4KB threshold
+  export SH_BIG_SMALL_THRESHOLD="1048576" # 4KB threshold
   export SH_MAX_SITES_PER_ARENA="5000"
   ft $@
 }
@@ -140,7 +156,7 @@ function ft_bss_debug {
 function ft_mr_ss {
   # This just takes a percentage that should be left available on the upper tier
   RATIO=$(echo "${1}/100" | bc -l)
-  CANARY_CFG="ft_ss:"
+  CANARY_CFG="ft_def:"
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
 
   # This is in kilobytes
@@ -162,7 +178,7 @@ function ft_mr_ss {
 function ft_mr_ed {
   # This just takes a percentage that should be left available on the upper tier
   RATIO=$(echo "${1}/100" | bc -l)
-  CANARY_CFG="ft_ed:"
+  CANARY_CFG="ft_def:"
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
 
   # This is in kilobytes
@@ -181,10 +197,33 @@ function ft_mr_ed {
   ft $@
 }
 
+function ft_mr_bsl {
+  # This just takes a percentage that should be left available on the upper tier
+  RATIO=$(echo "${1}/100" | bc -l)
+  CANARY_CFG="ft_def:"
+  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
+
+  # This is in kilobytes
+  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single="${CANARY_DIR}" --metric=peak_rss_kbytes`
+  PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
+
+  # How many pages we need to be free on upper tier
+  NUM_PAGES=$(echo "${PEAK_RSS} * ${RATIO} / 4" | bc)
+  NUM_BYTES_FLOAT=$(echo "${PEAK_RSS} * ${RATIO} * 1024" | bc)
+  NUM_BYTES=${NUM_BYTES_FLOAT%.*}
+
+  export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304" # 4MB threshold
+  export SH_MAX_SITES_PER_ARENA="5000"
+  DO_MEMRESERVE=true
+  ft $@
+}
+
 function ft_mr_def {
   # This just takes a percentage that should be left available on the upper tier
   RATIO=$(echo "${1}/100" | bc -l)
-  CANARY_CFG="firsttouch_default:"
+  CANARY_CFG="ft_def:"
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
 
   # This is in kilobytes

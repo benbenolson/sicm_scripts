@@ -3,7 +3,7 @@
 source ./all/vars.sh
 
 # SYSTEM_C_COMPILER and SYSTEM_CXX_COMPILER needs to be at least GCC 7.2 to work.
-SICM_DEPS_DIR="$SICM_PREFIX"
+SICM_DEPS_DIR="$SICM_NEW_PREFIX"
 SYSTEM_C_COMPILER="/usr/bin/gcc"
 SYSTEM_CXX_COMPILER="/usr/bin/g++"
 
@@ -15,19 +15,19 @@ mkdir -p src
 cd src
 if [ ! -d "llvm" ]; then
   git clone https://github.com/flang-compiler/llvm.git llvm
-  (cd llvm && git checkout flang_20180921)
+  (cd llvm && git checkout flang_20190329)
 fi
 if [ ! -d "flang" ]; then
   git clone https://github.com/flang-compiler/flang.git flang
-  (cd flang && git checkout flang_20180921)
+  (cd flang && git checkout flang_20190329)
 fi
 if [ ! -d "flang-driver" ]; then
   git clone https://github.com/flang-compiler/flang-driver.git flang-driver
-  (cd flang-driver && git checkout flang_20180921)
+  (cd flang-driver && git checkout flang_20190329)
 fi
 if [ ! -d "openmp" ]; then
   git clone https://github.com/flang-compiler/openmp.git openmp
-  (cd openmp && git checkout flang_20180921)
+  (cd openmp && git checkout flang_20190329)
 fi
 if [ ! -d "sicm" ]; then
   git clone https://github.com/lanl/SICM.git sicm
@@ -58,7 +58,7 @@ cd ..
 # Build Flang-patched LLVM
 cd llvm
 mkdir -p build && cd build
-cmake $CMAKE_OPTIONS -DCMAKE_C_COMPILER=${SYSTEM_C_COMPILER} -DCMAKE_CXX_COMPILER=${SYSTEM_CXX_COMPILER} ..
+cmake $CMAKE_OPTIONS -DCMAKE_C_COMPILER=${SYSTEM_C_COMPILER} -DCMAKE_CXX_COMPILER=${SYSTEM_CXX_COMPILER} -DLLVM_ENABLE_PROJECTS='compiler-rt' ..
 make -j$(nproc)
 make install
 cd ../..
@@ -115,7 +115,7 @@ fi
 # Build jemalloc
 cd jemalloc
 ./autogen.sh
-./configure --prefix=${SICM_DEPS_DIR} #--with-jemalloc-prefix="je_"
+./configure --prefix=${SICM_DEPS_DIR} --with-jemalloc-prefix="je_"
 make dist
 make -j$(nproc)
 make install

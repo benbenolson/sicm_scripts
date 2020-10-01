@@ -12,8 +12,8 @@ static char output_filetype = 0;
 
 /* This is just a struct that includes a variance and geomean over the iterations that we ran. */
 typedef struct result {
-  double geomean;
-  double variance;
+  double geomean, rel_geomean;
+  double variance, rel_variance;
 } result;
 
 typedef struct metric {
@@ -95,61 +95,61 @@ metric *parse_metrics(metrics *info, char *path, char *metric_str, unsigned long
   FILE *file;
   metric *m;
 
-  m = malloc(sizeof(metric));
+  //m = malloc(sizeof(metric));
   if((filename = is_gnu_time_metric(metric_str)) != NULL) {
     fullpath = construct_path(path, filename);
     file = fopen(fullpath, "r");
     if(!file) {
-      fprintf(stderr, "Failed to open file '%s'. Aborting.\n", fullpath);
-      exit(1);
+      fprintf(stderr, "WARNING: Failed to open file '%s'.\n", fullpath);
+      return NULL;
     }
     parse_gnu_time(file, info->gnu_time);
-    set_gnu_time_metric(metric_str, info->gnu_time, m);
+    m = set_gnu_time_metric(metric_str, info->gnu_time);
   } else if((filename = is_numastat_metric(metric_str)) != NULL) {
     fullpath = construct_path(path, filename);
     file = fopen(fullpath, "r");
     if(!file) {
-      fprintf(stderr, "Failed to open file '%s'. Aborting.\n", fullpath);
-      exit(1);
+      fprintf(stderr, "WARNING: Failed to open file '%s'.\n", fullpath);
+      return NULL;
     }
     parse_numastat(file, info->numastat);
-    set_numastat_metric(metric_str, info->numastat, node, m);
+    m = set_numastat_metric(metric_str, info->numastat, node);
   } else if((filename = is_pcm_memory_metric(metric_str)) != NULL) {
     fullpath = construct_path(path, filename);
     file = fopen(fullpath, "r");
     if(!file) {
-      fprintf(stderr, "Failed to open file '%s'. Aborting.\n", fullpath);
-      exit(1);
+      fprintf(stderr, "WARNING: Failed to open file '%s'.\n", fullpath);
+      return NULL;
     }
     parse_pcm_memory(file, info->pcm_memory);
-    set_pcm_memory_metric(metric_str, info->pcm_memory, node, m);
+    m = set_pcm_memory_metric(metric_str, info->pcm_memory, node);
   } else if((filename = is_sicm_metric(metric_str)) != NULL) {
     fullpath = construct_path(path, filename);
     file = fopen(fullpath, "r");
     if(!file) {
-      fprintf(stderr, "Failed to open file '%s'. Aborting.\n", fullpath);
-      exit(1);
+      fprintf(stderr, "WARNING: Failed to open file '%s'.\n", fullpath);
+      return NULL;
     }
     parse_sicm(file, metric_str, info->sicm, site);
-    set_sicm_metric(metric_str, info->sicm, m);
+    m = set_sicm_metric(metric_str, info->sicm);
   } else if((filename = is_memreserve_metric(metric_str)) != NULL) {
     fullpath = construct_path(path, filename);
     file = fopen(fullpath, "r");
     if(!file) {
-      fprintf(stderr, "Failed to open file '%s'. Aborting.\n", fullpath);
-      exit(1);
+      fprintf(stderr, "WARNING: Failed to open file '%s'.\n", fullpath);
+      return NULL;
     }
     parse_memreserve(file, info->memreserve);
-    set_memreserve_metric(metric_str, info->memreserve, m);
+    m = set_memreserve_metric(metric_str, info->memreserve);
   } else if((filename = is_bench_metric(metric_str)) != NULL) {
     fullpath = construct_path(path, filename);
     file = fopen(fullpath, "r");
     if(!file) {
-      fprintf(stderr, "Failed to open file '%s'. Aborting.\n", fullpath);
-      exit(1);
+      fprintf(stderr, "WARNING: Failed to open file '%s'.\n", fullpath);
+      return NULL;
     }
     parse_bench(file, info->bench);
-    set_bench_metric(metric_str, info->bench, m);
+    m = set_bench_metric(metric_str, info->bench);
   } else {
     fprintf(stderr, "Metric not yet implemented: '%s'\n", metric_str);
     exit(1);

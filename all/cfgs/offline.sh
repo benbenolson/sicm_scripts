@@ -9,7 +9,7 @@ ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
 function off_base {
   PACKING_ALGO="$1"
 
-  CANARY_CFG="ft_ed:"
+  CANARY_CFG="ft_def:"
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
   PEBS_DIR="${PROFILE_DIR}/"
   PEBS_FILE="${PEBS_DIR}/profile.txt"
@@ -29,10 +29,12 @@ function off_base {
   # Get the peak RSS of the canary run
   PEAK_RSS_CANARY=`${SCRIPTS_DIR}/all/stat --single="${CANARY_DIR}" --metric=peak_rss_kbytes`
   PEAK_RSS_CANARY_BYTES=$(echo "${PEAK_RSS_CANARY} * 1024" | bc)
+  echo "PEAK_RSS_CANARY=${PEAK_RSS_CANARY}"
 
   # Get the peak RSS of the profiling run
   PEAK_RSS_PROFILING=`${SCRIPTS_DIR}/all/stat --single="${PEBS_DIR}" --metric=peak_rss_kbytes`
   PEAK_RSS_PROFILING_BYTES=$(echo "${PEAK_RSS_PROFILING} * 1024" | bc)
+  echo "PEAK_RSS_PROFILING=${PEAK_RSS_PROFILING}"
 
   if [ "$DO_SCALE" = true ]; then
     # Now get the ratio that we should scale the sites' weights down by
@@ -95,17 +97,19 @@ function off {
 
 function off_mr {
   RATIO=$(echo "${2}/100" | bc -l)
-  CANARY_CFG="ft_ed:"
+  CANARY_CFG="ft_def:"
   CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
 
   # This is in kilobytes
-  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single --metric=peak_rss_kbytes ${CANARY_DIR}`
+  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single=${CANARY_DIR} --metric=peak_rss_kbytes`
   PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
+  echo "PEAK_RSS=${PEAK_RSS}"
 
   # How many pages we need to be free on upper tier
   NUM_PAGES=$(echo "${PEAK_RSS} * ${RATIO} / 4" | bc)
   NUM_BYTES_FLOAT=$(echo "${PEAK_RSS} * ${RATIO} * 1024" | bc)
   NUM_BYTES=${NUM_BYTES_FLOAT%.*}
+  echo "NUM_BYTES=${NUM_BYTES}"
 
   DO_MEMRESERVE=true
   off_base "$@"
@@ -121,10 +125,23 @@ function off_mr_bw_relative {
   off_mr $@
 }
 
-function off_mr_all_rss {
+function off_mr_all_rss_ed {
   DO_SCALE=false
   CAPACITY_PROF_TYPE="profile_rss_peak"
+  ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
   off_mr_all $@
+}
+
+function off_mr_all_rss_bsl {
+  DO_SCALE=false
+  CAPACITY_PROF_TYPE="profile_rss_peak"
+  ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  off_mr_all $@
+}
+
+function off_on_mr_all_rss_bsl {
+  off_mr_all_rss_bsl $@
 }
 
 function off_mr_all_es {

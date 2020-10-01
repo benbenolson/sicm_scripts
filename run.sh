@@ -22,6 +22,7 @@ else
   export OMP_NUM_THREADS="256"
 fi
 export SH_MAX_THREADS=`expr ${OMP_NUM_THREADS} + 1`
+export JE_MALLOC_CONF="oversize_threshold:0,background_thread:true,max_background_threads:1"
 
 source $SCRIPTS_DIR/all/args.sh
 source $SCRIPTS_DIR/all/tools.sh
@@ -166,7 +167,7 @@ for BENCH_INDEX in ${!BENCHES[*]}; do
     # We want SICM to output its configuration for debugging
     export SH_LOG_FILE="${DIRECTORY}/config.txt"
     ulimit -c unlimited
-    ulimit -s unlimited
+    ulimit -S -s unlimited
 
     # Print out information about this run
     echo "Running experiment:"
@@ -181,6 +182,7 @@ for BENCH_INDEX in ${!BENCHES[*]}; do
     cd $BENCH_DIR/${BENCH}
     eval "${SETUP}"
     cd $BENCH_DIR/${BENCH}/run
+    echo "Evaluating command: '$CONFIG ${ARGS_SPACES}'"
     ( eval "$CONFIG ${ARGS_SPACES}" )
 
   done

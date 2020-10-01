@@ -77,7 +77,10 @@ char *is_gnu_time_metric(char *metric) {
   return NULL;
 }
 
-void set_gnu_time_metric(char *metric_str, gnu_time_metrics *info, metric *m) {
+metric *set_gnu_time_metric(char *metric_str, gnu_time_metrics *info) {
+  metric *m;
+  
+  m = malloc(sizeof(metric));
   if(strcmp(metric_str, "peak_rss") == 0) {
     m->val.f = info->peak_rss;
     m->type = 0;
@@ -92,4 +95,5 @@ void set_gnu_time_metric(char *metric_str, gnu_time_metrics *info, metric *m) {
     m->val.s = info->runtime_seconds;
     m->type = 1;
   }
+  return m;
 }

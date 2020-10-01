@@ -5,16 +5,19 @@ DO_DEBUG=false
 MEMRESERVE_RATIO=""
 
 function on_base {
-  PACKING_ALGO="$1"
-  FREQ="$2"
-  RATE="$3"
-  CAPACITY_SKIP_INTERVALS="$4"
-  ONLINE_SKIP_INTERVALS="$5"
-
+  FREQ="$1"
+  RATE="$2"
+  CAPACITY_SKIP_INTERVALS="$3"
+  ONLINE_SKIP_INTERVALS="$4"
+  PACKING_ALGO="$5"
+  
+  echo "Running on_base"
+  
   # First, get ready to do memreserve if applicable
   if [ "${DO_MEMRESERVE}" = true ]; then
+    echo "Doing memreserve"
     RATIO=$(echo "${MEMRESERVE_RATIO}/100" | bc -l)
-    CANARY_CFG="firsttouch_exclusive_device:"
+    CANARY_CFG="ft_def:"
     CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
 
     # This file is used to get the peak RSS
@@ -22,9 +25,10 @@ function on_base {
       echo "ERROR: The file '${CANARY_DIR}' doesn't exist yet. Aborting."
       exit
     fi
-
+    
     # This is in kilobytes
-    PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single --metric=peak_rss_kbytes ${CANARY_DIR}`
+    echo "Calling stat" 
+    PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single=${CANARY_DIR} --metric=peak_rss_kbytes`
     PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
 
     # How many pages we need to be free on upper tier
@@ -75,10 +79,10 @@ function on_base {
     drop_caches_start
     numastat -m &>> ${DIR}/numastat_before.txt
     numastat_background "${DIR}"
-    #pcm_background "${DIR}"
+    pcm_background "${DIR}"
     eval "${COMMAND}" &>> ${DIR}/stdout.txt
     numastat_kill
-    #pcm_kill
+    pcm_kill
     if [ "$DO_MEMRESERVE" = true ]; then
       memreserve_kill
     fi
@@ -91,6 +95,7 @@ function on_base {
 #
 function on_mr {
   MEMRESERVE_RATIO="$6"
+  DO_MEMRESERVE=true
   on_base $@
 }
 
@@ -103,31 +108,33 @@ function on_mr_ski {
 }
 
 # PROFILE_ALL with RSS
-function on_mr_ski_all_rss {
+function on_mr_ski_all_rss_bsl {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
   export SH_PROFILE_ONLINE_VALUE="profile_all_total"
   export SH_PROFILE_ONLINE_WEIGHT="profile_rss_peak"
   export SH_PROFILE_RSS="1"
   on_mr_ski $@
 }
-function on_mr_ski_all_rss_debug {
+function on_mr_ski_all_rss_bsl_debug {
   DO_DEBUG=true
-  on_mr_ski_all_rss_debug $@
+  on_mr_ski_all_rss_bsl $@
 }
 
 # PROFILE_ALL with ES
-function on_mr_ski_all_es {
+function on_mr_ski_all_es_bsl {
   export SH_PROFILE_ONLINE_VALUE="profile_all_total"
   export SH_PROFILE_ONLINE_WEIGHT="profile_extent_size_peak"
   export SH_PROFILE_EXTENT_SIZE="1"
   on_mr_ski $@
 }
-function on_mr_ski_all_es_debug {
+function on_mr_ski_all_es_bsl_debug {
   DO_DEBUG=true
-  on_mr_ski_all_es $@
+  on_mr_ski_all_es_bsl $@
 }
 
 # PROFILE_ALL with latency and RSS
-function on_mr_ski_all_lat_rss {
+function on_mr_ski_all_lat_rss_bsl {
   export SH_PROFILE_ONLINE_VALUE="profile_all_total"
   export SH_PROFILE_ONLINE_WEIGHT="profile_rss_peak"
   export SH_PROFILE_RSS="1"
@@ -141,13 +148,13 @@ function on_mr_ski_all_lat_rss {
   
   on_mr_ski $@
 }
-function on_mr_ski_all_lat_rss_debug {
+function on_mr_ski_all_lat_rss_bsl_debug {
   DO_DEBUG=true
-  on_mr_ski_all_lat_rss $@
+  on_mr_ski_all_lat_rss_bsl $@
 }
 
 # PROFILE_ALL with latency and ES
-function on_mr_ski_all_lat_es {
+function on_mr_ski_all_lat_es_bsl {
   export SH_PROFILE_ONLINE_VALUE="profile_all_total"
   export SH_PROFILE_ONLINE_WEIGHT="profile_extent_size_peak"
   export SH_PROFILE_EXTENT_SIZE="1"
@@ -160,13 +167,13 @@ function on_mr_ski_all_lat_es {
   export SH_PROFILE_LATENCY_SKIP_INTERVALS="1"
   on_mr_ski $@
 }
-function on_mr_ski_all_lat_es_debug {
+function on_mr_ski_all_lat_es_bsl_debug {
   DO_DEBUG=true
-  on_mr_ski_all_lat_es $@
+  on_mr_ski_all_lat_es_bsl $@
 }
 
 # BWREL with RSS
-function on_mr_ski_bwrel_rss {
+function on_mr_ski_bwrel_rss_bsl {
   export SH_PROFILE_BW="1"
   export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
   export SH_PROFILE_BW_SKIP_INTERVALS="1"
@@ -176,13 +183,13 @@ function on_mr_ski_bwrel_rss {
   export SH_PROFILE_RSS="1"
   on_mr_ski $@
 }
-function on_mr_ski_bwrel_rss_debug {
+function on_mr_ski_bwrel_rss_bsl_debug {
   DO_DEBUG=true
-  on_mr_ski_bwrel_rss $@
+  on_mr_ski_bwrel_rss_bsl $@
 }
 
 # BWREL with ES
-function on_mr_ski_bwrel_es {
+function on_mr_ski_bwrel_es_bsl {
   export SH_PROFILE_BW="1"
   export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
   export SH_PROFILE_BW_SKIP_INTERVALS="1"
@@ -192,13 +199,13 @@ function on_mr_ski_bwrel_es {
   export SH_PROFILE_EXTENT_SIZE="1"
   on_mr_ski $@
 }
-function on_mr_ski_bwrel_es_debug {
+function on_mr_ski_bwrel_es_bsl_debug {
   DO_DEBUG=true
-  on_mr_ski_bwrel_es $@
+  on_mr_ski_bwrel_es_bsl $@
 }
 
 # BWREL with lat and RSS
-function on_mr_ski_bwrel_lat_rss {
+function on_mr_ski_bwrel_lat_rss_bsl {
   export SH_PROFILE_BW="1"
   export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
   export SH_PROFILE_BW_SKIP_INTERVALS="1"
@@ -216,13 +223,13 @@ function on_mr_ski_bwrel_lat_rss {
   
   on_mr_ski $@
 }
-function on_mr_ski_bwrel_lat_rss_debug {
+function on_mr_ski_bwrel_lat_rss_bsl_debug {
   DO_DEBUG=true
-  on_mr_ski_bwrel_lat_rss $@
+  on_mr_ski_bwrel_lat_rss_bsl $@
 }
   
 # BWREL with lat and ES
-function on_mr_ski_bwrel_lat_es {
+function on_mr_ski_bwrel_lat_es_bsl {
   export SH_PROFILE_BW="1"
   export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
   export SH_PROFILE_BW_SKIP_INTERVALS="1"
@@ -240,7 +247,7 @@ function on_mr_ski_bwrel_lat_es {
   
   on_mr_ski $@
 }
-function on_mr_ski_bwrel_lat_es_debug {
+function on_mr_ski_bwrel_lat_es_bsl_debug {
   DO_DEBUG=true
-  on_mr_ski_bwrel_lat_es $@
+  on_mr_ski_bwrel_lat_es_bsl $@
 }

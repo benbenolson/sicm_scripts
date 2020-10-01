@@ -86,6 +86,6 @@ void graph_metric_memreserve(char **bench_strs, size_t num_benches,
   printf("ARGS: '%s'\n", args);
   jgraph_wrapper("graph_multi_line", args);
 
-  free(first_file_name);
-  free(args);
+  orig_free(first_file_name);
+  orig_free(args);
 }

@@ -78,9 +78,12 @@ char *is_memreserve_metric(char *metric_str) {
   return NULL;
 }
 
-void set_memreserve_metric(char *metric_str, memreserve_metrics *info, metric *m) {
+metric *set_memreserve_metric(char *metric_str, memreserve_metrics *info) {
+  metric *m;
+  m = malloc(sizeof(metric));
   if(strcmp(metric_str, "num_reserved_bytes") == 0) {
     m->val.s = (size_t) info->num_reserved_bytes;
     m->type = 1;
   }
+  return m;
 }

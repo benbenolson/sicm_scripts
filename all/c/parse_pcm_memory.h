@@ -125,12 +125,15 @@ char *is_pcm_memory_metric(char *metric) {
   return NULL;
 }
 
-void set_pcm_memory_metric(char *metric_str, pcm_memory_metrics *info, long long node, metric *m) {
+metric *set_pcm_memory_metric(char *metric_str, pcm_memory_metrics *info, long long node) {
+  metric *m;
+  
   if(node == UINT_MAX) {
     fprintf(stderr, "This metric requires the `--node` argument. Aborting.\n");
     exit(1);
   }
 
+  m = malloc(sizeof(metric));
   if((strcmp(metric_str, "geomean_bw") == 0)) {
     m->val.f = info->tot_bw_geomeans[node];
     m->type = 0;
@@ -141,4 +144,6 @@ void set_pcm_memory_metric(char *metric_str, pcm_memory_metrics *info, long long
     m->val.f = info->pmm_bw_geomeans[node];
     m->type = 0;
   }
+  
+  return m;
 }

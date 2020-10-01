@@ -159,7 +159,10 @@ char *is_bench_metric(char *metric) {
   return NULL;
 }
 
-void set_bench_metric(char *metric_str, bench_metrics *info, metric *m) {
+metric *set_bench_metric(char *metric_str, bench_metrics *info) {
+  metric *m;
+  
+  m = malloc(sizeof(metric));
   if(strcmp(metric_str, "fom") == 0) {
     m->val.f = info->fom;
     m->type = 0;
@@ -186,4 +189,5 @@ void set_bench_metric(char *metric_str, bench_metrics *info, metric *m) {
     m->val.f = info->max_phase_time;
     m->type = 0;
   }
+  return m;
 }

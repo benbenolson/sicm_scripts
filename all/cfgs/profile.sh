@@ -96,6 +96,14 @@ function prof_all_bsl_rss_debug {
   prof_all_base $@
 }
 
+function prof_all_bsl_debug {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  export SH_PRINT_PROFILE_INTERVALS="1"
+  
+  prof_all_base $@
+}
+
 function prof_all_bss_es {
   export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
   export SH_BIG_SMALL_THRESHOLD="4096"
@@ -132,4 +140,12 @@ function prof_all_bsl {
   export SH_BIG_SMALL_THRESHOLD="4194304"
   
   prof_all_base $@
+}
+
+function prof_all_bsl_nopoll {
+  prof_all_bsl $@
+}
+
+function prof_all_bsl_rss_nopoll {
+  prof_all_bsl_rss $@
 }

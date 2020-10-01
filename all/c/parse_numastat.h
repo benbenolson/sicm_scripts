@@ -125,12 +125,15 @@ char *is_numastat_metric(char *metric) {
   return NULL;
 }
 
-void set_numastat_metric(char *metric_str, numastat_metrics *info, long long node, metric *m) {
+metric *set_numastat_metric(char *metric_str, numastat_metrics *info, long long node) {
+  metric *m;
+  
   if(node == UINT_MAX) {
     fprintf(stderr, "This metric requires the `--node` argument. Aborting.\n");
     exit(1);
   }
 
+  m = malloc(sizeof(metric));
   if((strcmp(metric_str, "memfree") == 0) || (strcmp(metric_str, "geomean_memfree") == 0)) {
     m->val.f = info->memfree_geomeans[node];
     m->type = 0;
@@ -144,4 +147,6 @@ void set_numastat_metric(char *metric_str, numastat_metrics *info, long long nod
     m->val.f = info->memfree_geomeans[node];
     m->type = 0;
   }
+  
+  return m;
 }

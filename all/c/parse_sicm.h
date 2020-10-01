@@ -180,6 +180,7 @@ void parse_sicm(FILE *file, char *metric, sicm_metrics *info, int site) {
         }
       }
     }
+    printf("Final prof_total_acc: %zu\n", info->prof_total_acc);
     info->prof_geomean_hotset_peak_size /= info->app_prof->num_intervals;
     info->prof_geomean_device_peak_size /= info->app_prof->num_intervals;
     info->prof_geomean_hotset_peak_size = exp(info->prof_geomean_hotset_peak_size);
@@ -229,11 +230,15 @@ char *is_sicm_metric(char *metric) {
   return NULL;
 }
 
-void set_sicm_metric(char *metric_str, sicm_metrics *info, metric *m) {
+metric *set_sicm_metric(char *metric_str, sicm_metrics *info) {
+  metric *m;
+  
   if(strncmp(metric_str, "graph_", 6) == 0) {
-    
-  /* Use profile.txt */
-  } else if(strcmp(metric_str, "prof_avg_interval_time") == 0) {
+    return NULL;
+  }
+  
+  m = malloc(sizeof(metric));
+  if(strcmp(metric_str, "prof_avg_interval_time") == 0) {
     m->val.f = info->prof_avg_interval_time;
     m->type = 0;
   } else if(strcmp(metric_str, "prof_last_phase_time") == 0) {
@@ -275,4 +280,5 @@ void set_sicm_metric(char *metric_str, sicm_metrics *info, metric *m) {
     m->val.f = info->online_num_rebinds;
     m->type = 0;
   }
+  return m;
 }

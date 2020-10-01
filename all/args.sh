@@ -106,7 +106,7 @@ if [[ ! -z "${BASECONFIG}" ]]; then
   FULL_BASECONFIG="${BASECONFIG}:${BASECONFIG_ARGS_UNDERSCORES}"
 fi
 
-export SICM_ENV="env LD_LIBRARY_PATH='${SICM_PREFIX}/lib:${LD_LIBRARY_PATH}' LD_PRELOAD='${SICM_PREFIX}/lib/libsicm_overrides.so ${SICM_PREFIX}/lib/libsicm_runtime.so'"
+export SICM_ENV="env LD_LIBRARY_PATH='${SICM_PREFIX}/lib:${SICM_PREFIX}/lib/clang/7.1.0/lib/:${LD_LIBRARY_PATH}' LD_PRELOAD='${SICM_PREFIX}/lib/libsicm_overrides.so ${SICM_PREFIX}/lib/libsicm_runtime.so ${SICM_PREFIX}/lib/libjemalloc.so'"
 #export SICM_ENV="env LD_LIBRARY_PATH="${SICM_PREFIX}/lib:${LD_LIBRARY_PATH}""
 BENCH_COMMANDS=()
 for BENCH in ${BENCHES[@]}; do

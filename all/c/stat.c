@@ -33,11 +33,12 @@ static struct option long_options[] = {
 /* This function returns a `result` struct */
 result *get_geomean_result(DIR *dir, char *path, char *metric_str, unsigned long node, int site) {
   double geomean, diff;
-  size_t num_iters;
+  size_t num_iters, i;
   int iter;
   char *iterpath;
   metric *m;
   metrics *info;
+  metric **m_arr;
   result *res;
   
   /* Used for detecting iteration directories */
@@ -48,13 +49,21 @@ result *get_geomean_result(DIR *dir, char *path, char *metric_str, unsigned long
   res->geomean = 0.0;
   res->variance = 0.0;
   num_iters = 0;
+  m_arr = NULL;
   while ((de = readdir(dir)) != NULL) {
     if(sscanf(de->d_name, "i%d", &iter) == 1) {
-      num_iters++;
       iterpath = malloc(sizeof(char) * (strlen(path) + strlen(de->d_name) + 2));
       sprintf(iterpath, "%s/%s", path, de->d_name);
       info = init_metrics();
       m = parse_metrics(info, iterpath, metric_str, node, site);
+      if(!m) {
+        break;
+      }
+      
+      /* Store this result in the array (so that we can calculate variance) */
+      num_iters++;
+      m_arr = realloc(m_arr, sizeof(metric *) * num_iters);
+      m_arr[num_iters - 1] = m;
       
       /* Add up the values in the `geomean` variable */
       if(m->type == 0) {
@@ -63,26 +72,31 @@ result *get_geomean_result(DIR *dir, char *path, char *metric_str, unsigned long
         res->geomean += log(m->val.s);
       }
       
-      #if 0
-      /* Calculate the variance */
-      if(m->type == 0) {
-        diff = m->val.f
-      } else if(m->type == 1) {
-        diff = m->val.s
-      }
-      #endif
-      
       free_metrics(info);
-      free(m);
       free(iterpath);
     }
   }
   if(!num_iters) {
-    fprintf(stderr, "Failed to find any iterations. Aborting.\n");
-    exit(1);
+    fprintf(stderr, "WARNING: Failed to find any iterations in '%s'.\n", path);
+    res->geomean = 0.0;
+    res->variance = 0.0;
+  } else {
+    res->geomean /= num_iters;
+    res->geomean = exp(res->geomean);
+    for(i = 0; i < num_iters; i++) {
+      m = m_arr[i];
+      if(m->type == 0) {
+        diff = abs(res->geomean - m->val.f);
+      } else if(m->type == 1) {
+        diff = abs(res->geomean - m->val.s);
+      }
+      if(diff > res->variance) {
+        res->variance = diff;
+      }
+      free(m_arr[i]);
+    }
   }
-  res->geomean /= num_iters;
-  res->geomean = exp(res->geomean);
+  free(m_arr);
   
   return res;
 }
@@ -127,6 +141,8 @@ int main(int argc, char **argv) {
   
   /* Array of per-bench, per-config result pointers */
   result ***results;
+  /* Same as above, but the strings of what we're going to print in the table */
+  char ***result_strs;
   
   /* Handle options and arguments */
   node = UINT_MAX;
@@ -291,8 +307,10 @@ int main(int argc, char **argv) {
   
   /* This loop iterates over the configs, gets a `metric` struct per config */
   results = calloc(num_benches, sizeof(result **));
+  result_strs = calloc(num_benches, sizeof(char **));
   for(bench = 0; bench < num_benches; bench++) {
     results[bench] = calloc(num_configs, sizeof(result *));
+    result_strs[bench] = calloc(num_configs, sizeof(char *));
     for(config = 0; config < num_configs; config++) {
       if(debug) {
         printf("Parsing '%s', '%s'\n", bench_strs[bench], config_strs[config]);
@@ -316,9 +334,30 @@ int main(int argc, char **argv) {
         results[bench][config] = malloc(sizeof(result));
         results[bench][config]->geomean = 0.0;
         results[bench][config]->variance = 0.0;
+        results[bench][config]->rel_geomean = 0.0;
+        results[bench][config]->rel_variance = 0.0;
       } else {
         results[bench][config] = get_geomean_result(dir, path, metric_str, node, site);
         closedir(dir);
+      }
+      
+      /* Now handle the `relative` flag */
+      if(relative && (results[bench][0]->geomean != 0.0)) {
+        results[bench][config]->rel_geomean = results[bench][config]->geomean / results[bench][0]->geomean;
+        results[bench][config]->rel_variance = results[bench][config]->variance / results[bench][0]->geomean;
+      }
+      
+      /* Here, we'll store the string of the result (including variance) in `result_strs`. We first figure
+         out how long the string is going to be, then allocate enough room, then finally write the result
+         into `result_strs[bench][config]`. */
+      if(relative) {
+        column_len = snprintf(NULL, 0, "%.2f ± %.2f", results[bench][config]->rel_geomean, results[bench][config]->rel_variance);
+        result_strs[bench][config] = malloc(sizeof(char) * column_len);
+        snprintf(result_strs[bench][config], column_len, "%.2f ± %.2f", results[bench][config]->rel_geomean, results[bench][config]->rel_variance);
+      } else {
+        column_len = snprintf(NULL, 0, "%.2f ± %.2f", results[bench][config]->geomean, results[bench][config]->variance);
+        result_strs[bench][config] = malloc(sizeof(char) * column_len);
+        snprintf(result_strs[bench][config], column_len, "%.2f ± %.2f", results[bench][config]->geomean, results[bench][config]->variance);
       }
       free(path);
     }
@@ -327,7 +366,7 @@ int main(int argc, char **argv) {
   /* The first column should be the width of the longest config name. */
   max_config_len = 0;
   for(config = 0; config < num_configs; config++) {
-    if(max_config_len < strlen(config_strs[config])) {
+    if(strlen(config_strs[config]) > max_config_len) {
       max_config_len = strlen(config_strs[config]);
     }
   }
@@ -337,19 +376,15 @@ int main(int argc, char **argv) {
   max_column_len = 0;
   for(config = 0; config < num_configs; config++) {
     for(bench = 0; bench < num_benches; bench++) {
-      if(relative) {
-        column_len = snprintf(NULL, 0, "%.2f", results[bench][config]->geomean / results[bench][0]->geomean);
-      } else {
-        column_len = snprintf(NULL, 0, "%.2f", results[bench][config]->geomean);
-      }
-      if(max_column_len < column_len) {
+      column_len = strlen(result_strs[bench][config]);
+      if(column_len > max_column_len) {
         max_column_len = column_len;
       }
     }
   }
   for(bench = 0; bench < num_benches; bench++) {
     column_len = strlen(bench_strs[bench]);
-    if(max_column_len < column_len) {
+    if(column_len > max_column_len) {
       max_column_len = column_len;
     }
   }
@@ -364,11 +399,7 @@ int main(int argc, char **argv) {
   for(config = 0; config < num_configs; config++) {
     printf("%-*s", max_config_len, config_strs[config]);
     for(bench = 0; bench < num_benches; bench++) {
-      if(relative) {
-        printf("%-*.2f", max_column_len, results[bench][config]->geomean / results[bench][0]->geomean);
-      } else {
-        printf("%-*.2f", max_column_len, results[bench][config]->geomean);
-      }
+      printf("%-*s", max_column_len, result_strs[bench][config]);
     }
     printf("\n");
     if(groupsize && ((config + 1) % groupsize == 0)) {
