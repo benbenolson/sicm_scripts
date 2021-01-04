@@ -15,19 +15,19 @@ mkdir -p src
 cd src
 if [ ! -d "llvm" ]; then
   git clone https://github.com/flang-compiler/llvm.git llvm
-  (cd llvm && git checkout flang_20180921)
+  (cd llvm && git checkout flang_20190329)
 fi
 if [ ! -d "flang" ]; then
   git clone https://github.com/flang-compiler/flang.git flang
-  (cd flang && git checkout flang_20180921)
+  (cd flang && git checkout flang_20190329)
 fi
 if [ ! -d "flang-driver" ]; then
   git clone https://github.com/flang-compiler/flang-driver.git flang-driver
-  (cd flang-driver && git checkout flang_20180921)
+  (cd flang-driver && git checkout flang_20190329)
 fi
 if [ ! -d "openmp" ]; then
   git clone https://github.com/flang-compiler/openmp.git openmp
-  (cd openmp && git checkout flang_20180921)
+  (cd openmp && git checkout flang_20190329)
 fi
 if [ ! -d "sicm" ]; then
   git clone https://github.com/lanl/SICM.git sicm
@@ -49,7 +49,6 @@ CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX \
 export PATH="${INSTALL_PREFIX}:${PATH}"
 
 # Start with an easy one: libpfm4
-mkdir -p ${INSTALL_PREFIX}
 cd libpfm4
 make -j$(nproc)
 cp -r include/* ${INSTALL_PREFIX}/include/
@@ -58,7 +57,7 @@ cd ..
 
 # Build Flang-patched LLVM
 cd llvm
-mkdir -p build && cd build
+rm -rf build && mkdir -p build && cd build
 cmake $CMAKE_OPTIONS -DCMAKE_C_COMPILER=${SYSTEM_C_COMPILER} -DCMAKE_CXX_COMPILER=${SYSTEM_CXX_COMPILER} ..
 make -j$(nproc)
 make install
@@ -66,7 +65,7 @@ cd ../..
 
 # Build Flang-patched Clang
 cd flang-driver
-mkdir -p build && cd build
+rm -rf build && mkdir -p build && cd build
 cmake $CMAKE_OPTIONS -DCMAKE_C_COMPILER=${SYSTEM_C_COMPILER} -DCMAKE_CXX_COMPILER=${SYSTEM_CXX_COMPILER} ..
 make -j$(nproc)
 make install
@@ -74,7 +73,7 @@ cd ../..
 
 # Build Flang-patched OpenMP
 cd openmp
-mkdir -p build && cd build
+rm -rf build && mkdir -p build && cd build
 cmake $CMAKE_OPTIONS ..
 make -j$(nproc)
 make install
@@ -82,7 +81,7 @@ cd ../..
 
 # Build Flang-patched libpgmath
 cd flang/runtime/libpgmath
-mkdir -p build && cd build
+rm -rf build && mkdir -p build && cd build
 cmake $CMAKE_OPTIONS -DFLANG_LIBOMP=$INSTALL_PREFIX/lib/libomp.so -DFLANG_OPENMP_GPU_NVIDIA=OFF ..
 make -j$(nproc)
 make install
@@ -116,7 +115,7 @@ fi
 # Build jemalloc
 cd jemalloc
 ./autogen.sh
-./configure --prefix=${SICM_DEPS_DIR} #--with-jemalloc-prefix="je_"
+./configure --prefix=${SICM_DEPS_DIR} --with-jemalloc-prefix="je_"
 make dist
 make -j$(nproc)
 make install

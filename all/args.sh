@@ -53,6 +53,8 @@ while true; do
   esac
 done
 
+export "PROFILE_DIR=${PROFILE_DIR}"
+
 MAX_ITER=$(echo "$ITERS - 1" | bc)
 
 export SICM="sicm-high"
@@ -106,8 +108,9 @@ if [[ ! -z "${BASECONFIG}" ]]; then
   FULL_BASECONFIG="${BASECONFIG}:${BASECONFIG_ARGS_UNDERSCORES}"
 fi
 
-export SICM_ENV="env LD_LIBRARY_PATH='${SICM_PREFIX}/lib:${SICM_PREFIX}/lib/clang/7.1.0/lib/:${LD_LIBRARY_PATH}' LD_PRELOAD='${SICM_PREFIX}/lib/libsicm_overrides.so ${SICM_PREFIX}/lib/libsicm_runtime.so ${SICM_PREFIX}/lib/libjemalloc.so'"
-#export SICM_ENV="env LD_LIBRARY_PATH="${SICM_PREFIX}/lib:${LD_LIBRARY_PATH}""
+export LD_LIBRARY_PATH_TMP="${SICM_PREFIX}/lib:${SICM_PREFIX}/lib/clang/7.1.0/lib/:${LD_LIBRARY_PATH}"
+export LD_PRELOAD_TMP="${SICM_PREFIX}/lib/libsicm_overrides.so ${SICM_PREFIX}/lib/libsicm_runtime.so ${SICM_PREFIX}/lib/libjemalloc.so"
+export SICM_ENV="env LD_LIBRARY_PATH='${LD_LIBRARY_PATH_TMP}' LD_PRELOAD='${LD_PRELOAD_TMP}'"
 BENCH_COMMANDS=()
 for BENCH in ${BENCHES[@]}; do
   BENCH_COMMAND=""

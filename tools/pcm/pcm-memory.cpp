@@ -355,15 +355,9 @@ void display_bandwidth(PCM *m, memdata_t *md, uint32 no_columns, const bool show
             }
 	    else
 	    {
-                cout << "\
-                    |---------------------------------------|\n\
-                    |--             Socket "<<skt<<"              --|\n\
-                    |---------------------------------------|\n";
+                cout << "|---------------------------------------|\n|--             Socket "<<skt<<"              --|\n|---------------------------------------|\n";
                 if (show_channel_output) {
-	  cout << "\
-                    |--     Memory Channel Monitoring     --|\n\
-                    |---------------------------------------|\n\
-                    "; 
+	  cout << "|--     Memory Channel Monitoring     --|\n|---------------------------------------|\n"; 
                   for(uint64 channel = 0; channel < max_imc_channels; ++channel)
                   {
                     if(md->iMC_Rd_socket_chan[skt][channel] < 0.0 && md->iMC_Wr_socket_chan[skt][channel] < 0.0) //If the channel read neg. value, the channel is not working; skip it.
@@ -378,14 +372,14 @@ void display_bandwidth(PCM *m, memdata_t *md, uint32 no_columns, const bool show
                     }
                   }
 	}
-                cout << "\
-                    |-- NODE"<<skt<<" Mem Read (MB/s)  :"<<setw(8)<<md->iMC_Rd_socket[skt]<<"  --|\n\
-                    |-- NODE"<<skt<<" Mem Write (MB/s) :"<<setw(8)<<md->iMC_Wr_socket[skt]<<"  --|\n";
+                cout
+                    << "|-- NODE"<<skt<<" Mem Read (MB/s)  :"<<setw(8)<<md->iMC_Rd_socket[skt]<<"  --|\n"
+                    << "|-- NODE"<<skt<<" Mem Write (MB/s) :"<<setw(8)<<md->iMC_Wr_socket[skt]<<"  --|\n";
                 if(md->PMM)
                 {
-                    cout << "\
-                        |-- NODE"<<skt<<" PMM Read (MB/s):"<<setw(8)<<md->iMC_PMM_Rd_socket[skt]<<"  --|\n\
-                        |-- NODE"<<skt<<" PMM Write(MB/s):"<<setw(8)<<md->iMC_PMM_Wr_socket[skt]<<"  --|\n";
+                    cout
+                      << "|-- NODE"<<skt<<" PMM Read (MB/s):"<<setw(8)<<md->iMC_PMM_Rd_socket[skt]<<"  --|\n"
+                      << "|-- NODE"<<skt<<" PMM Write(MB/s):"<<setw(8)<<md->iMC_PMM_Wr_socket[skt]<<"  --|\n";
                     for (uint32 ctrl = 0; ctrl < max_imc_controllers; ++ctrl)
                     {
                         cout << "|-- NODE"<<setw(2)<<skt<<"."<<ctrl<<" NM read hit rate :"<<setw(6)<<md->M2M_NM_read_hit_rate[skt][ctrl]<<" --|\n";
@@ -398,9 +392,7 @@ void display_bandwidth(PCM *m, memdata_t *md, uint32 no_columns, const bool show
                 }
                 cout <<
                    "|-- NODE"<<skt<<" Memory (MB/s): "<<setw(8)<<md->iMC_Rd_socket[skt]+md->iMC_Wr_socket[skt]+
-                    md->iMC_PMM_Rd_socket[skt]+md->iMC_PMM_Wr_socket[skt]<<"     --|\n\
-                    |---------------------------------------|\n\
-                    ";
+                    md->iMC_PMM_Rd_socket[skt]+md->iMC_PMM_Wr_socket[skt]<<"     --|\n|---------------------------------------|\n";
 
                 sysReadDRAM += md->iMC_Rd_socket[skt];
                 sysWriteDRAM += md->iMC_Wr_socket[skt];
@@ -411,19 +403,18 @@ void display_bandwidth(PCM *m, memdata_t *md, uint32 no_columns, const bool show
         }
     }
     {
-        cout << "\
-|---------------------------------------||---------------------------------------|\n";
+        cout << "|---------------------------------------||---------------------------------------|\n";
 	if(md->PMM)
-           cout << "\
-            |--            System DRAM Read Throughput(MB/s):"<<setw(14)<<sysReadDRAM<<"                --|\n\
-            |--           System DRAM Write Throughput(MB/s):"<<setw(14)<<sysWriteDRAM<<"                --|\n\
-            |--             System PMM Read Throughput(MB/s):"<<setw(14)<<sysReadPMM<<"                --|\n\
-            |--            System PMM Write Throughput(MB/s):"<<setw(14)<<sysWritePMM<<"                --|\n";
-        cout << "\
-|--                 System Read Throughput(MB/s):"<<setw(14)<<sysReadDRAM+sysReadPMM<<"                --|\n\
-|--                System Write Throughput(MB/s):"<<setw(14)<<sysWriteDRAM+sysWritePMM<<"                --|\n\
-|--               System Memory Throughput(MB/s):"<<setw(14)<<sysReadDRAM+sysReadPMM+sysWriteDRAM+sysWritePMM<<"                --|\n\
-|---------------------------------------||---------------------------------------|" << endl;
+           cout 
+             << "|--            System DRAM Read Throughput(MB/s):"<<setw(14)<<sysReadDRAM<<"                --|\n"
+             << "|--           System DRAM Write Throughput(MB/s):"<<setw(14)<<sysWriteDRAM<<"                --|\n"
+             << "|--             System PMM Read Throughput(MB/s):"<<setw(14)<<sysReadPMM<<"                --|\n"
+             << "|--            System PMM Write Throughput(MB/s):"<<setw(14)<<sysWritePMM<<"                --|\n";
+        cout 
+          << "|--                 System Read Throughput(MB/s):"<<setw(14)<<sysReadDRAM+sysReadPMM<<"                --|\n"
+          << "|--                System Write Throughput(MB/s):"<<setw(14)<<sysWriteDRAM+sysWritePMM<<"                --|\n"
+          << "|--               System Memory Throughput(MB/s):"<<setw(14)<<sysReadDRAM+sysReadPMM+sysWriteDRAM+sysWritePMM<<"                --|\n"
+          << "|---------------------------------------||---------------------------------------|" << endl;
     }
 }
 

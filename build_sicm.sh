@@ -14,6 +14,7 @@ cmake -DCMAKE_INSTALL_PREFIX=${SICM_PREFIX} \
   -DSICM_BUILD_HIGH_LEVEL=True \
   -DJEMALLOC_ROOT="${SICM_PREFIX}" \
   -DLIBPFM_INSTALL="${SICM_PREFIX}" \
+  -DCMAKE_BUILD_TYPE=Debug \
   ..
 make -j$(nproc) VERBOSE=1
 make install
@@ -24,6 +25,7 @@ cd ${SCRIPTS_DIR}/all
 INCLUDE="-I${SICM_PREFIX}/include"
 gcc -g c/stat.c ${INCLUDE} -o stat -lm
 gcc -g c/memreserve.c -lnuma -lpthread ${INCLUDE} -o memreserve
+gcc -g c/memhog.c -lnuma -lpthread ${INCLUDE} -o memhog
 
 #  -DCMAKE_C_FLAGS="-O1 -g -fsanitize=address -fno-omit-frame-pointer" \
 #  -DCMAKE_CXX_FLAGS="-O1 -g -fsanitize=address -fno-omit-frame-pointer" \

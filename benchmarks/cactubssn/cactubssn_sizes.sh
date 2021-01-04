@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#export REF="${SICM_ENV} gdb ./cactubssn.exe" #spec_ref.par"
 export REF="${SICM_ENV} ./cactubssn.exe spec_ref.par"
 export TRAIN="${SICM_ENV} ./cactubssn.exe spec_train.par"
 export TEST="${SICM_ENV} ./cactubssn.exe spec_test.par"

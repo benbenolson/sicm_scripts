@@ -74,8 +74,7 @@ function memreserve {
     memreserve_pid="$!"
 
     sleep 60
-    export RESERVED_BYTES=`${SCRIPTS_DIR}/all/stat --single="${1}" --metric=num_reserved_bytes`
-    echo "RESERVED_BYTES=${RESERVED_BYTES}"
+#    export RESERVED_BYTES=`${SCRIPTS_DIR}/all/stat --single="${1}" --metric=num_reserved_bytes`
 }
 
 function memreserve_kill {
@@ -85,6 +84,21 @@ function memreserve_kill {
     wait $memreserve 2>/dev/null
     sleep 5
   fi
+}
+
+############
+# per_node_max
+############
+# One argument: the amount that should be allowed on node 0.
+function per_node_max {
+  RESERVE_BYTES="${1}"
+  echo "+cpuset" | sudo tee /sys/fs/cgroup/cgroup.subtree_control &> /dev/null
+  sudo rmdir /sys/fs/cgroup/0 &> /dev/null
+  sudo mkdir /sys/fs/cgroup/0 &> /dev/null
+  if [ "${2}" = "real" ]; then
+    echo "${RESERVE_BYTES}" | sudo tee /sys/fs/cgroup/0/memory.node0_max &> /dev/null
+  fi
+  sh -c "echo \$$ | sudo tee /sys/fs/cgroup/0/cgroup.procs && ${COMMAND}" /dev/null
 }
 
 ############

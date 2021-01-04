@@ -17,6 +17,8 @@ elif [[ "$(hostname)" = "canata" ]]; then
 elif [[ "$(hostname)" = "SystemID-817" ]]; then
   # Intel's SDP machine with CLX and AEP
   export OMP_NUM_THREADS="40"
+elif [[ "$(hostname)" = "chile" ]]; then
+  export OMP_NUM_THREADS="32"
 else
   # KNL
   export OMP_NUM_THREADS="256"
@@ -77,6 +79,17 @@ elif [[ "$(hostname)" = "canata" ]]; then
   elif [[ $NUM_NUMA_NODES = 2 ]]; then
     export PLATFORM_COMMAND="sudo -E env time -v numactl --preferred=1 numactl --cpunodebind=1 --membind=1"
     export SH_UPPER_NODE="1"
+    export SH_LOWER_NODE="1"
+  else
+    echo "COULDN'T DETECT HARDWARE CONFIGURATION. ABORTING."
+    exit
+  fi
+  
+elif [[ "$(hostname)" = "chile" ]]; then
+
+  if [[ $NUM_NUMA_NODES = 2 ]]; then
+    export PLATFORM_COMMAND="sudo -E /usr/bin/time -v numactl --preferred=0 numactl --membind=0,1 "
+    export SH_UPPER_NODE="0"
     export SH_LOWER_NODE="1"
   else
     echo "COULDN'T DETECT HARDWARE CONFIGURATION. ABORTING."
@@ -161,12 +174,13 @@ for BENCH_INDEX in ${!BENCHES[*]}; do
     DIRECTORY="${RESULTS_DIR}/${BENCH}/${SIZE}/${FULL_CONFIG}"
     if [[ ! ${CONFIG} == *"manual"* ]]; then
       rm -rf ${DIRECTORY}
-      mkdir -p ${DIRECTORY}
     fi
+    mkdir -p ${DIRECTORY}
 
     # We want SICM to output its configuration for debugging
     export SH_LOG_FILE="${DIRECTORY}/config.txt"
     ulimit -c unlimited
+    ulimit -s unlimited
     ulimit -S -s unlimited
 
     # Print out information about this run
@@ -177,12 +191,11 @@ for BENCH_INDEX in ${!BENCHES[*]}; do
 
     # Execute the BASH function with arguments
     export BASEDIR="${DIRECTORY}"
-    export COMMAND="${PLATFORM_COMMAND} ${BENCH_COMMAND}"
+    export COMMAND="${PLATFORM_COMMAND} ${SICM_ENV} ${BENCH_COMMAND}"
 
     cd $BENCH_DIR/${BENCH}
     eval "${SETUP}"
     cd $BENCH_DIR/${BENCH}/run
-    echo "Evaluating command: '$CONFIG ${ARGS_SPACES}'"
     ( eval "$CONFIG ${ARGS_SPACES}" )
 
   done

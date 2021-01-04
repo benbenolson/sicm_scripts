@@ -2,98 +2,65 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "stat.h"
 
-char *gnu_time_metrics_list[] = {
+/* The `*_strs` and `*_indices` arrays must line up precisely. */
+#define NUM_GNU_TIME_METRICS 3
+static char *gnu_time_strs[NUM_GNU_TIME_METRICS+1] = {
   "peak_rss",
   "peak_rss_kbytes",
-  "runtime_seconds",
   "runtime",
-  "graph_runtime",
   NULL
 };
+enum gnu_time_indices {
+  PEAK_RSS,
+  PEAK_RSS_KBYTES,
+  RUNTIME
+};
+static double gnu_time_vals[NUM_GNU_TIME_METRICS];
 
-typedef struct gnu_time_metrics {
-  double peak_rss; /* In GB */
-  size_t peak_rss_kbytes;
-  size_t runtime_seconds;
-} gnu_time_metrics;
-
-void parse_gnu_time(FILE *file, gnu_time_metrics *info) {
+double get_gnu_time_val(char *metric_str, char *path, metric_opts *mopts) {
   size_t tmp, tmp2;
   float tmp_f;
-  char *line;
+  char *line, *filepath;
   size_t len;
   ssize_t read;
+  FILE *file;
+  
+  filepath = construct_path(path, "stdout.txt");
+  file = fopen(filepath, "r");
+  if(!file) {
+    fprintf(stderr, "WARNING: Failed to open '%s'. Filling with zero.\n");
+    return 0.0;
+  }
+  free(filepath);
   
   line = NULL;
   len = 0;
   while(read = getline(&line, &len, file) != -1) {
     if(sscanf(line, "  Maximum resident set size (kbytes): %zu", &tmp) == 1) {
-      info->peak_rss_kbytes = tmp;
-      info->peak_rss = ((double)tmp) / ((double)1024) / ((double)1024);
+      gnu_time_vals[PEAK_RSS_KBYTES] = tmp;
+      gnu_time_vals[PEAK_RSS] = ((double)tmp) / ((double)1024) / ((double)1024);
       goto cleanup;
     } else if(sscanf(line, "   Elapsed (wall clock) time (h:mm:ss or m:ss): %zu:%zu:%f", &tmp, &tmp2, &tmp_f) == 3) {
-      info->runtime_seconds = (tmp * 60 * 60) + (tmp2 * 60) + ((size_t) tmp_f);
+      gnu_time_vals[RUNTIME] = (tmp * 60 * 60) + (tmp2 * 60) + ((size_t) tmp_f);
     } else if(sscanf(line, "   Elapsed (wall clock) time (h:mm:ss or m:ss): %zu:%f", &tmp, &tmp_f) == 2) {
       if(tmp_f < 0) {
         /* Just to make sure the below explicit cast from float->size_t is valid */
         fprintf(stderr, "Number of seconds from GNU time was negative. Aborting.\n");
         exit(1);
       }
-      info->runtime_seconds = (tmp * 60) + ((size_t) tmp_f);
+      gnu_time_vals[RUNTIME] = (tmp * 60) + ((size_t) tmp_f);
     }
   }
   
 cleanup:
   free(line);
-  return;
-}
-
-gnu_time_metrics *init_gnu_time_metrics() {
-  gnu_time_metrics *info;
-  info = malloc(sizeof(gnu_time_metrics));
-
-  info->peak_rss_kbytes = 0;
-  info->peak_rss = 0.0;
-  info->runtime_seconds = 0;
-
-  return info;
-}
-
-char *is_gnu_time_metric(char *metric) {
-  char *ptr, *filename;
-  int i;
-
-  i = 0;
-  while((ptr = gnu_time_metrics_list[i]) != NULL) {
-    if(strcmp(metric, ptr) == 0) {
-      filename = malloc(sizeof(char) * (strlen("stdout.txt") + 1));
-      strcpy(filename, "stdout.txt");
-      return filename;
-    }
-    i++;
-  }
-
-  return NULL;
-}
-
-metric *set_gnu_time_metric(char *metric_str, gnu_time_metrics *info) {
-  metric *m;
+  fclose(file);
   
-  m = malloc(sizeof(metric));
-  if(strcmp(metric_str, "peak_rss") == 0) {
-    m->val.f = info->peak_rss;
-    m->type = 0;
-  } else if(strcmp(metric_str, "peak_rss_kbytes") == 0) {
-    m->val.s = info->peak_rss_kbytes;
-    m->type = 1;
-  } else if((strcmp(metric_str, "runtime") == 0) || (strcmp(metric_str, "graph_runtime") == 0)) {
-    /* Even if we're doing graph_runtime, output the runtime anyway */
-    m->val.s = info->runtime_seconds;
-    m->type = 1;
-  } else if(strcmp(metric_str, "runtime_seconds") == 0) {
-    m->val.s = info->runtime_seconds;
-    m->type = 1;
-  }
-  return m;
+  return gnu_time_vals[metric_index(metric_str, gnu_time_strs)];
+}
+
+void register_gnu_time_metrics() {
+  register_parser(gnu_time_strs, get_gnu_time_val);
 }

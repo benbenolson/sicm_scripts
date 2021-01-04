@@ -2,81 +2,81 @@
 #include <ctype.h>
 #include <float.h>
 
-char *bench_metrics_list[] = {
+#define NUM_BENCH_METRICS 10
+static char *bench_strs[NUM_BENCH_METRICS+1] = {
   "fom",
+  "best_mid_phase_time",
   "avg_phase_time",
   "first_phase_time",
+  "second_phase_time",
   "last_phase_time",
+  "second_to_last_phase_time",
   "total_phase_time",
   "num_phases",
-  "graph_last_phase_time",
-  "graph_first_phase_time",
-  "max_phase_time",
-  "min_phase_time",
-  "graph_min_phase_time",
-  "graph_max_phase_time",
+  "specific_phase_time",
   NULL
 };
+enum bench_indices {
+  FOM,
+  BEST_MID_PHASE_TIME,
+  AVG_PHASE_TIME,
+  FIRST_PHASE_TIME,
+  SECOND_PHASE_TIME,
+  LAST_PHASE_TIME,
+  SECOND_TO_LAST_PHASE_TIME,
+  TOTAL_PHASE_TIME,
+  NUM_PHASES,
+  SPECIFIC_PHASE_TIME
+};
+static double bench_vals[NUM_BENCH_METRICS];
 
-typedef struct bench_metrics {
-  double fom,
-         avg_phase_time,
-         first_phase_time,
-         last_phase_time,
-         max_phase_time,
-         min_phase_time,
-         total_phase_time;
-  size_t num_phases;
-
-  /* Just for QMCPACK */
-  unsigned qmcpack_blocks, qmcpack_steps, qmcpack_walkers;
-  double qmcpack_exectime;
-} bench_metrics;
-
-bench_metrics *init_bench_metrics() {
-  bench_metrics *info;
-  info = malloc(sizeof(bench_metrics));
-  info->fom = 0.0;
-  info->avg_phase_time = 0;
-  info->first_phase_time = 0;
-  info->last_phase_time = 0;
-  info->max_phase_time = 0;
-  info->min_phase_time = DBL_MAX;
-  info->total_phase_time = 0;
-  info->num_phases = 0;
-
-  return info;
-}
-
-void parse_bench(FILE *file, bench_metrics *info) {
+double get_bench_val(char *metric_str, char *path, metric_opts *mopts) {
   unsigned unsigned_tmp;
-  double double_tmp;
+  double double_tmp, last_phase, first_phase, last_best_phase_time;
   char *line, *ptr;
-  size_t len;
+  size_t len, last_best_phase_num;
   ssize_t read;
   char found_qmcpack;
+  char *filepath;
+  FILE *file;
+  
+  unsigned qmcpack_blocks, qmcpack_steps, qmcpack_walkers;
+  double qmcpack_exectime;
+  
+  clear_double_arr(bench_vals, NUM_BENCH_METRICS);
+  
+  filepath = construct_path(path, "stdout.txt");
+  file = fopen(filepath, "r");
+  if(!file) {
+    fprintf(stderr, "WARNING: Failed to open '%s'. Filling with zero.\n");
+    return 0.0;
+  }
+  free(filepath);
   
   line = NULL;
   len = 0;
   found_qmcpack = 0;
+  last_phase = 0.0;
+  first_phase = 0.0;
+  last_best_phase_num = 0;
   while(read = getline(&line, &len, file) != -1) {
 
     /* First QMCPACK */
     if(sscanf(line, "  blocks         = %u", &unsigned_tmp) == 1) {
-      info->qmcpack_blocks = unsigned_tmp;
+      qmcpack_blocks = unsigned_tmp;
       found_qmcpack++;
     } else if(sscanf(line, "  steps          = %u", &unsigned_tmp) == 1) {
-      info->qmcpack_steps = unsigned_tmp;
+      qmcpack_steps = unsigned_tmp;
       found_qmcpack++;
     } else if(sscanf(line, "  walkers/mpi    = %u", &unsigned_tmp) == 1) {
-      info->qmcpack_walkers = unsigned_tmp;
+      qmcpack_walkers = unsigned_tmp;
       found_qmcpack++;
     } else if(sscanf(line, "  QMC Execution time = %lf secs", &double_tmp) == 1) {
-      info->qmcpack_exectime = double_tmp;
+      qmcpack_exectime = double_tmp;
       found_qmcpack++;
     } else if(sscanf(line, "Figure of Merit (FOM_2): %lf", &double_tmp) == 1) {
       /* AMG */
-      info->fom = double_tmp;
+      bench_vals[FOM] = double_tmp;
     } else if(strncmp(line, "  Grind Time (nanoseconds)", 26) == 0) {
       /* SNAP */
       /* Seek to the numerical value on the line */
@@ -88,7 +88,7 @@ void parse_bench(FILE *file, bench_metrics *info) {
         fprintf(stderr, "Error getting SNAP FOM. Aborting.\n");
         exit(1);
       }
-      info->fom = 1.0 / double_tmp;
+      bench_vals[FOM] = 1.0 / double_tmp;
     } else if(strncmp(line, "FOM        ", 11) == 0) {
       /* LULESH */
       /* Seek to the numerical value on the line */
@@ -100,94 +100,49 @@ void parse_bench(FILE *file, bench_metrics *info) {
         fprintf(stderr, "Error getting LULESH FOM. Aborting.\n");
         exit(1);
       }
-      info->fom = double_tmp;
-    /* This is for LULESH */
-    } else if(sscanf(line, "cycle timer =     %lf (s)", &double_tmp) == 1) {
-      info->total_phase_time += double_tmp;
-      info->num_phases++;
-      if(double_tmp > info->max_phase_time) {
-        info->max_phase_time = double_tmp;
+      bench_vals[FOM] = double_tmp;
+    } else if(sscanf(line, "===== SICM phase time:      %lf =====", &double_tmp) == 1) {
+      bench_vals[NUM_PHASES]++;
+      if(bench_vals[NUM_PHASES] == mopts->index + 1) {
+        bench_vals[SPECIFIC_PHASE_TIME] = double_tmp;
       }
-      if(double_tmp < info->min_phase_time) {
-        info->min_phase_time = double_tmp;
+      if(bench_vals[NUM_PHASES] == 1) {
+        bench_vals[FIRST_PHASE_TIME] = double_tmp;
+      } else if(bench_vals[NUM_PHASES] == 2) {
+        bench_vals[SECOND_PHASE_TIME] = double_tmp;
       }
-      if(info->num_phases == 1) {
-        info->first_phase_time = double_tmp;
+      if((bench_vals[NUM_PHASES] != 1) && (double_tmp < bench_vals[BEST_MID_PHASE_TIME])) {
+        last_best_phase_num = bench_vals[NUM_PHASES];
+        last_best_phase_time = bench_vals[BEST_MID_PHASE_TIME];
+        bench_vals[BEST_MID_PHASE_TIME] = double_tmp;
       }
-      info->last_phase_time = double_tmp;
-    /* This is for AMG timestep time */
-    } else if(sscanf(line, "Timestep time: %lf", &double_tmp) == 1) {
-      info->total_phase_time += double_tmp;
-      info->num_phases++;
-      if(double_tmp > info->max_phase_time) {
-        info->max_phase_time = double_tmp;
-      }
-      if(double_tmp < info->min_phase_time) {
-        info->min_phase_time = double_tmp;
-      }
-      if(info->num_phases == 1) {
-        info->first_phase_time = double_tmp;
-      }
-      info->last_phase_time = double_tmp;
+      last_phase = bench_vals[LAST_PHASE_TIME];
+      bench_vals[LAST_PHASE_TIME] = double_tmp;
+      bench_vals[TOTAL_PHASE_TIME] += double_tmp;
     }
   }
   
-  if(info->total_phase_time) {
-    info->avg_phase_time = info->total_phase_time / info->num_phases;
+  bench_vals[SECOND_TO_LAST_PHASE_TIME] = last_phase;
+  
+  if(last_best_phase_num == bench_vals[NUM_PHASES]) {
+    bench_vals[BEST_MID_PHASE_TIME] = last_best_phase_time;
+  }
+  if(bench_vals[BEST_MID_PHASE_TIME] == DBL_MAX) {
+    bench_vals[BEST_MID_PHASE_TIME] = 0;
+  }
+  
+  if(bench_vals[TOTAL_PHASE_TIME]) {
+    bench_vals[AVG_PHASE_TIME] = bench_vals[TOTAL_PHASE_TIME] / bench_vals[NUM_PHASES];
   }
   
   if(found_qmcpack == 4) {
     /* If all qmcpack values have been found, calculate the fom */
-    info->fom = ((double) (info->qmcpack_blocks * info->qmcpack_steps * info->qmcpack_walkers)) / info->qmcpack_exectime;
+    bench_vals[FOM] = ((double) (qmcpack_blocks * qmcpack_steps * qmcpack_walkers)) / qmcpack_exectime;
   }
-}
-
-char *is_bench_metric(char *metric) {
-  char *ptr, *filename;
-  int i;
-
-  i = 0;
-  while((ptr = bench_metrics_list[i]) != NULL) {
-    if(strcmp(metric, ptr) == 0) {
-      filename = malloc(sizeof(char) * (strlen("stdout.txt") + 1));
-      strcpy(filename, "stdout.txt");
-      return filename;
-    }
-    i++;
-  }
-
-  return NULL;
-}
-
-metric *set_bench_metric(char *metric_str, bench_metrics *info) {
-  metric *m;
   
-  m = malloc(sizeof(metric));
-  if(strcmp(metric_str, "fom") == 0) {
-    m->val.f = info->fom;
-    m->type = 0;
-  } else if(strcmp(metric_str, "avg_phase_time") == 0) {
-    m->val.f = info->avg_phase_time;
-    m->type = 0;
-  } else if(strcmp(metric_str, "total_phase_time") == 0) {
-    m->val.f = info->total_phase_time;
-    m->type = 0;
-  } else if((strcmp(metric_str, "first_phase_time") == 0) || 
-            (strcmp(metric_str, "graph_first_phase_time") == 0)) {
-    m->val.f = info->first_phase_time;
-    m->type = 0;
-  } else if((strcmp(metric_str, "last_phase_time") == 0) ||
-            (strcmp(metric_str, "graph_last_phase_time") == 0)) {
-    m->val.f = info->last_phase_time;
-    m->type = 0;
-  } else if((strcmp(metric_str, "min_phase_time") == 0) ||
-            (strcmp(metric_str, "graph_min_phase_time") == 0)) {
-    m->val.f = info->min_phase_time;
-    m->type = 0;
-  } else if((strcmp(metric_str, "max_phase_time") == 0) ||
-            (strcmp(metric_str, "graph_max_phase_time") == 0)) {
-    m->val.f = info->max_phase_time;
-    m->type = 0;
-  }
-  return m;
+  return bench_vals[metric_index(metric_str, bench_strs)];
+}
+
+void register_bench_metrics() {
+  register_parser(bench_strs, get_bench_val);
 }

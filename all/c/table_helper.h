@@ -329,7 +329,7 @@ char *generate_site_aep_acc_table(FILE *input_file, int site) {
 char *generate_offhot_aep_acc_table(FILE *input_file) {
   char *offhot_aep_acc_table_name;
   FILE *offhot_aep_acc_table_f;
-  size_t i, n, acc, bad;
+  size_t i, n, acc, bad, invalid_weight;
   double per;
   int site;
   tree(site_info_ptr, int) offline_sites;
@@ -356,8 +356,8 @@ char *generate_offhot_aep_acc_table(FILE *input_file) {
   }
   
   packing_init_wrapper(input_file, PROFILE_ALL_TOTAL, 0, 0);
-  offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1);
-  offline_hotset = sh_get_hot_sites(offline_sites, app_prof->upper_capacity);
+  offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1, &invalid_weight);
+  offline_hotset = sh_get_hot_sites(offline_sites, app_prof->upper_capacity, invalid_weight);
   
   for(i = 0; i < app_prof->num_intervals; i++) {
     acc = 0;
@@ -468,21 +468,21 @@ char *generate_hotset_diff_table(FILE *input_file, char top100, int sort_arg) {
   char *hotset_diff_table_name;
   unsigned char state;
   FILE *hotset_diff_table_f;
-  size_t i;
+  size_t i, offline_invalid_weight;
 
   open_tmp_file(&hotset_diff_table_name, &hotset_diff_table_f);
 
   /* This site_tree will be sorted by value/weight, because we need that to generate the hotset. */
   packing_init_wrapper(input_file, PROFILE_ALL_TOTAL, 0, 0);
-  offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1);
-  offline_hotset = sh_get_hot_sites(offline_sites, app_prof->upper_capacity);
+  offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1, &offline_invalid_weight);
+  offline_hotset = sh_get_hot_sites(offline_sites, app_prof->upper_capacity, offline_invalid_weight);
   if(top100) {
     top100_sites = sh_get_top_sites(offline_sites, 100);
   }
 
   /* Now get the same sites, but sorted by weight. */
   packing_init_wrapper(input_file, PROFILE_ALL_TOTAL, 0, sort_arg);
-  offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1);
+  offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1, &offline_invalid_weight);
 
   /* Print the header of site IDs */
   tree_traverse(offline_sites, sit) {
@@ -500,7 +500,7 @@ char *generate_hotset_diff_table(FILE *input_file, char top100, int sort_arg) {
     /* Get the current interval's site_tree.
        Using the device that the site was bound to in the profiling information,
        construct a hotset to compare against the offline one. */
-    online_sites = sh_convert_to_site_tree(app_prof, i);
+    online_sites = sh_convert_to_site_tree(app_prof, i, NULL);
     online_dramset = tree_make(int, site_info_ptr);
     online_hotset = tree_make(int, site_info_ptr);
 
@@ -581,13 +581,13 @@ char *generate_weight_ratio_table(FILE *input_file, char top100, int sort_arg) {
     /* We first need to get the sites sorted by value/weight, then
        get the top 100 */
     packing_init_wrapper(input_file, PROFILE_ALL_TOTAL, 0, 0);
-    offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1);
+    offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1, NULL);
     top100_sites = sh_get_top_sites(offline_sites, 100);
   }
 
   /* The resulting tree will be sorted by the weight of the site */
   packing_init_wrapper(input_file, PROFILE_ALL_TOTAL, 0, sort_arg);
-  offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1);
+  offline_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1, NULL);
 
   /* Calculate the total weight first. */
   total_site_size = 0;
@@ -623,7 +623,7 @@ char *generate_weight_ratio_table(FILE *input_file, char top100, int sort_arg) {
 char *generate_heatmap_table(FILE *input_file, char top100, int sort_arg) {
   char *heatmap_name;
   FILE *heatmap_f;
-  size_t total_site_size, i, n;
+  size_t total_site_size, i, n, invalid_weight;
 
   /* To store the aggregated profiling data */
   tree(site_info_ptr, int) online_sites, last_interval_sites;
@@ -636,13 +636,13 @@ char *generate_heatmap_table(FILE *input_file, char top100, int sort_arg) {
 
   if(top100) {
     packing_init_wrapper(input_file, PROFILE_ALL_CURRENT, 0, 0);
-    last_interval_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1);
+    last_interval_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1, NULL);
     top100_sites = sh_get_top_sites(last_interval_sites, 100);
   }
 
   /* Sort sites by weight */
   packing_init_wrapper(input_file, PROFILE_ALL_CURRENT, 0, sort_arg);
-  last_interval_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1);
+  last_interval_sites = sh_convert_to_site_tree(app_prof, app_prof->num_intervals - 1, NULL);
 
   /* Print out the header to the table. This is just site IDs. We're iterating over
      the last_interval_sites because it's sorted by weight. */
@@ -657,7 +657,7 @@ char *generate_heatmap_table(FILE *input_file, char top100, int sort_arg) {
   /* Now, look at each interval. Print the value per weight for each site, sorted by weight. */
   for(i = 0; i < app_prof->num_intervals; i++) {
     /* Get the current interval's site_tree, then flip it so the keys are site IDs. */
-    online_sites = sh_convert_to_site_tree(app_prof, i);
+    online_sites = sh_convert_to_site_tree(app_prof, i, NULL);
     online_sites_flipped = sh_flip_site_tree(online_sites);
     /* Iterate over the sites in the last interval, find them in the current interval,
        and print "0" if it's not found. */

@@ -5650,7 +5650,7 @@ uint64 ServerPCICFGUncore::getDRAMClocks(uint32 channel)
     if (channel < (uint32)imcPMUs.size())
         result = *(imcPMUs[channel].fixedCounterValue);
 
-    std::cout << "DEBUG: DRAMClocks on channel " << channel << " = " << result << std::endl;
+    //std::cout << "DEBUG: DRAMClocks on channel " << channel << " = " << result << std::endl;
     return result;
 }
 

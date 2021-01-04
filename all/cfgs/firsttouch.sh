@@ -1,6 +1,8 @@
 #!/bin/bash
 
 DO_MEMRESERVE=false
+DO_PER_NODE_MAX=false
+DO_PER_NODE_MAX_FAKE=false
 
 function ft {
   eval "${PRERUN}"
@@ -15,7 +17,13 @@ function ft {
     pcm_background "${DIR}"
     numastat -m &>> ${DIR}/numastat_before.txt
     numastat_background "${DIR}"
-    eval "${COMMAND}" &>> ${DIR}/stdout.txt
+    if [ "$DO_PER_NODE_MAX" = true ]; then
+      per_node_max ${NUM_BYTES} real &> ${DIR}/stdout.txt
+    elif [ "$DO_PER_NODE_MAX_FAKE" = true ]; then
+      per_node_max ${NUM_BYTES} fake &> ${DIR}/stdout.txt
+    else
+      eval "${COMMAND}" &> ${DIR}/stdout.txt
+    fi
     numastat_kill
     pcm_kill
     if [ "$DO_MEMRESERVE" = true ]; then
@@ -157,7 +165,7 @@ function ft_mr_ss {
   # This just takes a percentage that should be left available on the upper tier
   RATIO=$(echo "${1}/100" | bc -l)
   CANARY_CFG="ft_def:"
-  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
+  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/"
 
   # This is in kilobytes
   PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single="${CANARY_DIR}" --metric=peak_rss_kbytes`
@@ -179,7 +187,7 @@ function ft_mr_ed {
   # This just takes a percentage that should be left available on the upper tier
   RATIO=$(echo "${1}/100" | bc -l)
   CANARY_CFG="ft_def:"
-  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
+  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/"
 
   # This is in kilobytes
   PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single="${CANARY_DIR}" --metric=peak_rss_kbytes`
@@ -201,13 +209,11 @@ function ft_mr_bsl {
   # This just takes a percentage that should be left available on the upper tier
   RATIO=$(echo "${1}/100" | bc -l)
   CANARY_CFG="ft_def:"
-  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
-
-  # This is in kilobytes
-  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single="${CANARY_DIR}" --metric=peak_rss_kbytes`
-  PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
+  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/"
 
   # How many pages we need to be free on upper tier
+  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single="${CANARY_DIR}" --metric=peak_rss_kbytes`
+  PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
   NUM_PAGES=$(echo "${PEAK_RSS} * ${RATIO} / 4" | bc)
   NUM_BYTES_FLOAT=$(echo "${PEAK_RSS} * ${RATIO} * 1024" | bc)
   NUM_BYTES=${NUM_BYTES_FLOAT%.*}
@@ -220,11 +226,32 @@ function ft_mr_bsl {
   ft $@
 }
 
+function ft_pnm_bsl {
+  # This just takes a percentage that should be left available on the upper tier
+  RATIO=$(echo "${1}/100" | bc -l)
+  CANARY_CFG="ft_def:"
+  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/"
+
+  # How many pages we need to be free on upper tier
+  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single="${CANARY_DIR}" --metric=peak_rss_kbytes`
+  PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
+  NUM_PAGES=$(echo "${PEAK_RSS} * ${RATIO} / 4" | bc)
+  NUM_BYTES_FLOAT=$(echo "${PEAK_RSS} * ${RATIO} * 1024" | bc)
+  NUM_BYTES=${NUM_BYTES_FLOAT%.*}
+
+  export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304" # 4MB threshold
+  export SH_MAX_SITES_PER_ARENA="5000"
+  DO_PER_NODE_MAX=true
+  ft $@
+}
+
 function ft_mr_def {
   # This just takes a percentage that should be left available on the upper tier
   RATIO=$(echo "${1}/100" | bc -l)
   CANARY_CFG="ft_def:"
-  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/i0/"
+  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/"
 
   # This is in kilobytes
   PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single="${CANARY_DIR}" --metric=peak_rss_kbytes`
