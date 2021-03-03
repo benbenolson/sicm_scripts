@@ -7,6 +7,16 @@
 #include <limits.h>
 #include "table_helper.h"
 
+#define NUM_COLORS 5
+static char *graph_colors[NUM_COLORS+1] = {
+  "0 0.247 0.360",
+  "0.345 0.313 0.552",
+  "0.737 0.313 0.564",
+  "1 0.388 0.380",
+  "1 0.650 0",
+  NULL
+};
+
 /* Takes a metric (graphing script name) as input, runs `jgraph` on it and generates a PNG of the graph */
 void jgraph_wrapper(char *metric_str, char *args, char *output_filename, char output_eps) {
   char *command, *line;

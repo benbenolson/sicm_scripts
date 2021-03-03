@@ -327,6 +327,7 @@ char *generate_site_aep_acc_table(FILE *input_file, int site) {
 }
 
 char *generate_offhot_aep_acc_table(FILE *input_file) {
+#if 0
   char *offhot_aep_acc_table_name;
   FILE *offhot_aep_acc_table_f;
   size_t i, n, acc, bad, invalid_weight;
@@ -381,6 +382,7 @@ char *generate_offhot_aep_acc_table(FILE *input_file) {
   fclose(offhot_aep_acc_table_f);
   
   return offhot_aep_acc_table_name;
+#endif
 }
 
 char *generate_reconfigure_table(FILE *input_file) {
@@ -451,6 +453,7 @@ char *generate_interval_time_table(FILE *input_file) {
 /* If `top100` is set, we'll only generate a table of the top 100 sites (by value/weight). Everything
    else will be the same. */
 char *generate_hotset_diff_table(FILE *input_file, char top100, int sort_arg) {
+#if 0
   /* Trees, keyed by their site_info. Sorted by weight. */
   tree(site_info_ptr, int) online_sites,
                            offline_sites;
@@ -563,6 +566,7 @@ char *generate_hotset_diff_table(FILE *input_file, char top100, int sort_arg) {
   fclose(hotset_diff_table_f);
 
   return hotset_diff_table_name;
+  #endif
 }
 
 /* Uses the given application_profile to generate a list of weight ratios

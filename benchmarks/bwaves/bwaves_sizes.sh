@@ -1,8 +1,12 @@
 #!/bin/bash
 
-export REF="${SICM_ENV} ./bwaves.exe bwaves_1 < bwaves_1.in; ${SICM_ENV} ./bwaves.exe bwaves_2 < bwaves_2.in"
-export TEST="${SICM_ENV} ./bwaves.exe bwaves_1 < bwaves_1.in; ${SICM_ENV} ./bwaves.exe bwaves_2 < bwaves_2.in"
-export TRAIN="${SICM_ENV} ./bwaves.exe bwaves_1 < bwaves_1.in; ${SICM_ENV} ./bwaves.exe bwaves_2 < bwaves_2.in"
+#export REF="${SICM_ENV} ./bwaves.exe bwaves_1 < bwaves_1.in; ${SICM_ENV} ./bwaves.exe bwaves_2 < bwaves_2.in"
+#export TEST="${SICM_ENV} ./bwaves.exe bwaves_1 < bwaves_1.in; ${SICM_ENV} ./bwaves.exe bwaves_2 < bwaves_2.in"
+#export TRAIN="${SICM_ENV} ./bwaves.exe bwaves_1 < bwaves_1.in; ${SICM_ENV} ./bwaves.exe bwaves_2 < bwaves_2.in"
+
+export REF="./bwaves.exe bwaves_2 < bwaves_2.in"
+export TEST="./bwaves.exe bwaves_2 < bwaves_2.in"
+export TRAIN="./bwaves.exe bwaves_2 < bwaves_2.in"
 
 function bwaves_setup {
   if [[ $SIZE = "ref" ]]; then

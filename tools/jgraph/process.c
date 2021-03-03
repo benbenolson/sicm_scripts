@@ -319,6 +319,9 @@ Graph g;
     while(c != nil(g->curves)) {
       if (c->l->label != CNULL) {
         c->l->x = hdist + x + ((hdist + max_col_width) * col);
+        if(col) {
+          c->l->x += l->columnsep;
+        }
         c->l->y = y;
         fprintf(stderr, "Entry: %s\n", c->l->label);
         fprintf(stderr, "Entry x: %f\n", c->l->x);
@@ -720,8 +723,6 @@ int adjust;
 
   if (l->label == CNULL) return;
 
-  fprintf(stderr, "Processing label: %s\n", l->label);
-
   if (adjust) {
     l->x = ctop(l->x, g->x_axis);
     l->y = ctop(l->y, g->y_axis);
@@ -748,7 +749,8 @@ int adjust;
       s = &(s[f+1]);
     }
   }
-  height = (l->fontsize * (fnl+1) + l->linesep * fnl) * FCPI / FPPI;
+  height = ((l->fontsize * (fnl+1) + l->linesep * fnl + (l->fontsize * 0.5)) * FCPI / FPPI);
+  fprintf(stderr, "Height of label '%s' (size %f): %f\n", l->label, l->fontsize, height);
   process_label_max_n_mins(l, len, height);
 }
 

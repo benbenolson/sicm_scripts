@@ -51,9 +51,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "prio_list.h"
 #include <stdlib.h>
 
-#define PPI 120
-#define FPPI 120.0
-#define CPI 72.0
+#define PPI 120 /* 120 */
+#define FPPI 120.0 /* 120.0 */
+#define CPI 72
 #define FCPI 72.0
 #define CNULL ((char *)0)
 #define GMNULL ((Point)0)

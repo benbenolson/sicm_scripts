@@ -150,7 +150,9 @@ void get_geo_result(char *path, char *metric_str, metric_opts *mopts, geo_result
       arr[num_iters - 1] = d;
       
       /* Add up the values in the `geomean` variable */
-      result->geomean += log(d);
+      if(d) {
+        result->geomean += log(d);
+      }
       
       free(iterpath);
     }
@@ -240,6 +242,7 @@ double parse_iteration(char *metric_str, char *iterpath, metric_opts *mopts) {
 static struct option long_options[] = {
   {"bench",       required_argument, 0, 'b'},
   {"config",      required_argument, 0, 'c'},
+  {"hconfig",     required_argument, 0, 'h'},
   {"size",        required_argument, 0, 'i'},
   {"groupsize",   required_argument, 0, 'g'},
   {"groupname",   required_argument, 0, 'u'},
@@ -257,7 +260,11 @@ static struct option long_options[] = {
   {0,             0,                 0, 0}
 };
 
-char check_args(char *metric_str, char *size_str, char **config_strs, char **bench_strs) {
+char check_args(char *metric_str, char *size_str, size_t num_configs, char **config_strs, size_t num_human_configs, char **bench_strs) {
+  if(num_human_configs && (num_configs != num_human_configs)) {
+    fprintf(stderr, "Spcified human config names, but not the same number as configs. Aborting.\n");
+    exit(1);
+  }
   if(!metric_str) {
     fprintf(stderr, "No metric given. Aborting.\n");
     exit(1);
@@ -290,8 +297,14 @@ int main(int argc, char **argv) {
   metric_opts *mopts;
   
   /* Array of configuration and benchmark strings */
-  char **config_strs, **bench_strs, **group_strs, **label_strs, *x_label, *y_label;
-  size_t num_configs, config, max_config_len,
+  char **config_strs,
+       **bench_strs,
+       **group_strs,
+       **label_strs,
+       *x_label,
+       *y_label,
+       **human_config_strs;
+  size_t num_configs, num_human_configs, config, max_config_len,
          num_benches, bench,
          num_groups, group,
          num_labels, label,
@@ -308,7 +321,9 @@ int main(int argc, char **argv) {
   metric_str = NULL;
   size_str = NULL;
   num_configs = 0;
+  num_human_configs = 0;
   config_strs = NULL;
+  human_config_strs = NULL;
   num_benches = 0;
   bench_strs = NULL;
   num_groups = 0;
@@ -325,7 +340,7 @@ int main(int argc, char **argv) {
   output_eps = 0;
   while(1) {
     option_index = 0;
-    c = getopt_long(argc, argv, "m:n:s:t:eo:c:b:gz:l:x:y:i:",
+    c = getopt_long(argc, argv, "m:n:s:t:eo:c:h:b:gz:l:x:y:i:",
                     long_options, &option_index);
     if(c == -1) {
       break;
@@ -353,6 +368,13 @@ int main(int argc, char **argv) {
         config_strs = (char **) realloc(config_strs, sizeof(char *) * num_configs);
         config_strs[num_configs - 1] = malloc(sizeof(char) * (strlen(optarg) + 1));
         strcpy(config_strs[num_configs - 1], optarg);
+        break;
+      case 'h':
+        /* Human-readable configuration name. At least one required. */
+        num_human_configs++;
+        human_config_strs = (char **) realloc(human_config_strs, sizeof(char *) * num_human_configs);
+        human_config_strs[num_human_configs - 1] = malloc(sizeof(char) * (strlen(optarg) + 1));
+        strcpy(human_config_strs[num_human_configs - 1], optarg);
         break;
       case 'g':
         groupsize = (size_t) strtoul(optarg, NULL, 0);
@@ -450,7 +472,7 @@ int main(int argc, char **argv) {
     goto cleanup;
   }
   
-  check_args(metric_str, size_str, config_strs, bench_strs);
+  check_args(metric_str, size_str, num_configs, config_strs, num_human_configs, bench_strs);
   if(groupsize && num_groups) {
     if((num_configs % groupsize != 0) || ((num_configs / groupsize != num_groups))) {
       fprintf(stderr, "The number of group names that you've specified doesn't align with the number of groups. Aborting.\n");
@@ -489,13 +511,13 @@ int main(int argc, char **argv) {
           out how long the string is going to be, then allocate enough room, then finally write the result
           into `result_strs[bench][config]`. */
         if(relative) {
-          column_len = snprintf(NULL, 0, "%.2f ± %.2f", results[bench][config]->rel_geomean, results[bench][config]->rel_variance);
+          column_len = snprintf(NULL, 0, "%.3f ± %.3f", results[bench][config]->rel_geomean, results[bench][config]->rel_variance);
           result_strs[bench][config] = malloc(sizeof(char) * column_len);
-          snprintf(result_strs[bench][config], column_len, "%.2f ± %.2f", results[bench][config]->rel_geomean, results[bench][config]->rel_variance);
+          snprintf(result_strs[bench][config], column_len, "%.3f ± %.3f", results[bench][config]->rel_geomean, results[bench][config]->rel_variance);
         } else {
-          column_len = snprintf(NULL, 0, "%.2f ± %.2f", results[bench][config]->geomean, results[bench][config]->variance);
+          column_len = snprintf(NULL, 0, "%.3f ± %.3f", results[bench][config]->geomean, results[bench][config]->variance);
           result_strs[bench][config] = malloc(sizeof(char) * column_len);
-          snprintf(result_strs[bench][config], column_len, "%.2f ± %.2f", results[bench][config]->geomean, results[bench][config]->variance);
+          snprintf(result_strs[bench][config], column_len, "%.3f ± %.3f", results[bench][config]->geomean, results[bench][config]->variance);
         }
         free(path);
       }
@@ -552,6 +574,9 @@ int main(int argc, char **argv) {
       graph_hotset_line(bench_strs[0], size_str, config_strs[0], output_eps);
     } else if(strcmp(metric_str, "graph_capacity_lines") == 0) {
       graph_capacity_lines(bench_strs[0], size_str, config_strs[0], output_eps);
+    } else if(strncmp(metric_str, "graph_clustered_bars_", 21) == 0) {
+      /* For this graph, the last part of the `metric_str` is the metric we want to use as values in the graph */
+      graph_clustered_bars(num_benches, bench_strs, num_configs, config_strs, human_config_strs, size_str, (metric_str + 21));
     } else {
       fprintf(stderr, "Graph metric name not recognized. Aborting.\n");
       goto cleanup;

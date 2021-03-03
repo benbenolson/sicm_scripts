@@ -157,13 +157,11 @@ function off_pnm {
   # This is in kilobytes
   PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single=${CANARY_DIR} --metric=peak_rss_kbytes`
   PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
-  echo "PEAK_RSS=${PEAK_RSS}"
 
   # How many pages we need to be free on upper tier
   NUM_PAGES=$(echo "${PEAK_RSS} * ${RATIO} / 4" | bc)
   NUM_BYTES_FLOAT=$(echo "${PEAK_RSS} * ${RATIO} * 1024" | bc)
   NUM_BYTES=${NUM_BYTES_FLOAT%.*}
-  echo "NUM_BYTES=${NUM_BYTES}"
 
   DO_PER_NODE_MAX=true
   off_base "$@"

@@ -93,11 +93,19 @@ function memreserve_kill {
 function per_node_max {
   RESERVE_BYTES="${1}"
   echo "+cpuset" | sudo tee /sys/fs/cgroup/cgroup.subtree_control &> /dev/null
-  sudo rmdir /sys/fs/cgroup/0 &> /dev/null
+  if [[ -d /sys/fs/cgroup/0 ]]; then
+    for line in `cat /sys/fs/cgroup/0/cgroup.procs`; do
+      sudo kill -9 $line
+    done
+    sudo rmdir /sys/fs/cgroup/0 &> /dev/null
+  fi
   sudo mkdir /sys/fs/cgroup/0 &> /dev/null
   if [ "${2}" = "real" ]; then
     echo "${RESERVE_BYTES}" | sudo tee /sys/fs/cgroup/0/memory.node0_max &> /dev/null
   fi
+  CURRENT=`cat /sys/fs/cgroup/0/memory.node0_current`
+  MAX=`cat /sys/fs/cgroup/0/memory.node0_max`
+  echo "UPPER TIER BEFORE RUN: $CURRENT / $MAX"
   sh -c "echo \$$ | sudo tee /sys/fs/cgroup/0/cgroup.procs && ${COMMAND}" /dev/null
 }
 

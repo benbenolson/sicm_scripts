@@ -12,24 +12,28 @@ function on_base {
   ONLINE_SKIP_INTERVALS="$4"
   PACKING_ALGO="$5"
   
-  RATIO=$(echo "${MEMRESERVE_RATIO}/100" | bc -l)
-  CANARY_CFG="ft_def:"
-  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/"
-
-  # This file is used to get the peak RSS
-  if [ ! -r "${CANARY_DIR}" ]; then
-    echo "ERROR: The file '${CANARY_DIR}' doesn't exist yet. Aborting."
-    exit
-  fi
+  # This whole bit is only necessary if we're going to artificially limit
+  # one of the memory tiers
+  if [ "$DO_MEMRESERVE" = true ] || [ "$DO_PER_NODE_MAX" = true ]; then
+    RATIO=$(echo "${MEMRESERVE_RATIO}/100" | bc -l)
+    CANARY_CFG="ft_def:"
+    CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/"
   
-  # This is in kilobytes
-  PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single=${CANARY_DIR} --metric=peak_rss_kbytes`
-  PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
-
-  # How many pages we need to be free on upper tier
-  NUM_PAGES=$(echo "${PEAK_RSS} * ${RATIO} / 4" | bc)
-  NUM_BYTES_FLOAT=$(echo "${PEAK_RSS} * ${RATIO} * 1024" | bc)
-  NUM_BYTES=${NUM_BYTES_FLOAT%.*}
+    # This file is used to get the peak RSS
+    if [ ! -r "${CANARY_DIR}" ]; then
+      echo "ERROR: The file '${CANARY_DIR}' doesn't exist yet. Aborting."
+      exit
+    fi
+  
+    # This is in kilobytes
+    PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single=${CANARY_DIR} --metric=peak_rss_kbytes`
+    PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
+  
+    # How many pages we need to be free on upper tier
+    NUM_PAGES=$(echo "${PEAK_RSS} * ${RATIO} / 4" | bc)
+    NUM_BYTES_FLOAT=$(echo "${PEAK_RSS} * ${RATIO} * 1024" | bc)
+    NUM_BYTES=${NUM_BYTES_FLOAT%.*}
+  fi
 
   export SH_MAX_SITES_PER_ARENA="5000"
   export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
@@ -44,14 +48,13 @@ function on_base {
   export SH_PROFILE_IMC="skx_unc_imc0,skx_unc_imc1,skx_unc_imc2,skx_unc_imc3,skx_unc_imc4,skx_unc_imc5"
   export SH_PROFILE_EXTENT_SIZE_SKIP_INTERVALS="${CAPACITY_SKIP_INTERVALS}"
   export SH_PROFILE_RSS_SKIP_INTERVALS="${CAPACITY_SKIP_INTERVALS}"
+  export SH_PROFILE_OBJMAP_SKIP_INTERVALS="${CAPACITY_SKIP_INTERVALS}"
 
   # Turn on online
   export SH_PROFILE_ONLINE="1"
   export SH_PROFILE_ONLINE_SKIP_INTERVALS="${ONLINE_SKIP_INTERVALS}"
   export SH_PROFILE_ONLINE_SORT="value_per_weight"
   export SH_PROFILE_ONLINE_PACKING_ALGO="${PACKING_ALGO}"
-  echo "SH_PROFILE_ONLINE_PACKING_ALGO=${SH_PROFILE_ONLINE_PACKING_ALGO}"
-  export SH_PROFILE_ONLINE_VALUE_THRESHOLD="10000000"
   
   export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
 
@@ -68,7 +71,6 @@ function on_base {
     drop_caches_start
     if [ "$DO_MEMRESERVE" = true ]; then
       memreserve ${DIR} ${NUM_PAGES} ${SH_UPPER_NODE}
-      export SH_PROFILE_ONLINE_RESERVED_BYTES="${RESERVED_BYTES}"
     fi
     drop_caches_start
     numastat -m &>> ${DIR}/numastat_before.txt
@@ -77,7 +79,7 @@ function on_base {
     if [ "$DO_PER_NODE_MAX" = true ]; then
       per_node_max ${NUM_BYTES} real &>> ${DIR}/stdout.txt
     else
-      eval ${COMMAND} &> ${DIR}/stdout.txt
+      eval ${COMMAND} &>> ${DIR}/stdout.txt
     fi
     numastat_kill
     pcm_kill
@@ -97,6 +99,11 @@ function on_pnm {
 function on_pnm_ski {
   export SH_PROFILE_ONLINE_STRAT_SKI="1"
   on_pnm $@
+}
+
+function on_ski {
+  export SH_PROFILE_ONLINE_STRAT_SKI="1"
+  on_base $@
 }
 
 # PROFILE_ALL with objmap
@@ -126,9 +133,39 @@ function on_pnm_ski_bwr_objmap_bsl {
   export SH_PROFILE_OBJMAP="1"
   on_pnm_ski $@
 }
-function on_pnm_ski_bwr_objmap_bsl_debug {
+function on_ski_bwr_objmap_bsl {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  export SH_PROFILE_BW="1"
+  export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
+  export SH_PROFILE_BW_SKIP_INTERVALS="1"
+  export SH_PROFILE_BW_RELATIVE="1"
+  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_objmap_peak"
+  export SH_PROFILE_OBJMAP="1"
+  on_ski $@
+}
+function on_pnm_ski_bwr_objmap_bsl_lazy {
+  DO_DEBUG=true
+  export SH_LAZY_MIGRATION="1"
+  on_pnm_ski_bwr_objmap_bsl $@
+}
+function on_pnm_ski_bwr_objmap_bsl_nolazy {
   DO_DEBUG=true
   on_pnm_ski_bwr_objmap_bsl $@
+}
+function on_pnm_ski_bwr_objmap_bsl_lazyfixed {
+  DO_DEBUG=true
+  export SH_LAZY_MIGRATION="1"
+  on_pnm_ski_bwr_objmap_bsl $@
+}
+function on_pnm_ski_bwr_objmap_bsl_nolazyfixed {
+  DO_DEBUG=true
+  on_pnm_ski_bwr_objmap_bsl $@
+}
+function on_ski_bwr_objmap_bsl_debug {
+  DO_DEBUG=true
+  on_ski_bwr_objmap_bsl $@
 }
 function on_pnm_ski_bwr_objmap_ss {
   export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"

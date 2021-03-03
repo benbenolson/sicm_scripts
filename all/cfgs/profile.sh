@@ -46,3 +46,22 @@ function prof_bsl {
   
   prof_all_base $@
 }
+
+function prof_bsl_large {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="33554432"
+  export SH_PROFILE_OBJMAP="1"
+  export SH_PROFILE_OBJMAP_SKIP_INTERVALS="$3"
+  export SH_PRINT_PROFILE_INTERVALS="1"
+  
+  prof_all_base $@
+}
+
+function prof_old {
+  export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
+  export SH_PROFILE_RSS="1"
+  export SH_PROFILE_RSS_SKIP_INTERVALS="$3"
+  export SH_PRINT_PROFILE_INTERVALS="1"
+  
+  prof_all_base $@
+}
