@@ -1,0 +1,79 @@
+newgraph
+
+(* The input to this script should be one line per bar. For each line:
+   1. The name of the cluster
+   2. The name of the bar
+   3. Red color value
+   4. Green color value
+   5. Blue color value
+   6. The x-axis point
+   7. The y-axis point *)
+
+legend defaults hjc vjb columns 2 columnsep 10
+(* title hjc vjt fontsize 14 : Arena Layout and Profiling Overhead *)
+
+yaxis
+  min 0.5
+  max 1.10
+  grid_lines grid_gray 0.75
+  hash 0.1 mhash 4
+  label fontsize 11 : Runtime (Relative to Default JeMalloc)
+  
+xaxis
+  min 0
+(*  size 8 *)
+  no_auto_hash_marks
+  no_auto_hash_labels
+  hash_scale -1.0
+  
+(* Evenly distribute cluster labels over the x-axis.
+   Iterates over each line, and constructs two arrays:
+   1. `clusters`, in which each key is a unique cluster name, and
+   2. `cluster_inds`, in which each key is the index at which that cluster name first appeared. 
+   It then generates each x-axis position by taking the average of the positions of all bars in each cluster. *)
+newstring hjc vjc fontsize 11 y 0.48
+shell : cat input.txt | awk '\
+  { \
+    sums[$1] += $6; \
+    nums[$1]++; \
+    if (!($1 in clusters)) { \
+      clusters[$1] = $6; \
+      cluster_inds[$6] = $1; \
+    } \
+  } \
+  END { \
+    for (i in cluster_inds) { \
+      val = sums[cluster_inds[i]] / nums[cluster_inds[i]]; \
+      print "copystring x", val, ":", cluster_inds[i]; \
+    } \
+  }'
+  
+(* This is a line that goes straight across the graph at 1.0 *)
+newline
+  pts
+  shell : cat input.txt | awk 'END { print "0", "1.0", $6, "1.0" }'
+  
+(* This is the bars themselves *)
+shell : cat input.txt | awk '{ print "newcurve marksize 0.8 5 marktype xbar cfill", \
+                               $3, $4, $5, \
+                               "pts", \
+                               $6, \
+                               $7 }'
+                               
+(* Now we're going to draw the legend items only for unique bar names *)
+shell : cat input.txt | awk '\
+  { \
+    if (!($2 in clusters)) { \
+      clusters[$2] = $6; \
+      cluster_inds[$6] = $2; \
+      reds[$6] = $3; \
+      greens[$6] = $4; \
+      blues[$6] = $5; \
+    } \
+  } \
+  END { \
+    for (i in cluster_inds) { \
+      print "newcurve marksize 0.5 0.02 marktype xbar linetype none cfill", reds[i], greens[i], blues[i], \
+      "label :", cluster_inds[i]; \
+    } \
+  }'
