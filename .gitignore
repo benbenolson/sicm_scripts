@@ -1,7 +1,5 @@
 *.ER
 *.OU
 *.o
-all/stat
-all/memreserve
-all/memhog
+reporting/report
 tools/jgraph/jgraph
