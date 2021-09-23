@@ -11,11 +11,11 @@ function prof_all_base {
   export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
 
   # Value profiling
-  export SH_PROFILE_ALL="1"
+  export SH_PROFILE_PEBS="1"
   export SH_MAX_SAMPLE_PAGES="2048"
   export SH_SAMPLE_FREQ="${FREQ}"
   export SH_PROFILE_RATE_NSECONDS=$(echo "${RATE} * 1000000" | bc)
-  export SH_PROFILE_ALL_EVENTS="MEM_LOAD_UOPS_LLC_MISS_RETIRED:LOCAL_DRAM,MEM_LOAD_UOPS_RETIRED:LOCAL_PMM"
+  export SH_PROFILE_PEBS_EVENTS="MEM_LOAD_UOPS_LLC_MISS_RETIRED:LOCAL_DRAM,MEM_LOAD_UOPS_RETIRED:LOCAL_PMM"
   
   # Bandwidth, too.
   export SH_PROFILE_BW="1"
@@ -52,6 +52,15 @@ function prof_bsl_large {
   export SH_BIG_SMALL_THRESHOLD="33554432"
   export SH_PROFILE_OBJMAP="1"
   export SH_PROFILE_OBJMAP_SKIP_INTERVALS="$3"
+  export SH_PRINT_PROFILE_INTERVALS="1"
+  
+  prof_all_base $@
+}
+
+function prof_old {
+  export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
+  export SH_PROFILE_RSS="1"
+  export SH_PROFILE_RSS_SKIP_INTERVALS="$3"
   export SH_PRINT_PROFILE_INTERVALS="1"
   
   prof_all_base $@

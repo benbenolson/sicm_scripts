@@ -137,7 +137,7 @@ double get_bench_val(char *metric_str, char *path, metric_opts *mopts) {
   
   if(found_qmcpack == 4) {
     /* If all qmcpack values have been found, calculate the fom */
-    bench_vals[FOM] = ((double) (qmcpack_blocks * qmcpack_steps * qmcpack_walkers)) / qmcpack_exectime;
+    bench_vals[FOM] = ((double) (qmcpack_blocks * qmcpack_steps * qmcpack_walkers)) / ((double) qmcpack_exectime);
   }
   
   return bench_vals[metric_index(metric_str, bench_strs)];

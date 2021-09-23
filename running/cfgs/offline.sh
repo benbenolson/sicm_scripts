@@ -13,23 +13,22 @@ MANUAL=false
 function off_base {
   PACKING_ALGO="$1"
   
-  if [ -z "${PROFILE_CFG}" ]; then
-    echo "You didn't specify a profiling config to use for the offline approach. Aborting."
-    exit 1
-  fi
-  
-  CANARY_CFG="ft_def"
-  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/"
-  PEBS_DIR="${BASEDIR}/../${PROFILE_CFG}"
-  PEBS_FILE="${PEBS_DIR}/i0/profile.txt"
-
-  # This file is used for the profiling information
-  if [ ! -f "${PEBS_FILE}" ]; then
-    echo "ERROR: The file '${PEBS_FILE}' doesn't exist yet. Aborting."
-    exit
+  if [ "$MANUAL" = false ]; then
+    if [ -z "${PROFILE_CFG}" ]; then
+      echo "You didn't specify a profiling config to use for the offline approach. Aborting."
+      exit 1
+    fi
+    PEBS_DIR="${BASEDIR}/../${PROFILE_CFG}"
+    PEBS_FILE="${PEBS_DIR}/i0/profile.txt"
+    if [ ! -f "${PEBS_FILE}" ]; then
+      echo "ERROR: The file '${PEBS_FILE}' doesn't exist yet. Aborting."
+      exit
+    fi
   fi
 
   # This file is used to get the peak RSS
+  CANARY_CFG="ft_def"
+  CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/"
   if [ ! -r "${CANARY_DIR}" ]; then
     echo "ERROR: The file '${CANARY_DIR}' doesn't exist yet. Aborting."
     exit
@@ -131,6 +130,11 @@ function off_pnm {
   off_base "$@"
 }
 
+function off_bwr {
+  VALUE_PROF_TYPE="profile_bw_relative_total"
+  off $@
+}
+
 function off_all {
   VALUE_PROF_TYPE="profile_all_total"
   off_base $@
@@ -160,6 +164,43 @@ function off_pnm_bwr_objmap_bsl {
   ARENA_LAYOUT="BIG_SMALL_ARENAS"
   export SH_BIG_SMALL_THRESHOLD="4194304"
   off_pnm_bwr $@
+}
+
+function off_bwr_objmap_bsl {
+  DO_SCALE=false
+  CAPACITY_PROF_TYPE="profile_objmap_peak"
+  ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  off_bwr $@
+}
+
+function off_bwr_objmap_bsl_newpcm {
+  DO_SCALE=false
+  CAPACITY_PROF_TYPE="profile_objmap_peak"
+  ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  off_bwr $@
+}
+
+function off_bwr_objmap_bsl_prefetch {
+  DO_SCALE=false
+  CAPACITY_PROF_TYPE="profile_objmap_peak"
+  ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  off_bwr $@
+}
+
+function off_bwr_objmap_bsl_nodalloc {
+  DO_SCALE=false
+  CAPACITY_PROF_TYPE="profile_objmap_peak"
+  ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  off_bwr $@
+}
+
+function off_pnm_bwr_objmap_bsl_manual {
+  MANUAL=true
+  off_pnm_bwr_objmap_bsl $@
 }
 
 function off_pnm_all_objmap_ss {

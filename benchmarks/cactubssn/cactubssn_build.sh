@@ -1,6 +1,5 @@
 #!/bin/bash
 
-source $SCRIPTS_DIR/all/bench_build.sh
 bench_build c
 export SH_CONTEXT="0"
 

@@ -5,17 +5,23 @@
 #include "report.h"
 
 /* The `*_strs` and `*_indices` arrays must line up precisely. */
-#define NUM_GNU_TIME_METRICS 3
+#define NUM_GNU_TIME_METRICS 6
 static char *gnu_time_strs[NUM_GNU_TIME_METRICS+1] = {
   "peak_rss",
   "peak_rss_kbytes",
   "runtime",
+  "runtime_minutes",
+  "runtime_hours",
+  "throughput", /* This is just the inverse of runtime */
   NULL
 };
 enum gnu_time_indices {
   PEAK_RSS,
   PEAK_RSS_KBYTES,
-  RUNTIME
+  RUNTIME,
+  RUNTIME_MINUTES,
+  RUNTIME_HOURS,
+  THROUGHPUT,
 };
 static double gnu_time_vals[NUM_GNU_TIME_METRICS];
 
@@ -41,9 +47,10 @@ double get_gnu_time_val(char *metric_str, char *path, metric_opts *mopts) {
     if(sscanf(line, "  Maximum resident set size (kbytes): %zu", &tmp) == 1) {
       gnu_time_vals[PEAK_RSS_KBYTES] = tmp;
       gnu_time_vals[PEAK_RSS] = ((double)tmp) / ((double)1024) / ((double)1024);
-      goto cleanup;
     } else if(sscanf(line, "   Elapsed (wall clock) time (h:mm:ss or m:ss): %zu:%zu:%f", &tmp, &tmp2, &tmp_f) == 3) {
       gnu_time_vals[RUNTIME] = (tmp * 60 * 60) + (tmp2 * 60) + ((size_t) tmp_f);
+      gnu_time_vals[RUNTIME_MINUTES] = (tmp * 60) + (tmp2) + (((double) tmp_f) / 60);
+      gnu_time_vals[RUNTIME_HOURS] = (tmp) + (((double) tmp2) / 60) + (((double) tmp_f) / 60 / 60);
     } else if(sscanf(line, "   Elapsed (wall clock) time (h:mm:ss or m:ss): %zu:%f", &tmp, &tmp_f) == 2) {
       if(tmp_f < 0) {
         /* Just to make sure the below explicit cast from float->size_t is valid */
@@ -51,11 +58,17 @@ double get_gnu_time_val(char *metric_str, char *path, metric_opts *mopts) {
         exit(1);
       }
       gnu_time_vals[RUNTIME] = (tmp * 60) + ((size_t) tmp_f);
+      gnu_time_vals[RUNTIME_MINUTES] = (tmp) + (((double) tmp_f) / 60);
+      gnu_time_vals[RUNTIME_HOURS] = (((double) tmp) / 60) + (((double) tmp_f) / 60 / 60);
     }
   }
   
+  gnu_time_vals[THROUGHPUT] = 1 / gnu_time_vals[RUNTIME];
+  
 cleanup:
-  free(line);
+  if(line) {
+    free(line);
+  }
   fclose(file);
   
   return gnu_time_vals[metric_index(metric_str, gnu_time_strs)];

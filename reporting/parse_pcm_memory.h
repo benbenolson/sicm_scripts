@@ -5,145 +5,133 @@
 #include <limits.h>
 #include <math.h>
 
-char *pcm_memory_metrics_list[] = {
+#define NUM_PCM_MEMORY_METRICS 6
+static char *pcm_memory_strs[NUM_PCM_MEMORY_METRICS+1] = {
   "geomean_bw",
   "geomean_dram_bw",
   "geomean_pmm_bw",
+  "cum_bw",
+  "num_bw_intervals",
+  "hit_rate",
   NULL
 };
+enum pcm_memory_indices {
+  GEOMEAN_BW,
+  GEOMEAN_DRAM_BW,
+  GEOMEAN_PMM_BW,
+  CUM_BW,
+  NUM_BW_INTERVALS,
+  HIT_RATE,
+};
+static double pcm_memory_vals[NUM_PCM_MEMORY_METRICS];
 
-typedef struct pcm_memory_metrics {
-  /* First dimension is per-interval, next is per-socket */
-  double **tot_bw_vals,
-         **dram_read_vals, **dram_write_vals,
-         **pmm_read_vals, **pmm_write_vals;
-  double *tot_bw_geomeans, *dram_bw_geomeans, *pmm_bw_geomeans; /* per-socket */
-  int num_skts;
-  size_t num_intervals;
-} pcm_memory_metrics;
-
-/* NOTE: Currently only supports two sockets. */
-
-char parse_pcm_memory(FILE *file, pcm_memory_metrics *info) {
-  double tmp, tmp2;
-  long long val;
-  char *line;
+double get_pcm_memory_val(char *metric_str, char *path, metric_opts *mopts) {
+  char *line, *filepath;
   size_t len;
   ssize_t read;
-  size_t i, n;
-
+  FILE *file;
+  double tmp, tmp2;
+  double *tot_bw_vals, *dram_read_vals, *dram_write_vals,
+         *pmm_read_vals, *pmm_write_vals,
+         tot_bw_geomean, dram_bw_geomean, pmm_bw_geomean;
+  int num_skts;
+  size_t num_intervals, num_tots, i;
+  
+  clear_double_arr(pcm_memory_vals, NUM_PCM_MEMORY_METRICS);
+  
+  /* Open the file */
+  filepath = construct_path(path, "pcm-memory.txt");
+  file = fopen(filepath, "r");
+  if(!file) {
+    fprintf(stderr, "WARNING: Failed to open '%s'. Filling with zero.\n");
+    return 0.0;
+  }
+  free(filepath);
+  
+  /* We'll need all values to calculate the geomeans */
+  tot_bw_vals = NULL;
+  dram_read_vals = NULL;
+  dram_write_vals = NULL;
+  pmm_read_vals = NULL;
+  pmm_write_vals = NULL;
+  tot_bw_geomean = 0;
+  dram_bw_geomean = 0;
+  pmm_bw_geomean = 0;
+  num_intervals = 0;
+  num_tots = 0;
+  
+  /* NOTE: only supports one socket */
   line = NULL;
   len = 0;
   while(read = getline(&line, &len, file) != -1) {
-    if(sscanf(line, "|-- Socket %lf --||-- Socket %lf --|", &tmp, &tmp2) == 2) {
-      info->num_skts = 2;
-      info->num_intervals++;
-    } else if(sscanf(line, "|-- NODE 0 Memory (MB/s): %lf --||-- NODE 1 Memory (MB/s): %lf --|", &tmp, &tmp2) == 2) {
-      info->tot_bw_vals = realloc(info->tot_bw_vals, sizeof(double *) * info->num_intervals);
-      info->tot_bw_vals[info->num_intervals - 1] = malloc(sizeof(double) * 2);
-      info->tot_bw_vals[info->num_intervals - 1][0] = tmp;
-      info->tot_bw_vals[info->num_intervals - 1][1] = tmp2;
-    } else if(sscanf(line, "|-- NODE 0 Mem Read (MB/s) : %lf --||-- NODE 1 Mem Read (MB/s) : %lf --|", &tmp, &tmp2) == 2) {
-      info->dram_read_vals = realloc(info->dram_read_vals, sizeof(double *) * info->num_intervals);
-      info->dram_read_vals[info->num_intervals - 1] = malloc(sizeof(double) * 2);
-      info->dram_read_vals[info->num_intervals - 1][0] = tmp;
-      info->dram_read_vals[info->num_intervals - 1][1] = tmp2;
-    } else if(sscanf(line, "|-- NODE 0 Mem Write(MB/s) : %lf --||-- NODE 1 Mem Write(MB/s) : %lf --|", &tmp, &tmp2) == 2) {
-      info->dram_write_vals = realloc(info->dram_write_vals, sizeof(double *) * info->num_intervals);
-      info->dram_write_vals[info->num_intervals - 1] = malloc(sizeof(double) * 2);
-      info->dram_write_vals[info->num_intervals - 1][0] = tmp;
-      info->dram_write_vals[info->num_intervals - 1][1] = tmp2;
-    } else if(sscanf(line, "|-- NODE 0 PMM Read (MB/s): %lf --||-- NODE 1 PMM Read (MB/s): %lf --|", &tmp, &tmp2) == 2) {
-      info->pmm_read_vals = realloc(info->pmm_read_vals, sizeof(double *) * info->num_intervals);
-      info->pmm_read_vals[info->num_intervals - 1] = malloc(sizeof(double) * 2);
-      info->pmm_read_vals[info->num_intervals - 1][0] = tmp;
-      info->pmm_read_vals[info->num_intervals - 1][1] = tmp2;
-    } else if(sscanf(line, "|-- NODE 0 PMM Write(MB/s): %lf --||-- NODE 1 PMM Write(MB/s): %lf --|", &tmp, &tmp2) == 2) {
-      info->pmm_write_vals = realloc(info->pmm_write_vals, sizeof(double *) * info->num_intervals);
-      info->pmm_write_vals[info->num_intervals - 1] = malloc(sizeof(double) * 2);
-      info->pmm_write_vals[info->num_intervals - 1][0] = tmp;
-      info->pmm_write_vals[info->num_intervals - 1][1] = tmp2;
+    if(sscanf(line, "|-- Socket %lf --|", &tmp) == 1) {
+      num_intervals++;
+    } else if(sscanf(line, "|-- NODE0 Memory (MB/s): %lf --|", &tmp) == 1) {
+      /* Older PCM tools use this printout */
+      num_tots++;
+      tot_bw_vals = realloc(tot_bw_vals, sizeof(double) * num_tots);
+      tot_bw_vals[num_tots - 1] = tmp;
+    } else if(sscanf(line, "|-- NODE 0 Memory (MB/s): %lf --|", &tmp) == 1) {
+      /* This case is the newer PCM tools */
+      num_tots++;
+      tot_bw_vals = realloc(tot_bw_vals, sizeof(double) * num_tots);
+      tot_bw_vals[num_tots - 1] = tmp;
+    } else if(sscanf(line, "|-- NODE0 Mem Read (MB/s) : %lf --|", &tmp) == 1) {
+      dram_read_vals = realloc(dram_read_vals, sizeof(double) * num_intervals);
+      dram_read_vals[num_intervals - 1] = tmp;
+    } else if(sscanf(line, "|-- NODE0 Mem Write(MB/s) : %lf --|", &tmp) == 1) {
+      dram_write_vals = realloc(dram_write_vals, sizeof(double) * num_intervals);
+      dram_write_vals[num_intervals - 1] = tmp;
+    } else if(sscanf(line, "|-- NODE0 PMM Read (MB/s): %lf --|", &tmp) == 1) {
+      pmm_read_vals = realloc(pmm_read_vals, sizeof(double) * num_intervals);
+      pmm_read_vals[num_intervals - 1] = tmp;
+    } else if(sscanf(line, "|-- NODE0 PMM Write(MB/s): %lf --|", &tmp) == 1) {
+      pmm_write_vals = realloc(pmm_write_vals, sizeof(double) * num_intervals);
+      pmm_write_vals[num_intervals - 1] = tmp;
     }
   }
-  
+
   /* Aggregate the results, calculate geomeans */
-  info->tot_bw_geomeans = calloc(info->num_skts, sizeof(double));
-  info->dram_bw_geomeans = calloc(info->num_skts, sizeof(double));
-  info->pmm_bw_geomeans = calloc(info->num_skts, sizeof(double));
-  for(n = 0; n < info->num_skts; n++) {
-    for(i = 0; i < info->num_intervals; i++) {
-      if(info->tot_bw_vals[i][n]) {
-        info->tot_bw_geomeans[n] += log(info->tot_bw_vals[i][n]);
-      }
-      if(info->dram_read_vals[i][n] + info->dram_write_vals[i][n]) {
-        info->dram_bw_geomeans[n] += log(info->dram_read_vals[i][n] + info->dram_write_vals[i][n]);
-      }
-      if(info->pmm_read_vals[i][n] + info->pmm_write_vals[i][n]) {
-        info->pmm_bw_geomeans[n] += log(info->pmm_read_vals[i][n] + info->pmm_write_vals[i][n]);
-      }
+  for(i = 0; i < num_intervals; i++) {
+    if(dram_read_vals && dram_write_vals && (dram_read_vals[i] + dram_write_vals[i])) {
+      dram_bw_geomean += log(dram_read_vals[i] + dram_write_vals[i]);
     }
-    info->tot_bw_geomeans[n] /= info->num_intervals;
-    info->tot_bw_geomeans[n] = exp(info->tot_bw_geomeans[n]);
-    info->dram_bw_geomeans[n] /= info->num_intervals;
-    info->dram_bw_geomeans[n] = exp(info->dram_bw_geomeans[n]);
-    info->pmm_bw_geomeans[n] /= info->num_intervals;
-    info->pmm_bw_geomeans[n] = exp(info->pmm_bw_geomeans[n]);
-  }
-
-  return 0;
-}
-
-pcm_memory_metrics *init_pcm_memory_metrics() {
-  pcm_memory_metrics *info;
-  info = malloc(sizeof(pcm_memory_metrics));
-  info->tot_bw_vals = NULL;
-  info->dram_read_vals = NULL;
-  info->dram_write_vals = NULL;
-  info->pmm_read_vals = NULL;
-  info->pmm_write_vals = NULL;
-  info->tot_bw_geomeans = NULL;
-  info->dram_bw_geomeans = NULL;
-  info->pmm_bw_geomeans = NULL;
-  info->num_skts = 0;
-  info->num_intervals = 0;
-}
-
-char *is_pcm_memory_metric(char *metric) {
-  char *ptr, *filename;
-  int i;
-
-  i = 0;
-  while((ptr = pcm_memory_metrics_list[i]) != NULL) {
-    if(strcmp(metric, ptr) == 0) {
-      filename = malloc(sizeof(char) * (strlen("pcm-memory.txt") + 1));
-      strcpy(filename, "pcm-memory.txt");
-      return filename;
+    if(pmm_read_vals && pmm_write_vals && (pmm_read_vals[i] + pmm_write_vals[i])) {
+      pmm_bw_geomean += log(pmm_read_vals[i] + pmm_write_vals[i]);
     }
-    i++;
   }
+  for(i = 0; i < num_tots; i++) {
+    if(tot_bw_vals[i]) {
+      tot_bw_geomean += log(tot_bw_vals[i]);
+      pcm_memory_vals[CUM_BW] += tot_bw_vals[i];
+      printf("%lf,", tot_bw_vals[i]);
+    }
+  }
+  printf("\n");
+  tot_bw_geomean /= num_tots;
+  tot_bw_geomean = exp(tot_bw_geomean);
+  dram_bw_geomean /= num_intervals;
+  dram_bw_geomean = exp(dram_bw_geomean);
+  pmm_bw_geomean /= num_intervals;
+  pmm_bw_geomean = exp(pmm_bw_geomean);
+  
+  pcm_memory_vals[GEOMEAN_BW] = tot_bw_geomean;
+  pcm_memory_vals[GEOMEAN_DRAM_BW] = dram_bw_geomean;
+  pcm_memory_vals[GEOMEAN_PMM_BW] = pmm_bw_geomean;
+  pcm_memory_vals[NUM_BW_INTERVALS] = num_intervals;
 
-  return NULL;
+cleanup:
+  if(line) {
+    free(line);
+  }
+  if(tot_bw_vals) {
+    free(tot_bw_vals);
+  }
+  fclose(file);
+
+  return pcm_memory_vals[metric_index(metric_str, pcm_memory_strs)];
 }
 
-metric *set_pcm_memory_metric(char *metric_str, pcm_memory_metrics *info, long long node) {
-  metric *m;
-  
-  if(node == UINT_MAX) {
-    fprintf(stderr, "This metric requires the `--node` argument. Aborting.\n");
-    exit(1);
-  }
-
-  m = malloc(sizeof(metric));
-  if((strcmp(metric_str, "geomean_bw") == 0)) {
-    m->val.f = info->tot_bw_geomeans[node];
-    m->type = 0;
-  } else if((strcmp(metric_str, "geomean_dram_bw") == 0)) {
-    m->val.f = info->dram_bw_geomeans[node];
-    m->type = 0;
-  } else if((strcmp(metric_str, "geomean_pmm_bw") == 0)) {
-    m->val.f = info->pmm_bw_geomeans[node];
-    m->type = 0;
-  }
-  
-  return m;
+void register_pcm_memory_metrics() {
+  register_parser(pcm_memory_strs, get_pcm_memory_val);
 }

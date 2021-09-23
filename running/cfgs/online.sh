@@ -16,7 +16,7 @@ function on_base {
   # one of the memory tiers
   if [ "$DO_MEMRESERVE" = true ] || [ "$DO_PER_NODE_MAX" = true ]; then
     RATIO=$(echo "${MEMRESERVE_RATIO}/100" | bc -l)
-    CANARY_CFG="ft_def:"
+    CANARY_CFG="ft_def"
     CANARY_DIR="${BASEDIR}/../${CANARY_CFG}/"
   
     # This file is used to get the peak RSS
@@ -26,7 +26,7 @@ function on_base {
     fi
   
     # This is in kilobytes
-    PEAK_RSS=`${SCRIPTS_DIR}/all/stat --single=${CANARY_DIR} --metric=peak_rss_kbytes`
+    PEAK_RSS=`${SCRIPTS_DIR}/reporting/report --single=${CANARY_DIR} --metric=peak_rss_kbytes`
     PEAK_RSS_BYTES=$(echo "${PEAK_RSS} * 1024" | bc)
   
     # How many pages we need to be free on upper tier
@@ -39,11 +39,11 @@ function on_base {
   export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
 
   # Value profiling
-  export SH_PROFILE_ALL="1"
+  export SH_PROFILE_PEBS="1"
   export SH_MAX_SAMPLE_PAGES="2048"
   export SH_SAMPLE_FREQ="${FREQ}"
   export SH_PROFILE_RATE_NSECONDS=$(echo "${RATE} * 1000000" | bc)
-  export SH_PROFILE_ALL_EVENTS="MEM_LOAD_UOPS_LLC_MISS_RETIRED:LOCAL_DRAM,MEM_LOAD_UOPS_RETIRED:LOCAL_PMM"
+  export SH_PROFILE_PEBS_EVENTS="MEM_LOAD_UOPS_LLC_MISS_RETIRED:LOCAL_DRAM,MEM_LOAD_UOPS_RETIRED:LOCAL_PMM"
   
   export SH_PROFILE_IMC="skx_unc_imc0,skx_unc_imc1,skx_unc_imc2,skx_unc_imc3,skx_unc_imc4,skx_unc_imc5"
   export SH_PROFILE_EXTENT_SIZE_SKIP_INTERVALS="${CAPACITY_SKIP_INTERVALS}"
@@ -52,11 +52,13 @@ function on_base {
 
   # Turn on online
   export SH_PROFILE_ONLINE="1"
+  export SH_PROFILE_ONLINE_STRAT_SKI="1"
   export SH_PROFILE_ONLINE_SKIP_INTERVALS="${ONLINE_SKIP_INTERVALS}"
   export SH_PROFILE_ONLINE_SORT="value_per_weight"
   export SH_PROFILE_ONLINE_PACKING_ALGO="${PACKING_ALGO}"
   
   export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
+  echo "OMP_NUM_THREADS: ${OMP_NUM_THREADS}"
 
   eval "${PRERUN}"
 
@@ -96,89 +98,113 @@ function on_pnm {
   on_base $@
 }
 
-function on_pnm_ski {
-  export SH_PROFILE_ONLINE_STRAT_SKI="1"
-  on_pnm $@
-}
-
-function on_ski {
-  export SH_PROFILE_ONLINE_STRAT_SKI="1"
-  on_base $@
-}
-
-# PROFILE_ALL with objmap
-function on_pnm_ski_all_objmap_bsl {
+# PROFILE_PEBS with objmap
+function on_pnm_all_objmap_bsl {
   export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
   export SH_BIG_SMALL_THRESHOLD="4194304"
   export SH_PROFILE_ONLINE_VALUE="profile_all_total"
   export SH_PROFILE_ONLINE_WEIGHT="profile_rss_peak"
   export SH_PROFILE_OBJMAP="1"
-  on_pnm_ski $@
+  on_pnm $@
 }
-function on_mr_ski_all_rss_bsl_debug {
+# BWREL with objmap
+function on_pnm_bwr_objmap_bsl {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  export SH_PROFILE_BW="1"
+  export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
+  export SH_PROFILE_BW_SKIP_INTERVALS="1"
+  export SH_PROFILE_BW_RELATIVE="1"
+  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_objmap_peak"
+  export SH_PROFILE_OBJMAP="1"
+  on_pnm $@
+}
+# BWREL with objmap
+function on_pnm_bwr_rss_bsl {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  export SH_PROFILE_BW="1"
+  export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
+  export SH_PROFILE_BW_SKIP_INTERVALS="1"
+  export SH_PROFILE_BW_RELATIVE="1"
+  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_rss_peak"
+  export SH_PROFILE_RSS="1"
+  on_pnm $@
+}
+function on_bwr_objmap_bsl {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  export SH_PROFILE_BW="1"
+  export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
+  export SH_PROFILE_BW_SKIP_INTERVALS="1"
+  export SH_PROFILE_BW_RELATIVE="1"
+  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_objmap_peak"
+  export SH_PROFILE_OBJMAP="1"
+  on_base $@
+}
+function on_bwr_objmap_bsl_debug {
   DO_DEBUG=true
-  on_pnm_ski_all_objmap_bsl $@
+  on_bwr_objmap_bsl $@
+}
+function on_bwr_objmap_bsl_nodalloc {
+  DO_DEBUG=true
+  on_bwr_objmap_bsl $@
+}
+function on_bwr_objmap_bsl_debug_test {
+  DO_DEBUG=true
+  on_bwr_objmap_bsl $@
+}
+function on_pnm_bwr_objmap_bsl_debug {
+  DO_DEBUG=true
+  on_pnm_bwr_objmap_bsl $@
+}
+function on_pnm_bwr_rss_bsl_debug {
+  DO_DEBUG=true
+  on_pnm_bwr_rss_bsl $@
+}
+function on_pnm_bwr_objmap_bsl_debug_test {
+  DO_DEBUG=true
+  on_pnm_bwr_objmap_bsl $@
+}
+function on_pnm_bwr_objmap_bsl_debug_test2 {
+  DO_DEBUG=true
+  on_pnm_bwr_objmap_bsl $@
+}
+function on_pnm_bwr_objmapc_bsl {
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304"
+  export SH_PROFILE_BW="1"
+  export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
+  export SH_PROFILE_BW_SKIP_INTERVALS="1"
+  export SH_PROFILE_BW_RELATIVE="1"
+  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
+  export SH_PROFILE_ONLINE_WEIGHT="profile_objmap_current"
+  export SH_PROFILE_OBJMAP="1"
+  on_pnm $@
+}
+function on_pnm_bwr_objmapc_bsl_debug {
+  DO_DEBUG=true
+  on_pnm_bwr_objmapc_bsl $@
 }
 
-# BWREL with objmap
-function on_pnm_ski_bwr_objmap_bsl {
+# BW-REL with OBJMAP with ALPHA
+function on_pnm_bwra_objmap_bsl {
   export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
   export SH_BIG_SMALL_THRESHOLD="4194304"
   export SH_PROFILE_BW="1"
   export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
   export SH_PROFILE_BW_SKIP_INTERVALS="1"
   export SH_PROFILE_BW_RELATIVE="1"
-  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
+  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_alpha"
+  export SH_PROFILE_ONLINE_ALPHA="0.1"
   export SH_PROFILE_ONLINE_WEIGHT="profile_objmap_peak"
   export SH_PROFILE_OBJMAP="1"
-  on_pnm_ski $@
+  on_pnm $@
 }
-function on_ski_bwr_objmap_bsl {
-  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
-  export SH_BIG_SMALL_THRESHOLD="4194304"
-  export SH_PROFILE_BW="1"
-  export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
-  export SH_PROFILE_BW_SKIP_INTERVALS="1"
-  export SH_PROFILE_BW_RELATIVE="1"
-  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
-  export SH_PROFILE_ONLINE_WEIGHT="profile_objmap_peak"
-  export SH_PROFILE_OBJMAP="1"
-  on_ski $@
-}
-function on_pnm_ski_bwr_objmap_bsl_lazy {
+function on_pnm_bwra_objmap_bsl_debug {
   DO_DEBUG=true
-  export SH_LAZY_MIGRATION="1"
-  on_pnm_ski_bwr_objmap_bsl $@
-}
-function on_pnm_ski_bwr_objmap_bsl_nolazy {
-  DO_DEBUG=true
-  on_pnm_ski_bwr_objmap_bsl $@
-}
-function on_pnm_ski_bwr_objmap_bsl_lazyfixed {
-  DO_DEBUG=true
-  export SH_LAZY_MIGRATION="1"
-  on_pnm_ski_bwr_objmap_bsl $@
-}
-function on_pnm_ski_bwr_objmap_bsl_nolazyfixed {
-  DO_DEBUG=true
-  on_pnm_ski_bwr_objmap_bsl $@
-}
-function on_ski_bwr_objmap_bsl_debug {
-  DO_DEBUG=true
-  on_ski_bwr_objmap_bsl $@
-}
-function on_pnm_ski_bwr_objmap_ss {
-  export SH_ARENA_LAYOUT="SHARED_SITE_ARENAS"
-  export SH_PROFILE_BW="1"
-  export SH_PROFILE_BW_EVENTS="UNC_M_CAS_COUNT:RD"
-  export SH_PROFILE_BW_SKIP_INTERVALS="1"
-  export SH_PROFILE_BW_RELATIVE="1"
-  export SH_PROFILE_ONLINE_VALUE="profile_bw_relative_total"
-  export SH_PROFILE_ONLINE_WEIGHT="profile_objmap_peak"
-  export SH_PROFILE_OBJMAP="1"
-  on_pnm_ski $@
-}
-function on_pnm_ski_bwr_objmap_ss_debug {
-  DO_DEBUG=true
-  on_pnm_ski_bwr_objmap_ss $@
+  on_pnm_bwra_objmap_bsl $@
 }

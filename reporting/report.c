@@ -9,10 +9,10 @@
 #include "parse_gnu_time.h"
 #include "parse_bench.h"
 #include "parse_sicm.h"
+#include "parse_pcm_memory.h"
 
 #if 0
 #include "parse_numastat.h"
-#include "parse_pcm_memory.h"
 #include "parse_memreserve.h"
 #endif
 
@@ -41,9 +41,9 @@ void register_metrics() {
   register_gnu_time_metrics();
   register_bench_metrics();
   register_sicm_metrics();
+  register_pcm_memory_metrics();
 #if 0
   register_numastat_metrics();
-  register_pcm_memory_metrics();
   register_memreserve_metrics();
 #endif
 }
@@ -95,10 +95,36 @@ char *get_config_path(char *bench_str, char *size_str, char *config_str) {
   return path;
 }
 
+/* We're only going to be using sample sizes of less than 30 here, so use a t-distribution */
+static const double distribution[] = {0, 12.71, 4.303, 3.182, 2.776, 2.571, 2.447, 2.998, 2.306, 2.262, 2.228,
+                                      2.201, 2.179, 2.160, 2.145, 2.131, 2.120, 2.110, 2.101, 2.093, 2.086};
+
+double get_ci95(double base_mean, double mean, double base_std_dev, double std_dev, size_t num_iters) {
+  double foo, s_x, faz, fez, ci95;
+  int n_df;
+  
+  if(!base_std_dev || !std_dev) {
+    return 0.0;
+  }
+  
+  foo = (pow(base_std_dev, 2) / ((double) num_iters)) + (pow(std_dev, 2) / ((double) num_iters));
+  s_x = sqrt(foo);
+  faz = pow(pow(base_std_dev, 2) / ((double) num_iters), 2) / ((double) num_iters - 1);
+  fez = pow(pow(std_dev, 2) / ((double) num_iters), 2) / ((double) num_iters - 1);
+  n_df = (int) round(pow(foo, 2) / (faz + fez));
+  
+  if((n_df < 1) || (n_df > 20)) {
+    fprintf(stderr, "Unable to determine distribution for n_df: %d. Aborting.\n", n_df);
+    exit(1);
+  }
+  ci95 = distribution[n_df] * s_x;
+  return ci95;
+}
+
 /* This function returns a `result` struct */
-void get_geo_result(char *path, char *metric_str, metric_opts *mopts, geo_result *result) {
-  double geomean, diff;
-  size_t num_iters, i;
+void get_mean_result(char *path, char *metric_str, metric_opts *mopts, mean_result *result) {
+  double mean, diff;
+  size_t i;
   int iter;
   char *iterpath;
   DIR *dir;
@@ -123,18 +149,20 @@ void get_geo_result(char *path, char *metric_str, metric_opts *mopts, geo_result
   dir = opendir(path);
   if(!dir) {
     fprintf(stderr, "Unable to open directory: '%s'. Filling with zeroes.\n", path);
-    result->geomean = 0.0;
-    result->variance = 0.0;
-    result->rel_geomean = 0.0;
-    result->rel_variance = 0.0;
+    result->mean = 0.0;
+    result->rel_mean = 0.0;
+    result->ci95 = 0.0;
+    result->std_dev = 0.0;
+    result->num_iters = 0;
     return;
   }
   
   /* Iterate over the directories (each of which is an iteration), get the result for
      that iteration, and add it to the array */
-  result->geomean = 0.0;
-  result->variance = 0.0;
-  num_iters = 0;
+  result->mean = 0.0;
+  result->ci95 = 0.0;
+  result->std_dev = 0.0;
+  result->num_iters = 0;
   arr = NULL;
   while ((de = readdir(dir)) != NULL) {
     if(sscanf(de->d_name, "i%d", &iter) == 1) {
@@ -143,40 +171,36 @@ void get_geo_result(char *path, char *metric_str, metric_opts *mopts, geo_result
       d = parse_iteration(metric_str, iterpath, mopts);
       
       /* Store this result in the array (so that we can calculate variance) */
-      num_iters++;
-      arr = realloc(arr, sizeof(double) * num_iters);
-      arr[num_iters - 1] = d;
+      result->num_iters++;
+      arr = realloc(arr, sizeof(double) * result->num_iters);
+      arr[result->num_iters - 1] = d;
       
-      /* Add up the values in the `geomean` variable */
-      if(d) {
-        result->geomean += log(d);
-      }
+      /* Add up the values in the `mean` variable */
+      result->mean += d;
       
       free(iterpath);
     }
   }
   
-  /* Calculate the geomean and variance across those iterations */
-  if(!num_iters) {
+  /* Calculate the mean across those iterations */
+  if(!(result->num_iters)) {
     fprintf(stderr, "WARNING: Failed to find any iterations in '%s'.\n", path);
-    result->geomean = 0.0;
-    result->variance = 0.0;
-  } else if(num_iters == 1) {
-    result->geomean = d;
-    result->variance = 0;
+    result->mean = 0.0;
   } else {
-    result->geomean /= num_iters;
-    result->geomean = exp(result->geomean);
-    for(i = 0; i < num_iters; i++) {
-      d = arr[i];
-      diff = abs(result->geomean - d);
-      if(diff > result->variance) {
-        result->variance = diff;
+    result->mean /= result->num_iters;
+    
+    /* Now that we've got the mean, we can calculate std_dev */
+    if(result->num_iters > 1) {
+      result->std_dev = 0.0;
+      for(i = 0; i < result->num_iters; i++) {
+        result->std_dev += pow(fabs(arr[i] - result->mean), 2);
       }
+      result->std_dev /= (result->num_iters - 1);
+      result->std_dev = sqrt(result->std_dev);
     }
   }
   
-  if(num_iters) {
+  if(result->num_iters) {
     free(arr);
   }
   if(!orig_mopts) {
@@ -276,7 +300,7 @@ char check_args(char *metric_str, char *size_str, size_t num_configs, char **con
 int main(int argc, char **argv) {
   int option_index, arg, iter, num_iters;
   char c, *metric_str, *iterpath, *path, *size_str, relative;
-  double geomean;
+  double mean;
   char *single_path, debug;
   DIR *dir;
   metric_opts *mopts;
@@ -284,14 +308,18 @@ int main(int argc, char **argv) {
   /* Array of configuration and benchmark strings */
   char **config_strs,
        **bench_strs;
-  size_t num_configs, config, max_config_len,
+  size_t num_configs, config, max_bench_len, max_config_len,
          num_benches, bench;
-  ssize_t max_column_len, column_len;
+  ssize_t column_len, string_len;
   
   /* Array of per-bench, per-config result pointers */
-  geo_result ***results, *result;
+  mean_result ***results, *result;
   /* Same as above, but the strings of what we're going to print in the table */
-  char ***result_strs;
+  char ***result_strs,
+       ***confidence_strs;
+  ssize_t **result_lens,
+          **confidence_lens;
+  int *column_lens;
   
   /* Handle options and arguments */
   mopts = malloc(sizeof(metric_opts));
@@ -385,93 +413,145 @@ int main(int argc, char **argv) {
       fprintf(stderr, "No metric given. Aborting.\n");
       exit(1);
     }
-    result = malloc(sizeof(geo_result));
-    get_geo_result(single_path, metric_str, mopts, result);
-    printf("%lf", result->geomean);
+    result = malloc(sizeof(mean_result));
+    get_mean_result(single_path, metric_str, mopts, result);
+    printf("%lf\n", result->mean);
     free(result);
     goto cleanup;
   }
   
   check_args(metric_str, size_str, num_configs, config_strs, bench_strs);
   
-  /* This loop iterates over the configs, gets a `metric` struct per config per bench */
-  results = calloc(num_benches, sizeof(geo_result **));
+  /* Allocate and initialize the arrays we'll use in the next loop */
+  results = calloc(num_benches, sizeof(mean_result **));
   result_strs = calloc(num_benches, sizeof(char **));
+  confidence_strs = calloc(num_benches, sizeof(char **));
+  result_lens = calloc(num_benches, sizeof(ssize_t *));
+  confidence_lens = calloc(num_benches, sizeof(ssize_t *));
   for(bench = 0; bench < num_benches; bench++) {
-    results[bench] = calloc(num_configs, sizeof(geo_result *));
+    results[bench] = calloc(num_configs, sizeof(mean_result *));
     result_strs[bench] = calloc(num_configs, sizeof(char *));
+    confidence_strs[bench] = calloc(num_configs, sizeof(char *));
+    result_lens[bench] = calloc(num_configs, sizeof(ssize_t));
+    confidence_lens[bench] = calloc(num_configs, sizeof(ssize_t));
     for(config = 0; config < num_configs; config++) {
-      if(debug) {
-        printf("Parsing '%s', '%s'\n", bench_strs[bench], config_strs[config]);
-      }
-      
+      results[bench][config] = malloc(sizeof(mean_result));
+    }
+  }
+    
+  /* This loop iterates over all bench/config pairs and generates a `mean_result` for each.
+     This struct just includes the mean result, standard deviation, number of iterations, etc. */
+  for(bench = 0; bench < num_benches; bench++) {
+    for(config = 0; config < num_configs; config++) {
       /* Get the result */
-      results[bench][config] = malloc(sizeof(geo_result));
       path = get_config_path(bench_strs[bench], size_str, config_strs[config]);
-      get_geo_result(path, metric_str, mopts, results[bench][config]);
+      get_mean_result(path, metric_str, mopts, results[bench][config]);
       
-      /* Now handle the `relative` flag */
-      if(relative && (results[bench][0]->geomean != 0.0)) {
-        results[bench][config]->rel_geomean = results[bench][config]->geomean / results[bench][0]->geomean;
-        results[bench][config]->rel_variance = results[bench][config]->variance / results[bench][0]->geomean;
+      /* If the user specified `--relative`, we want to normalize the mean to the first config.
+         Also calculate the 95% confidence interval. */
+      if(relative) {
+        if(results[bench][0]->mean == 0.0) {
+          /* If the mean of the first config is 0, we don't want to divide by 0 */
+          results[bench][config]->rel_mean = 0.0;
+          results[bench][config]->ci95 = 0.0;
+        } else {
+          results[bench][config]->rel_mean = results[bench][config]->mean / results[bench][0]->mean;
+          results[bench][config]->ci95 = get_ci95(results[bench][0]->mean,
+                                                  results[bench][config]->mean,
+                                                  results[bench][0]->std_dev,
+                                                  results[bench][config]->std_dev,
+                                                  results[bench][config]->num_iters);
+          results[bench][config]->ci95 /= results[bench][0]->mean;
+        }
       }
       
       /* Here, we'll store the string of the result (including variance) in `result_strs`. We first figure
         out how long the string is going to be, then allocate enough room, then finally write the result
         into `result_strs[bench][config]`. */
       if(relative) {
-        column_len = snprintf(NULL, 0, "%.3f ± %.3f", results[bench][config]->rel_geomean, results[bench][config]->rel_variance);
-        result_strs[bench][config] = malloc(sizeof(char) * column_len);
-        snprintf(result_strs[bench][config], column_len, "%.3f ± %.3f", results[bench][config]->rel_geomean, results[bench][config]->rel_variance);
+        /* Put the string of the result in the array */
+        string_len = snprintf(NULL, 0, "%.3f", results[bench][config]->rel_mean) + 1;
+        result_lens[bench][config] = string_len;
+        result_strs[bench][config] = malloc(sizeof(char) * string_len);
+        snprintf(result_strs[bench][config], string_len, "%.3f", results[bench][config]->rel_mean);
+        
+        /* Put the confidence string in the array */
+        string_len = snprintf(NULL, 0, "%.3f", results[bench][config]->ci95) + 1;
+        confidence_lens[bench][config] = string_len;
+        confidence_strs[bench][config] = malloc(sizeof(char) * string_len);
+        snprintf(confidence_strs[bench][config], string_len, "%.3f", results[bench][config]->ci95);
       } else {
-        column_len = snprintf(NULL, 0, "%.3f ± %.3f", results[bench][config]->geomean, results[bench][config]->variance);
-        result_strs[bench][config] = malloc(sizeof(char) * column_len);
-        snprintf(result_strs[bench][config], column_len, "%.3f ± %.3f", results[bench][config]->geomean, results[bench][config]->variance);
+        string_len = snprintf(NULL, 0, "%.3f", results[bench][config]->mean) + 1;
+        result_lens[bench][config] = string_len;
+        result_strs[bench][config] = malloc(sizeof(char) * string_len);
+        snprintf(result_strs[bench][config], string_len, "%.3f", results[bench][config]->mean);
       }
       free(path);
     }
   }
   
-  /* The first column should be the width of the longest config name. */
-  max_config_len = 0;
-  for(config = 0; config < num_configs; config++) {
-    if(strlen(config_strs[config]) > max_config_len) {
-      max_config_len = strlen(config_strs[config]);
+  /* The first column should be the width of the longest bench name. */
+  max_bench_len = 0;
+  for(bench = 0; bench < num_benches; bench++) {
+    if(strlen(bench_strs[bench]) > max_bench_len) {
+      max_bench_len = strlen(bench_strs[bench]);
     }
   }
-  max_config_len += 2;
+  max_bench_len += 2;
   
-  /* Subsequent columns should be as wide as the longest result or benchmark name. */
-  max_column_len = 0;
+  /* Subsequent columns should be as wide as the longest result or config name in that column. */
+  column_lens = calloc(num_configs, sizeof(int));
   for(config = 0; config < num_configs; config++) {
     for(bench = 0; bench < num_benches; bench++) {
       column_len = strlen(result_strs[bench][config]);
-      if(column_len > max_column_len) {
-        max_column_len = column_len;
+      if(column_len > column_lens[config]) {
+        column_lens[config] = column_len;
       }
     }
   }
-  for(bench = 0; bench < num_benches; bench++) {
-    column_len = strlen(bench_strs[bench]);
-    if(column_len > max_column_len) {
-      max_column_len = column_len;
+  for(config = 0; config < num_configs; config++) {
+    column_len = strlen(config_strs[config]);
+    if(column_len > column_lens[config]) {
+      column_lens[config] = column_len;
     }
+    column_lens[config] += 2;
   }
-  max_column_len += 2;
   
   /* Print the table of results */
-  printf("%-*s", max_config_len, " ");
-  for(bench = 0; bench < num_benches; bench++) {
-    printf("%-*s", max_column_len, bench_strs[bench]);
+  if(relative) {
+    printf("Relative ");
+  }
+  printf("%s\n", metric_str);
+  printf("%-*s", max_bench_len, " ");
+  for(config = 0; config < num_configs; config++) {
+    printf("%-*s", column_lens[config], config_strs[config]);
   }
   printf("\n");
-  for(config = 0; config < num_configs; config++) {
-    printf("%-*s", max_config_len, config_strs[config]);
-    for(bench = 0; bench < num_benches; bench++) {
-      printf("%-*s", max_column_len, result_strs[bench][config]);
+  for(bench = 0; bench < num_benches; bench++) {
+    printf("%-*s", max_bench_len, bench_strs[bench]);
+    for(config = 0; config < num_configs; config++) {
+      printf("%-*s", column_lens[config], result_strs[bench][config]);
     }
     printf("\n");
   }
+  
+  /* If printing relative results, print a separate table with the 95% confidence intervals */
+  if(relative) {
+    printf("\n95%% Confidence Intervals\n");
+    printf("%-*s", max_bench_len, " ");
+    for(config = 0; config < num_configs; config++) {
+      printf("%-*s", column_lens[config], config_strs[config]);
+    }
+    printf("\n");
+    for(bench = 0; bench < num_benches; bench++) {
+      printf("%-*s", max_bench_len, bench_strs[bench]);
+      for(config = 0; config < num_configs; config++) {
+        printf("%-*s", column_lens[config], confidence_strs[bench][config]);
+      }
+      printf("\n");
+    }
+  }
+  printf("\n");
   
   /* Clean up */
   cleanup:

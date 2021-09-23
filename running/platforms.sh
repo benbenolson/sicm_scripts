@@ -31,15 +31,16 @@ if [[ "$(hostname)" = "canata" ]]; then
   
 elif [[ "$(hostname)" = "chile" ]]; then
 
-  # Jantz's Chile machine, a CLX machine with AEP 
-  export OMP_NUM_THREADS="32"
+  # Jantz's Chile machine, a CLX machine with AEP
+  export OMP_NUM_THREADS="16"
   if [[ $NUM_NUMA_NODES = 2 ]]; then
     export PLATFORM_COMMAND="sudo -E /usr/bin/time -v numactl --preferred=0 numactl --membind=0,1 "
     export SH_UPPER_NODE="0"
     export SH_LOWER_NODE="1"
   else
-    echo "COULDN'T DETECT HARDWARE CONFIGURATION. ABORTING."
-    exit
+    export PLATFORM_COMMAND="sudo -E /usr/bin/time -v numactl --preferred=0 numactl --membind=0 "
+    export SH_UPPER_NODE="0"
+    export SH_LOWER_NODE="0"
   fi
   
 else

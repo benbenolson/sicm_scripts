@@ -1,8 +1,8 @@
 #!/bin/bash
 # On a Fedora 30 distro, I had to install the following packages:
-# lapack, lapack-devel, fftw, fftw-devel, hdf5, hdf5-devel, boost, boost-devel
+# lapack lapack-devel fftw fftw-devel hdf5 hdf5-devel boost boost-devel
 # On a Debian 10.0 distro, I had to install:
-# libxml2-dev, libxml2, libboost-dev, libxml2, libhdf5-103, libhdf5-dev, libfftw3-dev, liblapack-dev, libblas-dev
+# libxml2-dev libxml2 libboost-dev libxml2 libhdf5-103 libhdf5-dev libfftw3-dev liblapack-dev libblas-dev
 # On a CentOS 7.7 machine, I had to install:
 # lapack lapack-devel blas blas-devel centos-release-scl devtoolset-7-gcc* boost169 boost169-devel
 # then had to do: . /opt/rh/devtoolset-7/enable
@@ -15,16 +15,15 @@
 #    )
 
 #. /opt/rh/devtoolset-7/enable
-source $SCRIPTS_DIR/all/bench_build.sh
 bench_build c "" ""
 
 export FFTW_INCLUDE_DIRS="/usr/include"
 export FFTW_LIBRARY_DIRS="/usr/lib/x86_64-linux-gnu"
 # export HDF5_INCLUDE_DIRS="/usr/include/"
 # export HDF5_LIBRARY_DIRS="/usr/lib/x86_64-linux-gnu"
-#export BOOST_INCLUDE_DIRS="/usr/include/boost/"
-#export SICM_COMPILER_ARGS="--gcc-toolchain=/opt/rh/devtoolset-7/root/usr/ -L/opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/ -lstdc++_nonshared"
-#export CXXFLAGS="-lm ${SICM_COMPILER_ARGS}"
+# export BOOST_INCLUDE_DIRS="/usr/include/boost/"
+# export SICM_COMPILER_ARGS="--gcc-toolchain=/opt/rh/devtoolset-7/root/usr/ -L/opt/rh/devtoolset-7/root/usr/lib/gcc/x86_64-redhat-linux/7/ -lstdc++_nonshared"
+# export CXXFLAGS="-lm ${SICM_COMPILER_ARGS}"
 
 # Compile QMCPACK
 cd $BENCH_DIR/qmcpack/src

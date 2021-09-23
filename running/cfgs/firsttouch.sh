@@ -29,6 +29,12 @@ function ft_def {
   ft $@
 }
 
+function ft_def_15th {
+  export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
+  export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
+  ft $@
+}
+
 function ft_ed {
   export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
   export SH_ARENA_LAYOUT="EXCLUSIVE_DEVICE_ARENAS"
@@ -42,7 +48,56 @@ function ft_ss {
   ft $@
 }
 
+function ft_bsl_15th {
+  export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304" # 4MB threshold
+  export SH_MAX_SITES_PER_ARENA="5000"
+  export OMP_NUM_THREADS=`expr $OMP_NUM_THREADS - 1`
+  ft $@
+}
+
 function ft_bsl {
+  export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304" # 4MB threshold
+  export SH_MAX_SITES_PER_ARENA="5000"
+  ft $@
+}
+
+function ft_bsl_nodalloc {
+  export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304" # 4MB threshold
+  export SH_MAX_SITES_PER_ARENA="5000"
+  ft $@
+}
+
+function ft_bsl_mm {
+  export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304" # 4MB threshold
+  export SH_MAX_SITES_PER_ARENA="5000"
+  ft $@
+}
+
+function ft_bsl_mm_newpcm {
+  export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304" # 4MB threshold
+  export SH_MAX_SITES_PER_ARENA="5000"
+  ft $@
+}
+
+function ft_bsl_mm_thp {
+  export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
+  export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
+  export SH_BIG_SMALL_THRESHOLD="4194304" # 4MB threshold
+  export SH_MAX_SITES_PER_ARENA="5000"
+  ft $@
+}
+
+function ft_bsl_mm_ht {
   export SH_DEFAULT_NODE="${SH_UPPER_NODE}"
   export SH_ARENA_LAYOUT="BIG_SMALL_ARENAS"
   export SH_BIG_SMALL_THRESHOLD="4194304" # 4MB threshold

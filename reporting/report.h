@@ -9,11 +9,12 @@ typedef struct metric_opts {
   char *output_filename; /* Used for graphs */
 } metric_opts;
 
-/* This is just a struct that includes a variance and geomean over the iterations that we ran. */
-typedef struct geo_result {
-  double geomean, rel_geomean;
-  double variance, rel_variance;
-} geo_result;
+/* This is just a struct that includes a variance and mean over the iterations that we ran. */
+typedef struct mean_result {
+  double mean, rel_mean,
+         std_dev, ci95;
+  size_t num_iters;
+} mean_result;
 
 /* A parser registers a number of function pointers,
    plus a list of the metrics that it can provide.  */
@@ -51,7 +52,7 @@ int metric_index(char *metric, char **metrics);
 char *get_config_path(char *bench_str, char *size_str, char *config_str);
 
 /* This function returns a `result` struct */
-void get_geo_result(char *path, char *metric_str, metric_opts *mopts, geo_result *result);
+void get_mean_result(char *path, char *metric_str, metric_opts *mopts, mean_result *result);
 
 /* Appends the filename to the path */
 char *construct_path(char *path, char *filename);

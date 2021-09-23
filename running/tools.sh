@@ -53,7 +53,7 @@ function numastat_kill {
 function pcm_background {
   sudo modprobe msr
   rm -f $1/pcm-memory.txt
-  sudo ${SCRIPTS_DIR}/tools/pcm/pcm-memory.x -pmm &> $1/pcm-memory.txt &
+  sudo ${SCRIPTS_DIR}/tools/pcm/pcm-memory.x -mixed &> $1/pcm-memory.txt &
   pcm_pid=$!
 }
 function pcm_kill {
@@ -91,16 +91,16 @@ function memreserve_kill {
 # One argument: the amount that should be allowed on node 0.
 function per_node_max {
   RESERVE_BYTES="${1}"
-  echo "+cpuset" | sudo tee /sys/fs/cgroup/cgroup.subtree_control &> /dev/null
-  if [[ -d /sys/fs/cgroup/unified/0 ]]; then
-    for line in `cat /sys/fs/cgroup/unified/0/cgroup.procs`; do
+  echo "+cpuset" | sudo tee /sys/fs/cgroup/unified/cgroup.subtree_control &> /dev/null
+  if [[ -d /sys/fs/cgroup/unified/1 ]]; then
+    for line in `cat /sys/fs/cgroup/unified/1/cgroup.procs`; do
       sudo kill -9 $line
     done
-    sudo rmdir /sys/fs/cgroup/unified/0 &> /dev/null
+    sudo rmdir /sys/fs/cgroup/unified/1 &> /dev/null
   fi
-  sudo mkdir /sys/fs/cgroup/unified/0 &> /dev/null
-  echo "${RESERVE_BYTES}" | sudo tee /sys/fs/cgroup/unified/0/memory.node0_max &> /dev/null
-  CURRENT=`cat /sys/fs/cgroup/unified/0/memory.node0_current`
-  MAX=`cat /sys/fs/cgroup/unified/0/memory.node0_max`
-  sh -c "echo \$$ | sudo tee /sys/fs/cgroup/unified/0/cgroup.procs && ${COMMAND}" /dev/null
+  sudo mkdir /sys/fs/cgroup/unified/1 &> /dev/null
+  echo "${RESERVE_BYTES}" | sudo tee /sys/fs/cgroup/unified/1/memory.node0_max &> /dev/null
+  CURRENT=`cat /sys/fs/cgroup/unified/1/memory.node0_current`
+  MAX=`cat /sys/fs/cgroup/unified/1/memory.node0_max`
+  sh -c "echo \$$ | sudo tee /sys/fs/cgroup/unified/1/cgroup.procs && ${COMMAND}"
 }
